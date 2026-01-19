@@ -1,223 +1,563 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Seguridad Industrial AR</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     
+    <title>Seguridad Auditiva Industrial AR</title>
+
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Roboto', sans-serif; }
-        
-        /* -- INTERFAZ MEJORADA -- */
+        /* Reset básico del navegador para evitar márgenes inesperados */
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Evita barras de desplazamiento durante la experiencia AR */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000; /* Fondo negro mientras carga la cámara */
+        }
+
+        /* --- PANTALLA DE CARGA INICIAL --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            z-index: 9999; /* Asegura que esté siempre encima de todo */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            transition: opacity 0.5s ease-out; /* Transición suave al desaparecer */
+        }
+
+        .loader-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #f1c40f; /* Color amarillo seguridad */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 18px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* --- CAPA DE INTERFAZ DE USUARIO (UI LAYER) --- */
         #ui-layer {
-            position: fixed; bottom: 40px; left: 0; width: 100%;
-            display: flex; justify-content: center; pointer-events: none; z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permite que los toques pasen a través de la capa transparente */
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Alinea los controles abajo */
+            align-items: center;
+            padding-bottom: 40px; /* Espacio desde el borde inferior */
+        }
+
+        /* --- ESTILOS DE LOS BOTONES --- */
+        .btn-container {
+            pointer-events: auto; /* Reactiva los toques solo para los botones */
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
 
         .btn {
-            pointer-events: auto;
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white; border: none; padding: 15px 40px;
-            font-size: 18px; font-weight: bold; border-radius: 50px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: none; /* Oculto al inicio */
-            text-transform: uppercase; letter-spacing: 1px;
+            border: none;
+            padding-top: 15px;
+            padding-bottom: 15px;
+            padding-left: 40px;
+            padding-right: 40px;
+            font-size: 18px;
+            font-weight: 700; /* Bold */
+            border-radius: 50px; /* Bordes completamente redondeados */
+            cursor: pointer;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto de rebote suave */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            outline: none;
+            display: none; /* Ocultos por defecto hasta que cargue el sistema */
         }
 
-        .btn:active { transform: scale(0.95); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-        #btn-start { display: block; background: #3498db; } /* Azul para inicio */
-        #btn-protect { background: #2ecc71; display: none; } /* Verde para proteger */
-
-        /* Aviso flotante */
-        #overlay-text {
-            position: fixed; top: 20px; width: 100%; text-align: center;
-            color: white; font-weight: bold; text-shadow: 0 2px 4px black;
-            font-size: 24px; display: none; z-index: 998;
+        .btn:active {
+            transform: scale(0.95); /* Efecto de presionado */
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
         }
-        
-        .pulse { animation: pulse-anim 1.5s infinite; }
-        @keyframes pulse-anim {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+
+        #btn-start {
+            background-color: #3498db; /* Azul */
+            color: white;
+        }
+
+        #btn-protect {
+            background-color: #2ecc71; /* Verde */
+            color: white;
+        }
+
+        /* Animación de pulso para llamar la atención al botón de inicio */
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+
+        /* --- ALERTA VISUAL EN PANTALLA --- */
+        #alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0); /* Transparente al inicio */
+            z-index: 500;
+            pointer-events: none;
+            transition: background-color 0.5s ease;
+        }
+
+        #alert-text-container {
+            position: fixed;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            z-index: 1001;
+            display: none;
+        }
+
+        .alert-text {
+            font-size: 26px;
+            font-weight: 900;
+            color: #e74c3c; /* Rojo peligro */
+            text-shadow: 2px 2px 4px #000000;
+            background-color: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        /* Animación de fondo rojo parpadeante */
+        .danger-mode {
+            animation: danger-pulse 0.8s infinite alternate;
+        }
+
+        @keyframes danger-pulse {
+            from { background-color: rgba(255, 0, 0, 0.1); }
+            to { background-color: rgba(255, 0, 0, 0.4); }
+        }
+
+        /* --- ESTADO PROTEGIDO --- */
+        .safe-mode-text {
+            color: #2ecc71 !important; /* Verde seguridad */
+            border: 2px solid #2ecc71;
         }
     </style>
 </head>
-<body style="margin: 0px; overflow: hidden;">
+<body>
 
-    <div id="overlay-text">⚠️ RUIDO CRÍTICO DETECTADO</div>
-
-    <div id="ui-layer">
-        <button id="btn-start" class="btn pulse">🔊 ACTIVAR SIMULACIÓN</button>
-        <button id="btn-protect" class="btn">🎧 PONERSE PROTECCIÓN</button>
+    <div id="loading-screen">
+        <div class="loader-spinner"></div>
+        <div id="loading-text">Iniciando Sistema AR...</div>
+        <div style="font-size: 12px; margin-top: 10px; color: #aaa;">Por favor, permite el acceso a la cámara.</div>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+    <div id="alert-overlay"></div>
+    <div id="alert-text-container">
+        <div id="main-alert-text" class="alert-text">⚠️ RIESGO AUDITIVO DETECTADO</div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="btn-container">
+            <button id="btn-start" class="btn pulse-animation">🔊 ACTIVAR SIMULACIÓN</button>
+            <button id="btn-protect" class="btn">🎧 COLOCAR PROTECCIÓN EPP</button>
+        </div>
+    </div>
+
+    <a-scene 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 60;"
+        renderer="logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true;"
+        vr-mode-ui="enabled: false"
+        id="main-scene">
         
-        <a-light type="directional" position="1 1 1" intensity="1.5"></a-light>
-        <a-light type="ambient" intensity="0.8"></a-light>
+        <a-light type="ambient" color="#ffffff" intensity="0.7"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="1.2" position="-1 2 3" cast-shadow="true"></a-light>
 
-        <a-marker preset="hiro" smooth="true">
+
+        <a-marker preset="hiro" id="hiro-marker-anchor">
             
-            <a-entity id="ar-content" visible="false">
+            <a-entity id="ar-content-container" visible="false">
                 
-                <a-entity position="0 0.5 0" animation="property: position; to: 0 0.6 0; dir: alternate; loop: true; dur: 2000">
+                <a-entity 
+                    id="earmuffs-model-group"
+                    position="0 0.5 0" 
+                    scale="1.2 1.2 1.2"
+                    animation="property: position; to: 0 0.65 0; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine"
+                    animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 15000; easing: linear">
                     
-                    <a-torus arc="190" radius="0.6" radius-tubular="0.08" position="0 0 0" rotation="0 90 0" color="#1a1a1a"></a-torus>
+                    <a-torus 
+                        arc="200" 
+                        radius="0.7" 
+                        radius-tubular="0.08" 
+                        position="0 0 0" 
+                        rotation="0 90 0" 
+                        color="#2c3e50"
+                        roughness="0.5">
+                    </a-torus>
+                    <a-torus 
+                        arc="160" 
+                        radius="0.68" 
+                        radius-tubular="0.1" 
+                        position="0 -0.05 0" 
+                        rotation="0 90 0" 
+                        color="#1a1a1a"
+                        roughness="0.9">
+                    </a-torus>
 
-                    <a-entity position="-0.65 -0.1 0">
-                        <a-cylinder color="#f1c40f" height="0.3" radius="0.25" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#111" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="-0.1 0 0" scale="1 1 0.6"></a-torus>
-                        <a-sphere color="#555" radius="0.05" position="0 0.25 0"></a-sphere>
+                    <a-entity position="-0.75 -0.1 0">
+                        <a-cylinder color="#f1c40f" height="0.35" radius="0.3" rotation="0 0 90" metalness="0.1"></a-cylinder>
+                        <a-sphere color="#f1c40f" radius="0.3" position="-0.15 0 0" scale="0.5 1 1"></a-sphere>
+                        <a-torus color="#111" radius="0.3" radius-tubular="0.1" rotation="0 90 0" position="-0.12 0 0" scale="1 1 0.6" roughness="0.8"></a-torus>
+                        <a-cylinder color="#7f8c8d" height="0.1" radius="0.05" position="0 0.25 0"></a-cylinder>
                     </a-entity>
 
-                    <a-entity position="0.65 -0.1 0">
-                        <a-cylinder color="#f1c40f" height="0.3" radius="0.25" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#111" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="0.1 0 0" scale="1 1 0.6"></a-torus>
-                        <a-sphere color="#555" radius="0.05" position="0 0.25 0"></a-sphere>
+                    <a-entity position="0.75 -0.1 0">
+                        <a-cylinder color="#f1c40f" height="0.35" radius="0.3" rotation="0 0 90" metalness="0.1"></a-cylinder>
+                        <a-sphere color="#f1c40f" radius="0.3" position="0.15 0 0" scale="0.5 1 1"></a-sphere>
+                        <a-torus color="#111" radius="0.3" radius-tubular="0.1" rotation="0 90 0" position="0.12 0 0" scale="1 1 0.6" roughness="0.8"></a-torus>
+                        <a-cylinder color="#7f8c8d" height="0.1" radius="0.05" position="0 0.25 0"></a-cylinder>
                     </a-entity>
 
+                    <a-text 
+                        value="PROTECCION REQUERIDA"
+                        align="center"
+                        color="#e74c3c"
+                        position="0 -0.8 0"
+                        width="4"
+                        font="roboto"
+                        side="double">
+                    </a-text>
                 </a-entity>
 
-                <a-entity id="final-message" visible="false" position="0 0 0.5" rotation="-90 0 0">
-                     <a-plane color="#000" opacity="0.8" width="4" height="2.5"></a-plane>
+                <a-entity 
+                    id="final-safety-message" 
+                    visible="false" 
+                    position="0 0.2 0.5" 
+                    rotation="-45 0 0">
+                     
+                     <a-plane 
+                        color="#2c3e50" 
+                        opacity="0.9" 
+                        width="4.5" 
+                        height="3"
+                        border-radius="0.5">
+                    </a-plane>
+                     
                      <a-text 
-                        value="PROTECCION ACTIVA\n\nEl uso correcto de EPP\nevita la hipoacusia\nlaboral permanente."
-                        align="center" color="#2ecc71" width="3.8" position="0 0 0.1">
+                        value="¡BIEN HECHO!"
+                        align="center" 
+                        color="#2ecc71" 
+                        width="5" 
+                        position="0 1 0.1"
+                        font="roboto"
+                        font-weight="bold">
                      </a-text>
+
+                     <a-text 
+                        value="No te olvides de llevar auriculares.\n\nSin importar el lugar,\nlos ruidos fuertes pueden\nafectar permanentemente\ntu salud auditiva."
+                        align="center" 
+                        color="#ffffff" 
+                        width="3.8" 
+                        position="0 0 0.1"
+                        font="roboto"
+                        wrap-count="25">
+                     </a-text>
+
+                     <a-circle color="#2ecc71" radius="0.3" position="0 -1 0.1">
+                        <a-text value="✓" align="center" color="white" width="6" position="0 0 0"></a-text>
+                     </a-circle>
                 </a-entity>
 
-            </a-entity>
-        </a-marker>
+            </a-entity> </a-marker>
 
         <a-entity camera></a-entity>
+        
     </a-scene>
 
     <script>
-        // --- SISTEMA DE AUDIO INDUSTRIAL MEJORADO ---
-        let audioCtx, masterGain;
-        let oscillators = [];
-        let isProtected = false;
-        let sourceFile = null; // Variable por si usas MP3 real
+        // =================================================================
+        // VARIABLES GLOBALES Y ESTADO DE LA APLICACIÓN
+        // =================================================================
+        
+        // Referencias a elementos del DOM (Interfaz de Usuario)
+        const uiElements = {
+            loadingScreen: document.getElementById('loading-screen'),
+            btnStart: document.getElementById('btn-start'),
+            btnProtect: document.getElementById('btn-protect'),
+            alertOverlay: document.getElementById('alert-overlay'),
+            alertTextContainer: document.getElementById('alert-text-container'),
+            mainAlertText: document.getElementById('main-alert-text')
+        };
 
-        function initAudio() {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            masterGain = audioCtx.createGain();
-            masterGain.connect(audioCtx.destination);
+        // Referencias a elementos de la escena AR (A-Frame)
+        const arElements = {
+            scene: document.getElementById('main-scene'),
+            marker: document.getElementById('hiro-marker-anchor'),
+            contentContainer: document.getElementById('ar-content-container'),
+            earmuffsGroup: document.getElementById('earmuffs-model-group'),
+            finalMessage: document.getElementById('final-safety-message')
+        };
+
+        // Estado del sistema de audio
+        const audioSystem = {
+            context: null,      // El AudioContext principal
+            masterGain: null,   // Control de volumen maestro
+            filterNode: null,   // Filtro para el efecto "ahogado"
+            oscillators: [],    // Array para guardar los generadores de sonido
+            isInitialized: false, // Bandera para saber si el audio ya arrancó
+            isProtected: false    // Bandera para saber si el usuario activó la protección
+        };
+
+        // =================================================================
+        // FUNCIONES DE INICIALIZACIÓN Y EVENTOS DEL SISTEMA
+        // =================================================================
+
+        /**
+         * Se ejecuta cuando la escena de A-Frame ha terminado de cargar completamente.
+         * Es el punto de entrada seguro para empezar a interactuar con la escena.
+         */
+        document.querySelector('a-scene').addEventListener('loaded', function () {
+            console.log("APP: Escena A-Frame cargada correctamente.");
             
-            // --- OPCIÓN A: Generador de Zumbido de Fábrica (Sintético) ---
-            // Creamos 3 osciladores graves para simular maquinaria pesada
-            const freqs = [55, 110, 220]; // Frecuencias graves (Hertz)
-            
-            freqs.forEach(f => {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sawtooth'; // Onda diente de sierra (suena áspero/mecánico)
-                osc.frequency.value = f;
+            // Ocultamos la pantalla de carga después de un breve retraso para asegurar estabilidad
+            setTimeout(() => {
+                uiElements.loadingScreen.style.opacity = '0';
+                // Removemos el elemento del DOM una vez terminada la transición
+                setTimeout(() => uiElements.loadingScreen.style.display = 'none', 500);
                 
-                // Un filtro para quitarle lo "electrónico" y que suene "ahogado" como motor
-                const lowPass = audioCtx.createBiquadFilter();
-                lowPass.type = 'lowpass';
-                lowPass.frequency.value = 400;
+                // Mostramos el botón inicial
+                uiElements.btnStart.style.display = 'block';
+                console.log("APP: Interfaz de usuario lista. Esperando interacción.");
+            }, 1500);
+        });
 
-                const oscGain = audioCtx.createGain();
-                oscGain.gain.value = 0.3; // Volumen individual
+        /**
+         * EVENTOS DEL MARCADOR HIRO
+         * Estos eventos son cruciales para depurar la detección.
+         */
+        
+        // Evento: Marcador Encontrado
+        arElements.marker.addEventListener('markerFound', () => {
+            console.log("AR SYSTEM: ✅ Marcador Hiro detectado.");
+            // Si el audio ya se inició, aseguramos que el contenido sea visible
+            if (audioSystem.isInitialized) {
+                arElements.contentContainer.setAttribute('visible', true);
+            }
+        });
 
-                osc.connect(lowPass);
-                lowPass.connect(oscGain);
-                oscGain.connect(masterGain);
+        // Evento: Marcador Perdido
+        arElements.marker.addEventListener('markerLost', () => {
+            console.log("AR SYSTEM: ❌ Marcador Hiro perdido.");
+            // Opcional: Podrías ocultar el contenido si se pierde el marcador
+            // arElements.contentContainer.setAttribute('visible', false);
+        });
+
+
+        // =================================================================
+        // LÓGICA DEL SISTEMA DE AUDIO (WEB AUDIO API)
+        // =================================================================
+
+        /**
+         * Inicializa el contexto de audio y genera los sonidos industriales sintéticos.
+         * Debe ser llamado por una interacción del usuario (click) debido a políticas del navegador.
+         */
+        function initializeAudioSystem() {
+            if (audioSystem.isInitialized) return;
+
+            console.log("AUDIO: Inicializando sistema de audio...");
+
+            // Crear el AudioContext de manera compatible con distintos navegadores
+            const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+            audioSystem.context = new AudioContextConstructor();
+
+            // Crear nodo de ganancia maestro (Volumen general)
+            audioSystem.masterGain = audioSystem.context.createGain();
+            audioSystem.masterGain.gain.value = 0.8; // Volumen inicial alto (80%)
+
+            // Crear filtro Biquad (Paso Bajo) para el efecto de protección auditiva
+            // Inicialmente está abierto (22kHz) para dejar pasar todo el sonido
+            audioSystem.filterNode = audioSystem.context.createBiquadFilter();
+            audioSystem.filterNode.type = 'lowpass';
+            audioSystem.filterNode.frequency.value = 22000;
+            audioSystem.filterNode.Q.value = 1; // Calidad del filtro
+
+            // Conectar la cadena de audio: Filtro -> Volumen Maestro -> Altavoces
+            audioSystem.filterNode.connect(audioSystem.masterGain);
+            audioSystem.masterGain.connect(audioSystem.context.destination);
+
+            // --- GENERACIÓN DE SONIDO INDUSTRIAL SINTÉTICO ---
+
+            // CAPA 1: Zumbido de motor grave (Osciladores)
+            // Usamos ondas diente de sierra (sawtooth) por su sonido áspero y mecánico.
+            const baseFrequencies = [55, 110, 165]; // Frecuencias bajas en Hz
+
+            baseFrequencies.forEach(freq => {
+                const osc = audioSystem.context.createOscillator();
+                osc.type = 'sawtooth';
+                osc.frequency.value = freq; // Frecuencia base
+
+                // Ganancia individual para cada oscilador para mezclar
+                const oscGain = audioSystem.context.createGain();
+                oscGain.gain.value = 0.25;
+
+                // Conectar oscilador -> su ganancia -> al filtro principal
+                osc.connect(oscGain);
+                oscGain.connect(audioSystem.filterNode);
                 
                 osc.start();
-                oscillators.push(osc);
+                audioSystem.oscillators.push(osc); // Guardar referencia
             });
 
-            // Agregamos Ruido Blanco para "vapor/aire"
-            const bufferSize = audioCtx.sampleRate * 2;
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            // CAPA 2: Ruido Blanco (Siseo/Vapor/Aire a presión)
+            // Creamos un buffer de 2 segundos con valores aleatorios.
+            const bufferSize = audioSystem.context.sampleRate * 2;
+            const noiseBuffer = audioSystem.context.createBuffer(1, bufferSize, audioSystem.context.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
             
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = buffer;
-            noise.loop = true;
-            const noiseGain = audioCtx.createGain();
-            noiseGain.gain.value = 0.1;
-            noise.connect(masterGain);
-            noise.start();
-            oscillators.push(noise);
+            for (let i = 0; i < bufferSize; i++) {
+                // Llenamos el buffer con ruido aleatorio entre -1 y 1
+                noiseData[i] = Math.random() * 2 - 1;
+            }
 
-            // --- OPCIÓN B: MP3 REAL (Descomenta esto si subes un archivo) ---
-            /*
-            const audioEl = new Audio('fabrica.mp3'); // TU ARCHIVO AQUÍ
-            audioEl.loop = true;
-            audioEl.crossOrigin = "anonymous";
-            sourceFile = audioCtx.createMediaElementSource(audioEl);
-            sourceFile.connect(masterGain);
-            audioEl.play();
-            // Nota: Si usas MP3, comenta la parte de los osciladores de arriba para que no se mezclen
-            */
+            const noiseSource = audioSystem.context.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+            noiseSource.loop = true; // Reproducir en bucle infinito
+
+            // Ganancia específica para el ruido blanco (más baja que los motores)
+            const noiseGain = audioSystem.context.createGain();
+            noiseGain.gain.value = 0.15;
+
+            // Conectar ruido -> su ganancia -> al filtro principal
+            noiseSource.connect(noiseGain);
+            noiseGain.connect(audioSystem.filterNode);
+            noiseSource.start();
+            audioSystem.oscillators.push(noiseSource);
+
+            audioSystem.isInitialized = true;
+            console.log("AUDIO: Sistema de audio iniciado y reproduciendo ruido industrial.");
         }
 
-        // ELEMENTOS UI
-        const btnStart = document.getElementById('btn-start');
-        const btnProtect = document.getElementById('btn-protect');
-        const overlay = document.getElementById('overlay-text');
-        const arContent = document.getElementById('ar-content');
-        const finalMsg = document.getElementById('final-message');
-        const headphonesModel = arContent.querySelector('a-entity'); // El grupo de auriculares
+        /**
+         * Activa el efecto de protección auditiva.
+         * Reduce el volumen y aplica un filtro paso bajo intenso.
+         */
+        function enableHearingProtection() {
+            if (audioSystem.isProtected || !audioSystem.context) return;
+            
+            console.log("AUDIO: Activando protección auditiva (Efecto Muffled).");
+            audioSystem.isProtected = true;
 
-        // 1. INICIAR
-        btnStart.addEventListener('click', () => {
-            initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // UI Update
-            btnStart.style.display = 'none';
-            btnProtect.style.display = 'block';
-            overlay.style.display = 'block';
-            arContent.setAttribute('visible', true);
-            
-            // Efecto visual de alerta (Fondo rojo intermitente simulado)
-            document.body.style.animation = "pulse-bg 0.5s infinite alternate";
-        });
+            const currentTime = audioSystem.context.currentTime;
+            const transitionDuration = 0.8; // Duración de la transición en segundos
 
-        // 2. PROTEGER
-        btnProtect.addEventListener('click', () => {
-            if(isProtected) return;
-            isProtected = true;
+            // 1. Reducir el volumen drásticamente (del 80% al 10%)
+            // Usamos exponentialRampToValueAtTime para un cambio de volumen natural al oído
+            audioSystem.masterGain.gain.cancelScheduledValues(currentTime);
+            audioSystem.masterGain.gain.setValueAtTime(audioSystem.masterGain.gain.value, currentTime);
+            audioSystem.masterGain.gain.exponentialRampToValueAtTime(0.1, currentTime + transitionDuration);
 
-            // BAJAR VOLUMEN Y FILTRAR (Efecto Muffled)
-            // Bajamos volumen al 10%
-            masterGain.gain.exponentialRampToValueAtTime(0.1, audioCtx.currentTime + 1);
-            
-            // Si estuviéramos usando un MP3, aquí podríamos aplicar un filtro LowPass extra
-            // Pero bajar el volumen drásticamente ya simula bien la protección
+            // 2. Cerrar el filtro paso bajo (de 22kHz a 300Hz)
+            // Esto elimina los agudos y deja solo los graves resonantes (efecto "bajo el agua" o con tapones)
+            audioSystem.filterNode.frequency.cancelScheduledValues(currentTime);
+            audioSystem.filterNode.frequency.setValueAtTime(audioSystem.filterNode.frequency.value, currentTime);
+            audioSystem.filterNode.frequency.exponentialRampToValueAtTime(300, currentTime + transitionDuration);
+        }
 
-            // CAMBIOS VISUALES
-            document.body.style.animation = "none"; // Quitar alerta roja
-            document.body.style.backgroundColor = "transparent";
-            overlay.style.color = "#2ecc71";
-            overlay.innerText = "✅ PROTEGIDO";
+
+        // =================================================================
+        // MANEJADORES DE INTERACCIÓN DE USUARIO (BOTONES)
+        // =================================================================
+
+        // --- BOTÓN 1: ACTIVAR SIMULACIÓN ---
+        uiElements.btnStart.addEventListener('click', function() {
+            console.log("UI: Usuario inició la simulación.");
             
-            btnProtect.style.display = 'none';
+            // 1. Iniciar el audio
+            initializeAudioSystem();
             
-            // Ocultar auriculares 3D y mostrar mensaje
-            headphonesModel.setAttribute('visible', false);
-            finalMsg.setAttribute('visible', true);
-        });
-        
-        // Estilo dinámico para alerta roja
-        const styleSheet = document.createElement("style");
-        styleSheet.innerText = `
-            @keyframes pulse-bg {
-                from { background-color: rgba(255, 0, 0, 0); }
-                to { background-color: rgba(255, 0, 0, 0.3); }
+            // Asegurar que el contexto de audio no esté suspendido (común en móviles)
+            if (audioSystem.context.state === 'suspended') {
+                audioSystem.context.resume();
             }
-        `;
-        document.head.appendChild(styleSheet);
+
+            // 2. Actualizar la interfaz gráfica
+            this.style.display = 'none'; // Ocultar botón de inicio
+            uiElements.btnProtect.style.display = 'block'; // Mostrar botón de protección
+            
+            // Activar alertas visuales
+            uiElements.alertTextContainer.style.display = 'block';
+            uiElements.alertOverlay.classList.add('danger-mode');
+
+            // 3. Habilitar el contenido AR
+            // Se hace visible para que aparezca en cuanto la cámara detecte el marcador
+            arElements.contentContainer.setAttribute('visible', true);
+        });
+
+        // --- BOTÓN 2: PONERSE PROTECCIÓN ---
+        uiElements.btnProtect.addEventListener('click', function() {
+             console.log("UI: Usuario activó la protección.");
+
+             // 1. Aplicar efectos de audio
+             enableHearingProtection();
+
+             // 2. Actualizar la interfaz gráfica
+             this.style.display = 'none'; // Ocultar botón de protección
+             
+             // Desactivar alertas visuales de peligro
+             uiElements.alertOverlay.classList.remove('danger-mode');
+             uiElements.alertOverlay.style.backgroundColor = 'transparent';
+             
+             // Cambiar el texto de alerta a estado seguro
+             uiElements.mainAlertText.innerText = "✅ ESTADO: PROTEGIDO";
+             uiElements.mainAlertText.classList.add('safe-mode-text');
+
+             // 3. Actualizar la escena AR
+             // Ocultar el modelo de los auriculares (porque "ya los tiene puestos")
+             arElements.earmuffsGroup.setAttribute('visible', false);
+             // Mostrar el mensaje final de concientización
+             arElements.finalMessage.setAttribute('visible', true);
+        });
 
     </script>
 </body>
