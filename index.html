@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seguridad Auditiva AR</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    
+    <style>
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
+        
+        /* Botonera de Interfaz */
+        #ui-container {
+            position: fixed; bottom: 30px; left: 0; width: 100%;
+            text-align: center; z-index: 100;
+        }
+        
+        .btn {
+            background: #e74c3c; color: white; border: none;
+            padding: 15px 30px; font-size: 18px; border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold;
+            display: none; /* Ocultos al principio */
+        }
+
+        #btn-start { display: inline-block; background: #3498db; }
+        #btn-protect { background: #2ecc71; }
+
+        /* Aviso de "Apunta a la cámara" */
+        #scan-guide {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: white; background: rgba(0,0,0,0.7); padding: 20px;
+            border-radius: 10px; pointer-events: none; display: none;
+        }
+    </style>
+</head>
+<body style="margin: 0px; overflow: hidden;">
+
+    <div id="scan-guide">📱 Apunta al marcador "HIRO"</div>
+    
+    <div id="ui-container">
+        <button id="btn-start" class="btn">🔊 INICIAR EXPERIENCIA</button>
+        <button id="btn-protect" class="btn">🎧 PONERSE PROTECCIÓN</button>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        
+        <a-marker preset="hiro">
+            
+            <a-entity id="ar-content" visible="false">
+                
+                <a-entity position="0 0.5 0" animation="property: position; to: 0 0.7 0; dir: alternate; loop: true; dur: 1000">
+                    <a-torus color="red" radius="0.3" radius-tubular="0.05" position="-0.3 0 0" rotation="0 90 0"></a-torus>
+                    <a-torus color="red" radius="0.3" radius-tubular="0.05" position="0.3 0 0" rotation="0 90 0"></a-torus>
+                    <a-box color="black" width="0.7" height="0.1" depth="0.1" position="0 0.4 0"></a-box>
+                    <a-text value="TOCA EL BOTON VERDE\nPARA PROTEGERTE" align="center" position="0 -0.5 0" color="red" width="4"></a-text>
+                </a-entity>
+
+                <a-entity id="final-message" visible="false" position="0 0.5 0">
+                    <a-text 
+                        value="No te olvides de llevar auriculares.\n\nSin importar el lugar,\nlos ruidos fuertes pueden\nafectar permanente\ntu salud auditiva."
+                        align="center" 
+                        color="#2ecc71" 
+                        width="3" 
+                        position="0 0.5 0"
+                        wrap-count="20"
+                        side="double">
+                    </a-text>
+                    <a-sphere color="#2ecc71" radius="0.2" position="0 -0.5 0" opacity="0.5"></a-sphere>
+                </a-entity>
+
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        // CONFIGURACIÓN DE AUDIO
+        let audioCtx, noiseNode, gainNode, filterNode;
+        let isProtected = false;
+
+        function initAudio() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // Generador de Ruido Blanco (Industrial)
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            noiseNode = audioCtx.createBufferSource();
+            noiseNode.buffer = buffer;
+            noiseNode.loop = true;
+
+            // Filtro LowPass (Efecto Auriculares)
+            filterNode = audioCtx.createBiquadFilter();
+            filterNode.type = 'lowpass';
+            filterNode.frequency.value = 20000; // Abierto totalmente
+
+            // Volumen
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.8; // Volumen alto
+
+            noiseNode.connect(filterNode);
+            filterNode.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+        }
+
+        // ELEMENTOS DEL DOM
+        const btnStart = document.getElementById('btn-start');
+        const btnProtect = document.getElementById('btn-protect');
+        const scanGuide = document.getElementById('scan-guide');
+        const arContent = document.getElementById('ar-content');
+        const finalMessage = document.getElementById('final-message');
+
+        // 1. INICIAR (Click usuario necesario)
+        btnStart.addEventListener('click', () => {
+            initAudio();
+            audioCtx.resume();
+            noiseNode.start();
+            
+            btnStart.style.display = 'none';
+            btnProtect.style.display = 'inline-block';
+            scanGuide.style.display = 'block';
+            arContent.setAttribute('visible', true); // Mostrar contenido sobre el marcador
+        });
+
+        // 2. PROTEGERSE (Click en botón verde)
+        btnProtect.addEventListener('click', () => {
+            if (isProtected) return;
+            isProtected = true;
+
+            // Efecto Audio: Muffled (Ahogado)
+            filterNode.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.5);
+            gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.5);
+
+            // Efecto Visual: Cambiar a mensaje de texto
+            // Ocultamos los "auriculares rojos" (que son los hijos directos del ar-content menos el mensaje final)
+            // Para hacerlo simple, ocultamos el padre y mostramos solo el mensaje final
+            const children = arContent.children;
+            children[0].setAttribute('visible', false); // Ocultar aros
+
+            finalMessage.setAttribute('visible', true);
+
+            btnProtect.style.display = 'none';
+            scanGuide.innerText = "✅ Estás protegido";
+        });
+    </script>
+</body>
+</html>
