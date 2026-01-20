@@ -728,11 +728,21 @@
                 font-size: 68px;
             }
         }
-
         @media (min-height: 700px) {
             #meter {
                 padding-top: calc(var(--safe-top) + 120px);
             }
+        } /* <--- ¡TE FALTABA ESTA LLAVE DE CIERRE! */
+
+        /* El arreglo de cámara debe estar FUERA del media query */
+        .a-canvas, video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            position: absolute !important;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0 !important;
+            margin: 0 !important;
         }
     </style>
 </head>
@@ -847,184 +857,40 @@
          =================================================================== -->
     <a-scene 
         id="arScene"
-        embedded 
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true; colorManagement: true; antialias: true;"
         loading-screen="enabled: false;">
 
+        <a-assets>
+            <a-asset-item id="modelo-auris" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
+        </a-assets>
         <!-- Iluminación -->
         <a-light type="ambient" intensity="0.7"></a-light>
         <a-light type="directional" position="2 3 1" intensity="1.3"></a-light>
         <a-light type="point" color="#D71920" intensity="0.9" position="-1.2 1 0"></a-light>
 
         <!-- Marcador AR -->
-        <a-marker 
+<a-marker 
             type="pattern" 
             url="pattern-marker.patt" 
             smooth="true" 
             smoothCount="5"
             id="arMarker">
             
-            <!-- Contenedor Principal -->
             <a-entity id="arRoot" visible="false">
                 
-                <!-- AURICULARES 3D - TAMAÑO REDUCIDO Y OPTIMIZADO -->
-                <a-entity id="headphones" position="0 0.2 0" rotation="0 0 0" scale="0.6 0.6 0.6">
+                <a-entity 
+                    id="headphones" 
+                    gltf-model="#modelo-auris"
+                    position="0 0.5 0" 
+                    rotation="0 0 0" 
+                    scale="5 5 5"
+                    animation="property: position; from: 0 0.5 0; to: 0 0.6 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
+                    animation__rot="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
                     
-                    <!-- Animación de flotación suave -->
-                    <a-animation 
-                        attribute="position" 
-                        from="0 0.2 0" 
-                        to="0 0.28 0" 
-                        direction="alternate" 
-                        dur="2800" 
-                        repeat="indefinite" 
-                        easing="ease-in-out-sine">
-                    </a-animation>
-                    
-                    <!-- Animación de rotación continua -->
-                    <a-animation 
-                        attribute="rotation" 
-                        from="0 0 0" 
-                        to="0 360 0" 
-                        dur="10000" 
-                        repeat="indefinite" 
-                        easing="linear">
-                    </a-animation>
-
-                    <!-- Banda Superior (Diadema) -->
-                    <a-entity position="0 0.3 0">
-                        <!-- Arco principal -->
-                        <a-torus 
-                            color="#0f0f0f" 
-                            radius="0.5" 
-                            radius-tubular="0.07" 
-                            arc="190" 
-                            rotation="90 0 0"
-                            material="shader: standard; roughness: 0.3; metalness: 0.8;">
-                        </a-torus>
-                        
-                        <!-- Arco interno (acolchado) -->
-                        <a-torus 
-                            color="#1a1a1a" 
-                            radius="0.48" 
-                            radius-tubular="0.09" 
-                            arc="150" 
-                            rotation="90 0 0" 
-                            position="0 -0.01 0"
-                            material="shader: standard; roughness: 0.8; metalness: 0.2;">
-                        </a-torus>
-                    </a-entity>
-
-                    <!-- Auricular IZQUIERDO -->
-                    <a-entity position="-0.52 0.3 0" rotation="0 -12 0">
-                        <!-- Carcasa principal -->
-                        <a-cylinder 
-                            color="#D71920" 
-                            height="0.24" 
-                            radius="0.26" 
-                            rotation="0 0 90"
-                            material="shader: standard; roughness: 0.2; metalness: 0.9;">
-                        </a-cylinder>
-                        
-                        <!-- Almohadilla (oreja) -->
-                        <a-torus 
-                            color="#2a2a2a" 
-                            radius="0.26" 
-                            radius-tubular="0.08" 
-                            rotation="0 90 0" 
-                            position="-0.09 0 0" 
-                            scale="1 1 0.5"
-                            material="shader: standard; roughness: 0.9; metalness: 0.15;">
-                        </a-torus>
-                        
-                        <!-- Texto de advertencia -->
-                        <a-text 
-                            value="PELIGRO" 
-                            color="white" 
-                            align="center" 
-                            width="2.2" 
-                            position="-0.28 0 0" 
-                            rotation="0 -90 0"
-                            font="mozillavr">
-                        </a-text>
-                        
-                        <!-- LED rojo parpadeante -->
-                        <a-sphere 
-                            color="#ff0000" 
-                            radius="0.035" 
-                            position="-0.22 0.1 0"
-                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.9;">
-                            <a-animation 
-                                attribute="material.emissiveIntensity" 
-                                from="0.3" 
-                                to="1" 
-                                direction="alternate" 
-                                dur="700" 
-                                repeat="indefinite">
-                            </a-animation>
-                        </a-sphere>
-                    </a-entity>
-
-                    <!-- Auricular DERECHO -->
-                    <a-entity position="0.52 0.3 0" rotation="0 12 0">
-                        <!-- Carcasa principal -->
-                        <a-cylinder 
-                            color="#D71920" 
-                            height="0.24" 
-                            radius="0.26" 
-                            rotation="0 0 90"
-                            material="shader: standard; roughness: 0.2; metalness: 0.9;">
-                        </a-cylinder>
-                        
-                        <!-- Almohadilla (oreja) -->
-                        <a-torus 
-                            color="#2a2a2a" 
-                            radius="0.26" 
-                            radius-tubular="0.08" 
-                            rotation="0 90 0" 
-                            position="0.09 0 0" 
-                            scale="1 1 0.5"
-                            material="shader: standard; roughness: 0.9; metalness: 0.15;">
-                        </a-torus>
-                        
-                        <!-- Texto de advertencia -->
-                        <a-text 
-                            value="RUIDO" 
-                            color="white" 
-                            align="center" 
-                            width="2.2" 
-                            position="0.28 0 0" 
-                            rotation="0 90 0"
-                            font="mozillavr">
-                        </a-text>
-                        
-                        <!-- LED rojo parpadeante -->
-                        <a-sphere 
-                            color="#ff0000" 
-                            radius="0.035" 
-                            position="0.22 0.1 0"
-                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.9;">
-                            <a-animation 
-                                attribute="material.emissiveIntensity" 
-                                from="0.3" 
-                                to="1" 
-                                direction="alternate" 
-                                dur="700" 
-                                repeat="indefinite">
-                            </a-animation>
-                        </a-sphere>
-                    </a-entity>
-
-                    <!-- Partículas de peligro -->
-                    <a-entity 
-                        position="0 0.3 0"
-                        particle-system="preset: dust; color: #D71920, #ff4444; particleCount: 40; maxAge: 2.5; size: 0.4; opacity: 0.4;">
-                    </a-entity>
+                    <a-text value="PELIGRO RUIDO" color="red" align="center" position="0 0.5 0" scale="0.5 0.5 0.5" width="4"></a-text>
                 </a-entity>
-
-                <!-- PANEL FINAL (MENSAJE) - TAMAÑO AJUSTADO -->
                 <a-entity 
                     id="messagePanel" 
                     visible="false" 
@@ -1032,7 +898,6 @@
                     rotation="-25 0 0"
                     scale="0 0 0">
                     
-                    <!-- Fondo Negro -->
                     <a-plane 
                         color="#000000" 
                         opacity="0.96" 
@@ -1041,24 +906,21 @@
                         material="shader: standard; roughness: 0.2; metalness: 0.9;">
                     </a-plane>
                     
-                    <!-- Borde Rojo -->
                     <a-plane 
                         color="#D71920" 
                         width="3.4" 
                         height="2.7" 
-                        position="0 0 -0.005">
+                        position="0 0 0.01">
                     </a-plane>
                     
-                    <!-- Contenido Interno -->
                     <a-plane 
                         color="#0a0a0a" 
                         opacity="0.95" 
                         width="3.3" 
                         height="2.6" 
-                        position="0 0 -0.01">
+                        position="0 0 0.02">
                     </a-plane>
 
-                    <!-- Título -->
                     <a-text 
                         value="RECORDATORIO DE SEGURIDAD" 
                         color="#D71920" 
@@ -1068,7 +930,6 @@
                         font="mozillavr">
                     </a-text>
                     
-                    <!-- Línea decorativa -->
                     <a-plane 
                         color="#D71920" 
                         width="2.2" 
@@ -1076,7 +937,6 @@
                         position="0 0.85 0.05">
                     </a-plane>
 
-                    <!-- Texto Principal (Typewriter) -->
                     <a-text 
                         id="messageText" 
                         value="" 
@@ -1089,7 +949,6 @@
                         font="mozillavr">
                     </a-text>
 
-                    <!-- Footer -->
                     <a-text 
                         value="HERRAMIENTA DIARIA LANXESS" 
                         color="#666666" 
@@ -1099,16 +958,13 @@
                         font="mozillavr">
                     </a-text>
 
-                    <!-- Icono protección -->
                     <a-text 
                         value="🛡️" 
                         align="center" 
                         width="1.5" 
                         position="0 -1.35 0.05">
                     </a-text>
-                </a-entity>
-
-            </a-entity>
+                    </a-entity>
         </a-marker>
 
         <a-entity camera></a-entity>
@@ -1488,7 +1344,7 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 const headphones = document.getElementById('headphones');
                 
                 headphones.removeAttribute('animation');
-                headphones.removeAttribute('animation__2');
+                headphones.removeAttribute('animation__rot');
 
                 new TWEEN.Tween({ z: 0, scale: 0.6, rotation: 0 })
                     .to({ z: 2.5, scale: 5, rotation: 15 }, 1400)
