@@ -43,6 +43,10 @@
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Safe areas para móvil */
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         /* ===================================================================
@@ -56,14 +60,17 @@
             user-select: none;
         }
         
+        html, body {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            overflow: hidden;
+        }
+        
         body {
-            width: 100vw;
-            height: 100dvh;
             background: var(--deep-black);
             font-family: var(--font-body);
-            overflow: hidden;
             color: var(--pure-white);
-            position: relative;
         }
 
         /* ===================================================================
@@ -88,37 +95,38 @@
         }
 
         /* ===================================================================
-           BOTÓN DE NAVEGACIÓN (VOLVER)
+           BOTÓN DE NAVEGACIÓN (VOLVER) - OPTIMIZADO
            =================================================================== */
         .btn-back {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 56px;
-            height: 56px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            top: calc(var(--safe-top) + 10px);
+            left: 15px;
+            width: 52px;
+            height: 52px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 9999;
+            z-index: 99999;
             transition: all var(--transition-fast);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            pointer-events: auto;
         }
 
         .btn-back::before {
             content: '←';
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 900;
             color: var(--pure-white);
         }
 
         .btn-back:active {
-            transform: scale(0.92);
+            transform: scale(0.88);
             background: var(--primary-red);
             border-color: var(--primary-red);
         }
@@ -137,7 +145,7 @@
         /* Logo y Header */
         .home-header {
             text-align: center;
-            margin-bottom: 80px;
+            margin-bottom: 60px;
             animation: fadeInDown 1s ease-out;
         }
 
@@ -153,47 +161,46 @@
         }
 
         .logo-container {
-            margin-bottom: 30px;
-            position: relative;
+            margin-bottom: 25px;
         }
 
         .logo-icon {
-            font-size: 72px;
-            filter: drop-shadow(0 0 30px rgba(215, 25, 32, 0.5));
-            animation: pulse 2s infinite;
+            font-size: 64px;
+            filter: drop-shadow(0 0 25px rgba(215, 25, 32, 0.6));
+            animation: pulse 2.5s infinite;
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.08); }
         }
 
         .home-header h1 {
             font-family: var(--font-display);
-            font-size: 42px;
+            font-size: 38px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             background: linear-gradient(135deg, var(--pure-white) 0%, var(--light-gray) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .accent-line {
-            width: 80px;
+            width: 70px;
             height: 4px;
             background: var(--primary-red);
-            margin: 15px auto;
+            margin: 12px auto;
             border-radius: 2px;
-            box-shadow: 0 0 20px rgba(215, 25, 32, 0.6);
+            box-shadow: 0 0 15px rgba(215, 25, 32, 0.7);
         }
 
         .home-header p {
             font-family: var(--font-heading);
-            font-size: 14px;
-            letter-spacing: 3px;
+            font-size: 13px;
+            letter-spacing: 2.5px;
             color: var(--light-gray);
             text-transform: uppercase;
         }
@@ -202,9 +209,9 @@
         .menu-grid {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
             animation: fadeInUp 1s ease-out 0.3s both;
         }
 
@@ -220,19 +227,19 @@
         }
 
         .menu-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-left: 4px solid var(--primary-red);
-            border-radius: 16px;
-            padding: 28px 24px;
+            border-radius: 14px;
+            padding: 24px 20px;
             cursor: pointer;
             position: relative;
             overflow: hidden;
             transition: all var(--transition-medium);
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
         }
 
         .menu-item::before {
@@ -242,13 +249,13 @@
             left: 0;
             width: 0;
             height: 100%;
-            background: linear-gradient(90deg, rgba(215, 25, 32, 0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(215, 25, 32, 0.15) 0%, transparent 100%);
             transition: width var(--transition-medium);
         }
 
         .menu-item:active {
             transform: scale(0.97);
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .menu-item:active::before {
@@ -256,28 +263,28 @@
         }
 
         .menu-icon {
-            font-size: 40px;
-            min-width: 40px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            font-size: 36px;
+            min-width: 36px;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
         }
 
         .menu-content h3 {
             font-family: var(--font-heading);
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             color: var(--pure-white);
         }
 
         .menu-content p {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--light-gray);
             line-height: 1.4;
         }
 
         .menu-arrow {
             margin-left: auto;
-            font-size: 24px;
+            font-size: 22px;
             color: var(--primary-red);
             font-weight: 900;
         }
@@ -285,12 +292,12 @@
         /* Footer */
         .home-footer {
             position: absolute;
-            bottom: 30px;
+            bottom: calc(var(--safe-bottom) + 20px);
             left: 0;
             width: 100%;
             text-align: center;
             font-family: var(--font-display);
-            font-size: 10px;
+            font-size: 9px;
             color: #444;
             letter-spacing: 2px;
         }
@@ -303,26 +310,26 @@
             align-items: center;
             justify-content: flex-start;
             background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
-            padding-top: 120px;
+            padding-top: calc(var(--safe-top) + 90px);
         }
 
         /* Medidor Circular Principal */
         .meter-display {
-            width: 320px;
-            height: 320px;
+            width: 280px;
+            height: 280px;
             position: relative;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
         }
 
         .meter-circle {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(26, 26, 26, 0.8) 0%, rgba(10, 10, 10, 0.95) 100%);
-            border: 6px solid #2a2a2a;
+            background: radial-gradient(circle, rgba(26, 26, 26, 0.9) 0%, rgba(10, 10, 10, 1) 100%);
+            border: 5px solid #2a2a2a;
             box-shadow: 
-                0 0 60px rgba(0, 0, 0, 0.8),
-                inset 0 0 60px rgba(0, 0, 0, 0.5);
+                0 0 50px rgba(0, 0, 0, 0.9),
+                inset 0 0 50px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -334,10 +341,10 @@
         .meter-circle::before {
             content: '';
             position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
             border-radius: 50%;
             background: conic-gradient(
                 from 0deg,
@@ -357,34 +364,34 @@
         }
 
         .meter-circle.danger::before {
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
         .db-value {
             font-family: var(--font-display);
-            font-size: 84px;
+            font-size: 76px;
             font-weight: 900;
             color: var(--pure-white);
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
             line-height: 1;
             margin-bottom: 5px;
         }
 
         .db-unit {
             font-family: var(--font-heading);
-            font-size: 18px;
+            font-size: 16px;
             color: var(--light-gray);
             letter-spacing: 2px;
         }
 
         .status-indicator {
-            margin-top: 25px;
-            padding: 10px 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            padding: 9px 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             font-family: var(--font-heading);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -393,14 +400,14 @@
 
         /* Visualizador de Ondas */
         .wave-visualizer {
-            width: 100%;
-            max-width: 400px;
-            height: 120px;
+            width: 90%;
+            max-width: 360px;
+            height: 100px;
             position: relative;
-            margin-top: 40px;
+            margin-top: 30px;
             background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
             overflow: hidden;
         }
 
@@ -411,17 +418,17 @@
 
         /* Info Box */
         .meter-info {
-            max-width: 340px;
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.03);
+            max-width: 320px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            margin-top: 30px;
+            border-radius: 10px;
+            margin-top: 25px;
             text-align: center;
         }
 
         .meter-info p {
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.6;
             color: var(--light-gray);
         }
@@ -432,63 +439,58 @@
         }
 
         /* ===================================================================
-           VISTA 3: SIMULADOR AR
+           VISTA 3: SIMULADOR AR - OPTIMIZADO PARA MÓVIL
            =================================================================== */
         #ar {
             background: transparent;
             pointer-events: none;
         }
 
-        /* HUD Superior */
+        /* HUD Superior - Compacto */
         .ar-hud {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            padding-left: 90px;
-            display: flex;
-            justify-content: flex-end;
+            position: fixed;
+            top: calc(var(--safe-top) + 70px);
+            right: 15px;
             pointer-events: none;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .hud-meter {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.25);
             border-right: 4px solid var(--primary-red);
             border-radius: 8px;
-            padding: 16px 20px;
-            min-width: 140px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            padding: 12px 16px;
+            min-width: 120px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.7);
         }
 
         .hud-label {
             font-family: var(--font-heading);
-            font-size: 10px;
+            font-size: 9px;
             color: var(--light-gray);
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .hud-value {
             font-family: var(--font-display);
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 900;
             color: var(--primary-red);
-            text-shadow: 0 0 20px rgba(215, 25, 32, 0.6);
+            text-shadow: 0 0 18px rgba(215, 25, 32, 0.7);
             line-height: 1;
             text-align: right;
         }
 
         .hud-bar {
             width: 100%;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin-top: 10px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            margin-top: 8px;
             overflow: hidden;
         }
 
@@ -496,20 +498,20 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%);
-            border-radius: 3px;
+            border-radius: 2px;
             transition: width 0.2s ease-out;
-            box-shadow: 0 0 10px rgba(215, 25, 32, 0.8);
+            box-shadow: 0 0 8px rgba(215, 25, 32, 0.9);
         }
 
-        /* Instrucciones AR */
+        /* Instrucciones AR - Centradas */
         .ar-instructions {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             pointer-events: none;
-            z-index: 50;
+            z-index: 500;
             animation: fadeInScale 1s ease-out;
         }
 
@@ -525,75 +527,76 @@
         }
 
         .instruction-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+            font-size: 70px;
+            margin-bottom: 18px;
+            filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.5));
             animation: bounce 2s infinite;
         }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-12px); }
         }
 
         .instruction-text {
             font-family: var(--font-heading);
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 19px;
+            font-weight: 700;
             color: var(--pure-white);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-            margin-bottom: 10px;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+            margin-bottom: 8px;
         }
 
         .instruction-subtext {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--light-gray);
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
         }
 
-        /* Controles AR (Botones) */
+        /* Controles AR - Optimizados */
         .ar-controls {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, transparent 100%);
-            padding: 50px 30px 40px;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.8) 60%, transparent 100%);
+            padding: 25px 20px calc(var(--safe-bottom) + 20px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             pointer-events: auto;
-            z-index: 100;
+            z-index: 1000;
         }
 
         .ar-status-text {
             font-family: var(--font-heading);
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 600;
             color: var(--pure-white);
             text-align: center;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-            min-height: 24px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+            min-height: 22px;
         }
 
         .btn-ar {
             width: 100%;
-            max-width: 360px;
-            padding: 20px 32px;
+            max-width: 340px;
+            padding: 18px 28px;
             background: var(--pure-white);
             color: var(--deep-black);
             border: none;
             border-radius: 50px;
             font-family: var(--font-heading);
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
             transition: all var(--transition-fast);
             display: none;
         }
@@ -608,12 +611,12 @@
             background: rgba(0, 0, 0, 0.1);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+            transition: width 0.5s, height 0.5s;
         }
 
         .btn-ar:active::before {
-            width: 400px;
-            height: 400px;
+            width: 350px;
+            height: 350px;
         }
 
         .btn-ar:active {
@@ -627,24 +630,24 @@
         #btnStartAR {
             background: var(--primary-red);
             color: var(--pure-white);
-            box-shadow: 0 8px 32px rgba(215, 25, 32, 0.4);
+            box-shadow: 0 6px 25px rgba(215, 25, 32, 0.5);
         }
 
         #btnProtectAR {
             background: var(--safe);
             color: var(--pure-white);
-            box-shadow: 0 8px 32px rgba(52, 199, 89, 0.4);
+            box-shadow: 0 6px 25px rgba(52, 199, 89, 0.5);
         }
 
         /* Overlay de Peligro */
         .danger-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 80;
+            z-index: 800;
             display: none;
             animation: dangerPulse 1.5s infinite;
         }
@@ -658,20 +661,20 @@
                 box-shadow: inset 0 0 0 rgba(215, 25, 32, 0);
             }
             50% {
-                box-shadow: inset 0 0 120px rgba(215, 25, 32, 0.4);
+                box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.5);
             }
         }
 
         /* Loading Spinner */
         .loading-spinner {
             display: inline-block;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-top-color: var(--pure-white);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 10px;
+            animation: spin 0.7s linear infinite;
+            margin-right: 8px;
             vertical-align: middle;
         }
 
@@ -680,60 +683,10 @@
         }
 
         /* ===================================================================
-           UTILIDADES GLOBALES
-           =================================================================== */
-        .hidden {
-            display: none !important;
-        }
-
-        /* Animaciones de entrada/salida */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .slide-up {
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ===================================================================
-           RESPONSIVE
-           =================================================================== */
-        @media (max-width: 400px) {
-            .home-header h1 {
-                font-size: 36px;
-            }
-            
-            .meter-display {
-                width: 280px;
-                height: 280px;
-            }
-            
-            .db-value {
-                font-size: 72px;
-            }
-        }
-
-        /* ===================================================================
-           ESTILOS ESPECÍFICOS DE A-FRAME (OCULTOS POR DEFECTO)
+           A-FRAME SCENE - OPTIMIZADO
            =================================================================== */
         a-scene {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -744,6 +697,42 @@
 
         a-scene.active {
             visibility: visible;
+        }
+
+        /* Ocultar canvas de A-Frame cuando no está en AR */
+        #ar:not(.active) a-scene {
+            display: none;
+        }
+
+        /* ===================================================================
+           UTILIDADES GLOBALES
+           =================================================================== */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===================================================================
+           RESPONSIVE OPTIMIZATIONS
+           =================================================================== */
+        @media (max-width: 360px) {
+            .home-header h1 {
+                font-size: 34px;
+            }
+            
+            .meter-display {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .db-value {
+                font-size: 68px;
+            }
+        }
+
+        @media (min-height: 700px) {
+            #meter {
+                padding-top: calc(var(--safe-top) + 120px);
+            }
         }
     </style>
 </head>
@@ -762,7 +751,7 @@
             </div>
             <h1>Safety Suite</h1>
             <div class="accent-line"></div>
-            <p>Sistema de Protección Auditiva</p>
+            <p>Protección Auditiva</p>
         </div>
 
         <div class="menu-grid">
@@ -786,7 +775,7 @@
         </div>
 
         <div class="home-footer">
-            LANXESS INITIATIVE • v9.0 PRO
+            LANXESS INITIATIVE • v10.0 MOBILE
         </div>
     </div>
 
@@ -826,7 +815,7 @@
         <!-- HUD Superior -->
         <div class="ar-hud">
             <div class="hud-meter">
-                <div class="hud-label">Simulación Ruido</div>
+                <div class="hud-label">SIMULACIÓN RUIDO</div>
                 <div class="hud-value" id="hudValue">0 dB</div>
                 <div class="hud-bar">
                     <div class="hud-fill" id="hudFill"></div>
@@ -854,7 +843,7 @@
     </div>
 
     <!-- ===================================================================
-         ESCENA A-FRAME (AR)
+         ESCENA A-FRAME (AR) - MODELO REDUCIDO
          =================================================================== -->
     <a-scene 
         id="arScene"
@@ -865,9 +854,9 @@
         loading-screen="enabled: false;">
 
         <!-- Iluminación -->
-        <a-light type="ambient" intensity="0.6"></a-light>
-        <a-light type="directional" position="2 3 1" intensity="1.2"></a-light>
-        <a-light type="point" color="#D71920" intensity="0.8" position="-1.5 1 0"></a-light>
+        <a-light type="ambient" intensity="0.7"></a-light>
+        <a-light type="directional" position="2 3 1" intensity="1.3"></a-light>
+        <a-light type="point" color="#D71920" intensity="0.9" position="-1.2 1 0"></a-light>
 
         <!-- Marcador AR -->
         <a-marker 
@@ -880,16 +869,16 @@
             <!-- Contenedor Principal -->
             <a-entity id="arRoot" visible="false">
                 
-                <!-- AURICULARES 3D MEJORADOS -->
-                <a-entity id="headphones" position="0 0.5 0" rotation="0 0 0">
+                <!-- AURICULARES 3D - TAMAÑO REDUCIDO Y OPTIMIZADO -->
+                <a-entity id="headphones" position="0 0.2 0" rotation="0 0 0" scale="0.6 0.6 0.6">
                     
-                    <!-- Animación de flotación -->
+                    <!-- Animación de flotación suave -->
                     <a-animation 
                         attribute="position" 
-                        from="0 0.5 0" 
-                        to="0 0.65 0" 
+                        from="0 0.2 0" 
+                        to="0 0.28 0" 
                         direction="alternate" 
-                        dur="2500" 
+                        dur="2800" 
                         repeat="indefinite" 
                         easing="ease-in-out-sine">
                     </a-animation>
@@ -899,7 +888,7 @@
                         attribute="rotation" 
                         from="0 0 0" 
                         to="0 360 0" 
-                        dur="8000" 
+                        dur="10000" 
                         repeat="indefinite" 
                         easing="linear">
                     </a-animation>
@@ -909,19 +898,19 @@
                         <!-- Arco principal -->
                         <a-torus 
                             color="#0f0f0f" 
-                            radius="0.6" 
-                            radius-tubular="0.09" 
-                            arc="200" 
+                            radius="0.5" 
+                            radius-tubular="0.07" 
+                            arc="190" 
                             rotation="90 0 0"
-                            material="shader: standard; roughness: 0.3; metalness: 0.7;">
+                            material="shader: standard; roughness: 0.3; metalness: 0.8;">
                         </a-torus>
                         
                         <!-- Arco interno (acolchado) -->
                         <a-torus 
                             color="#1a1a1a" 
-                            radius="0.58" 
-                            radius-tubular="0.11" 
-                            arc="160" 
+                            radius="0.48" 
+                            radius-tubular="0.09" 
+                            arc="150" 
                             rotation="90 0 0" 
                             position="0 -0.01 0"
                             material="shader: standard; roughness: 0.8; metalness: 0.2;">
@@ -929,25 +918,25 @@
                     </a-entity>
 
                     <!-- Auricular IZQUIERDO -->
-                    <a-entity position="-0.62 0.3 0" rotation="0 -15 0">
+                    <a-entity position="-0.52 0.3 0" rotation="0 -12 0">
                         <!-- Carcasa principal -->
                         <a-cylinder 
                             color="#D71920" 
-                            height="0.28" 
-                            radius="0.3" 
+                            height="0.24" 
+                            radius="0.26" 
                             rotation="0 0 90"
-                            material="shader: standard; roughness: 0.2; metalness: 0.8;">
+                            material="shader: standard; roughness: 0.2; metalness: 0.9;">
                         </a-cylinder>
                         
                         <!-- Almohadilla (oreja) -->
                         <a-torus 
                             color="#2a2a2a" 
-                            radius="0.3" 
-                            radius-tubular="0.1" 
+                            radius="0.26" 
+                            radius-tubular="0.08" 
                             rotation="0 90 0" 
-                            position="-0.1 0 0" 
+                            position="-0.09 0 0" 
                             scale="1 1 0.5"
-                            material="shader: standard; roughness: 0.9; metalness: 0.1;">
+                            material="shader: standard; roughness: 0.9; metalness: 0.15;">
                         </a-torus>
                         
                         <!-- Texto de advertencia -->
@@ -955,49 +944,49 @@
                             value="PELIGRO" 
                             color="white" 
                             align="center" 
-                            width="2.5" 
-                            position="-0.32 0 0" 
+                            width="2.2" 
+                            position="-0.28 0 0" 
                             rotation="0 -90 0"
                             font="mozillavr">
                         </a-text>
                         
-                        <!-- Detalle LED rojo -->
+                        <!-- LED rojo parpadeante -->
                         <a-sphere 
                             color="#ff0000" 
-                            radius="0.04" 
-                            position="-0.25 0.12 0"
-                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.8;">
+                            radius="0.035" 
+                            position="-0.22 0.1 0"
+                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.9;">
                             <a-animation 
                                 attribute="material.emissiveIntensity" 
                                 from="0.3" 
                                 to="1" 
                                 direction="alternate" 
-                                dur="800" 
+                                dur="700" 
                                 repeat="indefinite">
                             </a-animation>
                         </a-sphere>
                     </a-entity>
 
                     <!-- Auricular DERECHO -->
-                    <a-entity position="0.62 0.3 0" rotation="0 15 0">
+                    <a-entity position="0.52 0.3 0" rotation="0 12 0">
                         <!-- Carcasa principal -->
                         <a-cylinder 
                             color="#D71920" 
-                            height="0.28" 
-                            radius="0.3" 
+                            height="0.24" 
+                            radius="0.26" 
                             rotation="0 0 90"
-                            material="shader: standard; roughness: 0.2; metalness: 0.8;">
+                            material="shader: standard; roughness: 0.2; metalness: 0.9;">
                         </a-cylinder>
                         
                         <!-- Almohadilla (oreja) -->
                         <a-torus 
                             color="#2a2a2a" 
-                            radius="0.3" 
-                            radius-tubular="0.1" 
+                            radius="0.26" 
+                            radius-tubular="0.08" 
                             rotation="0 90 0" 
-                            position="0.1 0 0" 
+                            position="0.09 0 0" 
                             scale="1 1 0.5"
-                            material="shader: standard; roughness: 0.9; metalness: 0.1;">
+                            material="shader: standard; roughness: 0.9; metalness: 0.15;">
                         </a-torus>
                         
                         <!-- Texto de advertencia -->
@@ -1005,69 +994,67 @@
                             value="RUIDO" 
                             color="white" 
                             align="center" 
-                            width="2.5" 
-                            position="0.32 0 0" 
+                            width="2.2" 
+                            position="0.28 0 0" 
                             rotation="0 90 0"
                             font="mozillavr">
                         </a-text>
                         
-                        <!-- Detalle LED rojo -->
+                        <!-- LED rojo parpadeante -->
                         <a-sphere 
                             color="#ff0000" 
-                            radius="0.04" 
-                            position="0.25 0.12 0"
-                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.8;">
+                            radius="0.035" 
+                            position="0.22 0.1 0"
+                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.9;">
                             <a-animation 
                                 attribute="material.emissiveIntensity" 
                                 from="0.3" 
                                 to="1" 
                                 direction="alternate" 
-                                dur="800" 
+                                dur="700" 
                                 repeat="indefinite">
                             </a-animation>
                         </a-sphere>
                     </a-entity>
 
-                    <!-- Efectos de partículas (opcional) -->
-                    <a-entity id="particles" position="0 0.3 0">
-                        <a-entity 
-                            position="0 0 0"
-                            particle-system="preset: dust; color: #D71920, #ff0000; particleCount: 50; maxAge: 2; size: 0.5; opacity: 0.3;">
-                        </a-entity>
+                    <!-- Partículas de peligro -->
+                    <a-entity 
+                        position="0 0.3 0"
+                        particle-system="preset: dust; color: #D71920, #ff4444; particleCount: 40; maxAge: 2.5; size: 0.4; opacity: 0.4;">
                     </a-entity>
                 </a-entity>
 
-                <!-- PANEL FINAL (MENSAJE) -->
+                <!-- PANEL FINAL (MENSAJE) - TAMAÑO AJUSTADO -->
                 <a-entity 
                     id="messagePanel" 
                     visible="false" 
-                    position="0 0.5 0.6" 
-                    rotation="-30 0 0"
+                    position="0 0.2 0.5" 
+                    rotation="-25 0 0"
                     scale="0 0 0">
                     
                     <!-- Fondo Negro -->
                     <a-plane 
                         color="#000000" 
-                        opacity="0.95" 
-                        width="5" 
-                        height="3.5"
+                        opacity="0.96" 
+                        width="3.5" 
+                        height="2.8"
                         material="shader: standard; roughness: 0.2; metalness: 0.9;">
                     </a-plane>
                     
                     <!-- Borde Rojo -->
                     <a-plane 
                         color="#D71920" 
-                        width="4.9" 
-                        height="3.4" 
+                        width="3.4" 
+                        height="2.7" 
                         position="0 0 -0.005">
                     </a-plane>
                     
-                    <!-- Contenido Blanco -->
+                    <!-- Contenido Interno -->
                     <a-plane 
-                        color="#000000" 
-                        opacity="0.9" 
-                        width="4.8" 
-                        height="3.3" 
+                        color="#0a0a0a" 
+                        opacity="0.95" 
+                        width="3.3" 
+                        height="2.6" 
                         position="0 0 -0.01">
                     </a-plane>
 
@@ -1076,17 +1063,17 @@
                         value="RECORDATORIO DE SEGURIDAD" 
                         color="#D71920" 
                         align="center" 
-                        width="5.5" 
-                        position="0 1.3 0.05"
+                        width="4" 
+                        position="0 1.0 0.05"
                         font="mozillavr">
                     </a-text>
                     
                     <!-- Línea decorativa -->
                     <a-plane 
                         color="#D71920" 
-                        width="3" 
-                        height="0.02" 
-                        position="0 1.1 0.05">
+                        width="2.2" 
+                        height="0.015" 
+                        position="0 0.85 0.05">
                     </a-plane>
 
                     <!-- Texto Principal (Typewriter) -->
@@ -1095,10 +1082,10 @@
                         value="" 
                         color="#FFFFFF" 
                         align="center" 
-                        width="4.6" 
-                        position="0 0.1 0.05" 
-                        wrap-count="32"
-                        line-height="55"
+                        width="3.2" 
+                        position="0 0 0.05" 
+                        wrap-count="28"
+                        line-height="52"
                         font="mozillavr">
                     </a-text>
 
@@ -1107,17 +1094,17 @@
                         value="HERRAMIENTA DIARIA LANXESS" 
                         color="#666666" 
                         align="center" 
-                        width="3.5" 
-                        position="0 -1.4 0.05"
+                        width="2.8" 
+                        position="0 -1.15 0.05"
                         font="mozillavr">
                     </a-text>
 
-                    <!-- Icono de Shield -->
+                    <!-- Icono protección -->
                     <a-text 
                         value="🛡️" 
                         align="center" 
-                        width="2" 
-                        position="0 -1.6 0.05">
+                        width="1.5" 
+                        position="0 -1.35 0.05">
                     </a-text>
                 </a-entity>
 
@@ -1141,7 +1128,7 @@
 Los decibelios altos pueden perjudicar tu salud auditiva de forma permanente.
 
 Usa esta herramienta a diario para monitorear tu entorno.`,
-            typewriterSpeed: 35, // ms por letra
+            typewriterSpeed: 32,
             dbThresholds: {
                 safe: 60,
                 warning: 85,
@@ -1159,6 +1146,8 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 // Event listeners para navegación
                 document.querySelectorAll('[data-nav]').forEach(el => {
                     el.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         const target = e.currentTarget.getAttribute('data-nav');
                         this.navigate(target);
                     });
@@ -1168,24 +1157,26 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             navigate(viewId) {
                 if (this.currentView === viewId) return;
 
+                console.log(`Navegando de ${this.currentView} a ${viewId}`);
+
                 // Ocultar vista actual
                 const currentEl = document.getElementById(this.currentView);
                 if (currentEl) {
                     currentEl.classList.remove('active');
                 }
 
-                // Mostrar nueva vista
-                const targetEl = document.getElementById(viewId);
-                if (targetEl) {
-                    setTimeout(() => {
+                // Mostrar nueva vista con delay
+                setTimeout(() => {
+                    const targetEl = document.getElementById(viewId);
+                    if (targetEl) {
                         targetEl.classList.add('active');
-                    }, 100);
-                }
+                    }
+                }, 150);
 
                 // Actualizar estado
                 this.currentView = viewId;
 
-                // Ejecutar lógica específica por vista
+                // Ejecutar lógica específica
                 this.handleViewLogic(viewId);
             },
 
@@ -1223,7 +1214,6 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 if (this.active) return;
 
                 try {
-                    // Solicitar permiso de micrófono
                     this.stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: {
                             echoCancellation: false,
@@ -1232,7 +1222,6 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                         } 
                     });
 
-                    // Configurar Web Audio API
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AudioContext();
                     this.analyser = this.audioContext.createAnalyser();
@@ -1244,7 +1233,6 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
                     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
 
-                    // Configurar canvas
                     this.canvas = document.getElementById('waveCanvas');
                     this.canvasContext = this.canvas.getContext('2d');
                     this.canvas.width = this.canvas.offsetWidth;
@@ -1281,14 +1269,10 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
                 this.analyser.getByteFrequencyData(this.dataArray);
 
-                // Calcular promedio
                 const average = this.dataArray.reduce((a, b) => a + b) / this.dataArray.length;
                 let db = Math.floor(average * 1.3);
-                
-                // Limitar rango
                 db = Math.max(30, Math.min(120, db));
 
-                // Actualizar UI
                 this.updateUI(db);
                 this.drawWaveform();
             },
@@ -1300,7 +1284,6 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
                 valueEl.textContent = db;
 
-                // Actualizar colores según umbral
                 if (db < CONFIG.dbThresholds.safe) {
                     circleEl.style.borderColor = '#34c759';
                     circleEl.classList.remove('danger');
@@ -1329,21 +1312,18 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 const width = this.canvas.width;
                 const height = this.canvas.height;
 
-                // Limpiar canvas
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
                 ctx.fillRect(0, 0, width, height);
 
-                // Dibujar onda
                 const barWidth = (width / this.dataArray.length) * 2.5;
                 let x = 0;
 
                 for (let i = 0; i < this.dataArray.length; i++) {
                     const barHeight = (this.dataArray[i] / 255) * height;
                     
-                    // Gradiente
                     const gradient = ctx.createLinearGradient(0, height - barHeight, 0, height);
-                    gradient.addColorStop(0, 'rgba(215, 25, 32, 0.8)');
-                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+                    gradient.addColorStop(0, 'rgba(215, 25, 32, 0.85)');
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
                     
                     ctx.fillStyle = gradient;
                     ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
@@ -1373,24 +1353,24 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                     return;
                 }
 
-                // Configurar event listeners
                 this.setupEventListeners();
                 this.initialized = true;
                 this.resume();
             },
 
             setupEventListeners() {
-                // Botón iniciar simulación
-                document.getElementById('btnStartAR').addEventListener('click', () => {
+                document.getElementById('btnStartAR').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.loadAudio();
                 });
 
-                // Botón ponerse protección
-                document.getElementById('btnProtectAR').addEventListener('click', () => {
+                document.getElementById('btnProtectAR').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.applyProtection();
                 });
 
-                // Detectar marcador
                 const marker = document.getElementById('arMarker');
                 
                 marker.addEventListener('markerFound', () => {
@@ -1414,7 +1394,6 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
             onMarkerLost() {
                 this.markerDetected = false;
-                // No ocultar el contenido inmediatamente para mejor UX
             },
 
             async loadAudio() {
@@ -1423,53 +1402,44 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 btn.disabled = true;
 
                 try {
-                    // Crear contexto de audio
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AudioContext();
 
-                    // Cargar archivo de audio
                     const response = await fetch(CONFIG.audioFile);
                     if (!response.ok) throw new Error('Audio no encontrado');
                     
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
 
-                    // Configurar nodos de audio
                     this.source = this.audioContext.createBufferSource();
                     this.source.buffer = audioBuffer;
                     this.source.loop = true;
 
-                    // Filtro para simular auriculares
                     this.filterNode = this.audioContext.createBiquadFilter();
                     this.filterNode.type = 'lowpass';
                     this.filterNode.frequency.value = 22000;
 
-                    // Control de ganancia
                     this.gainNode = this.audioContext.createGain();
                     this.gainNode.gain.value = 1.0;
 
-                    // Conectar nodos
                     this.source
                         .connect(this.filterNode)
                         .connect(this.gainNode)
                         .connect(this.audioContext.destination);
 
-                    // Iniciar reproducción
                     this.source.start(0);
 
-                    // Actualizar UI
                     this.isAudioLoaded = true;
                     btn.style.display = 'none';
                     document.getElementById('btnProtectAR').classList.add('visible');
                     document.getElementById('arStatusText').textContent = '¡Nivel peligroso de ruido!';
                     document.getElementById('dangerOverlay').classList.add('active');
 
-                    // Iniciar actualización de HUD
                     this.startHUDUpdate();
 
                 } catch (error) {
                     console.error('Error al cargar audio:', error);
-                    alert('Error: No se pudo cargar el archivo de audio. Asegúrate de que "Sonidos_De_Fabrica.wav" esté disponible en el repositorio.');
+                    alert('Error: No se pudo cargar el archivo de audio. Asegúrate de que "Sonidos_De_Fabrica.wav" esté disponible.');
                     btn.textContent = 'ERROR AL CARGAR';
                     btn.style.background = '#ff3b30';
                 }
@@ -1483,14 +1453,11 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
                     let db;
                     if (!this.isProtected) {
-                        // Simular ruido peligroso
                         db = 95 + Math.floor(Math.random() * 15);
                     } else {
-                        // Simular protección efectiva
                         db = 60 + Math.floor(Math.random() * 10);
                     }
 
-                    // Actualizar HUD
                     document.getElementById('hudValue').textContent = `${db} dB`;
                     const percentage = Math.min(100, (db / 120) * 100);
                     document.getElementById('hudFill').style.width = `${percentage}%`;
@@ -1503,44 +1470,36 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
 
                 this.isProtected = true;
 
-                // Efectos de audio
                 const currentTime = this.audioContext.currentTime;
-                this.filterNode.frequency.exponentialRampToValueAtTime(400, currentTime + 1.8);
-                this.gainNode.gain.exponentialRampToValueAtTime(0.15, currentTime + 1.8);
+                this.filterNode.frequency.exponentialRampToValueAtTime(350, currentTime + 2);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.12, currentTime + 2);
 
-                // Actualizar UI
                 document.getElementById('btnProtectAR').style.display = 'none';
                 document.getElementById('arStatusText').textContent = 'Protección aplicada';
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
-                // Cambiar color del HUD a verde
                 document.getElementById('hudValue').style.color = '#34c759';
                 document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #66ff66 100%)';
 
-                // Animar auriculares
                 this.animateHeadphones();
             },
 
             animateHeadphones() {
                 const headphones = document.getElementById('headphones');
                 
-                // Detener animaciones previas
                 headphones.removeAttribute('animation');
                 headphones.removeAttribute('animation__2');
 
-                // Animación de acercamiento a cámara
-                new TWEEN.Tween({ z: 0, scale: 1 })
-                    .to({ z: 3.5, scale: 8 }, 1200)
-                    .easing(TWEEN.Easing.Quadratic.In)
+                new TWEEN.Tween({ z: 0, scale: 0.6, rotation: 0 })
+                    .to({ z: 2.5, scale: 5, rotation: 15 }, 1400)
+                    .easing(TWEEN.Easing.Cubic.In)
                     .onUpdate((obj) => {
-                        headphones.setAttribute('position', `0 0.5 ${obj.z}`);
+                        headphones.setAttribute('position', `0 0.2 ${obj.z}`);
                         headphones.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
+                        headphones.setAttribute('rotation', `${obj.rotation} 0 0`);
                     })
                     .onComplete(() => {
-                        // Ocultar auriculares
                         headphones.setAttribute('visible', 'false');
-                        
-                        // Mostrar panel de mensaje
                         this.showMessagePanel();
                     })
                     .start();
@@ -1550,15 +1509,13 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 const panel = document.getElementById('messagePanel');
                 panel.setAttribute('visible', 'true');
 
-                // Animación de aparición (escala)
                 new TWEEN.Tween({ scale: 0 })
-                    .to({ scale: 1 }, 900)
+                    .to({ scale: 1 }, 1000)
                     .easing(TWEEN.Easing.Elastic.Out)
                     .onUpdate((obj) => {
                         panel.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
                     })
                     .onComplete(() => {
-                        // Iniciar efecto typewriter
                         this.startTypewriter();
                     })
                     .start();
@@ -1583,7 +1540,9 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             },
 
             pause() {
-                document.getElementById('arScene').classList.remove('active');
+                const scene = document.getElementById('arScene');
+                scene.classList.remove('active');
+                
                 if (this.audioContext && this.audioContext.state === 'running') {
                     this.audioContext.suspend();
                 }
@@ -1593,7 +1552,9 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             },
 
             resume() {
-                document.getElementById('arScene').classList.add('active');
+                const scene = document.getElementById('arScene');
+                scene.classList.add('active');
+                
                 if (this.audioContext && this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
@@ -1617,16 +1578,23 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
         // ===================================================================
         window.addEventListener('load', () => {
             Router.init();
-            console.log('%c🎧 Lanxess Safety Suite v9.0 PRO', 'color: #D71920; font-size: 16px; font-weight: bold;');
-            console.log('%cSistema iniciado correctamente', 'color: #34c759; font-size: 12px;');
+            console.log('%c🎧 Lanxess Safety Suite v10.0 MOBILE', 'color: #D71920; font-size: 16px; font-weight: bold;');
+            console.log('%cOptimizado para dispositivos móviles', 'color: #34c759; font-size: 12px;');
         });
 
         // Prevenir errores de A-Frame en consola
         window.addEventListener('error', (e) => {
-            if (e.message.includes('A-Frame')) {
+            if (e.message && e.message.includes('A-Frame')) {
                 e.preventDefault();
             }
         });
+
+        // Prevenir scroll en móvil
+        document.body.addEventListener('touchmove', (e) => {
+            if (Router.currentView !== 'home') {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
