@@ -3,752 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a1a">
-    <title>Seguridad Industrial AR - Simulador EPP</title>
+    <meta name="theme-color" content="#111111">
+    <title>Seguridad Industrial AR</title>
 
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <style>
-        /* Importación de tipografía industrial legible */
-        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Roboto:wght@400;900&display=swap');
+        /* --- ESTILOS VISUALES CORREGIDOS --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap');
 
-        /* --- RESET Y VARIABLES GLOBALES --- */
-        :root {
-            --color-danger: #ff3838;
-            --color-safe: #2ed573;
-            --color-warning: #f1c40f;
-            --color-dark: #1e272e;
-            --color-light: #ecf0f1;
-            --font-industrial: 'Chakra Petch', sans-serif;
-            --font-standard: 'Roboto', sans-serif;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        * {
-            box-sizing: border-box;
-            /* Evita el resaltado azul al tocar elementos en móviles */
-            -webkit-tap-highlight-color: transparent;
-            /* Deshabilita la selección de texto para una sensación de "app" nativa */
-            user-select: none;
-        }
-
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Previene el scroll elástico en iOS */
-            font-family: var(--font-standard);
-            background-color: var(--color-dark);
-        }
-
-        /* --- PANTALLA DE CARGA (PRELOADER) --- */
-        #app-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #000000 0%, #2c3e50 100%);
-            z-index: 9999;
+            width: 100vw;
+            /* dvh = Dynamic Viewport Height (Se adapta a la barra del navegador) */
+            height: 100dvh; 
+            background-color: #000;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: var(--color-light);
         }
 
-        .loader-spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255,255,255,0.1);
-            border-top: 5px solid var(--color-warning);
-            border-radius: 50%;
-            animation: spin-animation 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin-animation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #loader-text {
-            font-family: var(--font-industrial);
-            font-size: 18px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: blink-animation 2s ease-in-out infinite;
-        }
-
-        @keyframes blink-animation {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* --- CAPA DE INTERFAZ DE USUARIO (UI LAYER) --- */
-        #ui-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Permite tocar la escena 3D a través de la UI */
-            z-index: 100;
+        /* --- PANTALLA DE INICIO (OVERLAY) --- */
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            z-index: 9999; /* Siempre encima de todo */
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Separa header y footer */
-            align-items: center;
+            justify-content: center; /* Centrado Vertical REAL */
+            align-items: center;     /* Centrado Horizontal REAL */
             padding: 20px;
-        }
-
-        /* --- MEDIDOR DE DECIBELIOS (HUD SUPERIOR) --- */
-        #db-meter-panel {
-            width: 95%;
-            max-width: 400px;
-            background: rgba(30, 39, 46, 0.95);
-            border-radius: 12px;
-            padding: 15px;
-            border: 3px solid var(--color-danger);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            transform: translateY(-150%); /* Oculto hacia arriba inicialmente */
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.5s;
-            /* Asegura que el panel sea visible en vertical */
-            margin-top: safe-area-inset-top; /* Respetar el notch en iPhones */
-        }
-
-        .meter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-family: var(--font-industrial);
-            font-size: 12px;
-            color: #bdc3c7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        #status-indicator {
-            font-weight: 700;
-            color: var(--color-danger);
-            display: flex;
-            align-items: center;
-        }
-
-        #status-icon { margin-right: 5px; }
-
-        #db-value-display {
-            font-family: 'Roboto', monospace; /* Fuente monoespaciada para números fijos */
-            font-size: 36px;
-            font-weight: 900;
-            color: var(--color-danger);
             text-align: center;
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(255, 56, 56, 0.5);
-            transition: color 0.3s;
         }
 
-        .meter-bar-container {
-            width: 100%;
-            height: 14px;
-            background-color: #130f0f;
-            border-radius: 7px;
-            overflow: hidden;
-            border: 1px solid #333;
-            position: relative;
+        .title-box {
+            margin-bottom: 40px;
+            border: 2px solid #f1c40f;
+            padding: 20px;
+            background: rgba(241, 196, 15, 0.1);
         }
 
-        /* Marcas de escala en la barra */
-        .meter-scale-marks {
+        h1 {
+            color: #f1c40f;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p { color: #ccc; font-size: 16px; margin-top: 10px; max-width: 300px; line-height: 1.5; }
+
+        /* --- UI DURANTE LA EXPERIENCIA --- */
+        #hud-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 2px;
-            pointer-events: none;
-        }
-        .scale-mark { width: 1px; height: 100%; background: rgba(255,255,255,0.1); }
-
-        #meter-bar-fill {
-            height: 100%;
-            width: 0%; /* Se actualiza por JS */
-            background: linear-gradient(90deg, var(--color-safe) 0%, var(--color-warning) 60%, var(--color-danger) 100%);
-            border-radius: 7px;
-            transition: width 0.1s linear; /* Transición rápida para simular tiempo real */
-        }
-
-        /* --- ÁREA INFERIOR (BOTONES Y GUÍA) --- */
-        #bottom-controls-area {
-            width: 100%;
-            display: flex;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1000;
+            pointer-events: none; /* Dejar pasar toques al 3D */
+            display: none; /* Oculto al inicio */
             flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-            pointer-events: auto; /* Reactivar toques en esta área */
+            justify-content: space-between;
         }
 
-        #scan-guide-text {
+        /* Panel Superior (Medidor) */
+        .top-panel {
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            display: flex; justify-content: center;
+        }
+
+        #db-card {
+            background: #1e272e;
+            border: 2px solid #ff4757;
+            padding: 15px 25px;
+            border-radius: 12px;
             text-align: center;
-            color: var(--color-light);
-            font-family: var(--font-industrial);
-            font-size: 16px;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.6);
-            padding: 10px 20px;
-            border-radius: 30px;
-            opacity: 0; /* Oculto hasta que cargue */
-            animation: fade-in 1s forwards 2s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            min-width: 200px;
         }
 
-        @keyframes fade-in { to { opacity: 1; } }
+        .db-label { font-size: 12px; color: #aaa; letter-spacing: 1px; margin-bottom: 5px; }
+        .db-number { font-size: 32px; font-weight: 900; color: #ff4757; }
+        .db-bar-bg { width: 100%; height: 8px; background: #333; margin-top: 5px; border-radius: 4px; }
+        .db-bar-fill { width: 100%; height: 100%; background: #ff4757; border-radius: 4px; transition: width 0.1s; }
 
-        .btn-industrial {
-            width: 80%;
-            max-width: 320px;
-            padding: 18px;
+        /* Panel Inferior (Botones) */
+        .bottom-panel {
+            padding: 40px 20px;
+            text-align: center;
+            pointer-events: auto; /* Reactivar toques */
+        }
+
+        /* BOTONES GRANDES */
+        .btn-big {
+            background: white;
+            color: black;
             border: none;
-            border-radius: 50px;
-            font-family: var(--font-industrial);
+            padding: 20px 40px;
             font-size: 18px;
-            font-weight: 700;
+            font-weight: 900;
+            border-radius: 50px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 320px;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            transition: all 0.2s ease;
-            display: none; /* Se muestran según el estado */
-            position: relative;
-            overflow: hidden;
+            transition: transform 0.1s;
         }
 
-        /* Efecto de brillo al pulsar */
-        .btn-industrial::after {
-            content: '';
+        .btn-big:active { transform: scale(0.95); }
+
+        #btn-start { background: #3498db; color: white; }
+        #btn-protect { background: #2ecc71; color: white; display: none; margin: 0 auto; }
+
+        /* TEXTO GUÍA FLOTANTE */
+        #ar-guide {
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255,255,255,0.1);
-            transform: rotate(45deg);
-            transition: all 0.3s;
-            opacity: 0;
-        }
-        .btn-industrial:active::after { opacity: 1; transform: rotate(45deg) translate(50px, 0); }
-        .btn-industrial:active { transform: scale(0.96); box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
-
-        /* Estado: Deshabilitado (Cargando) */
-        .btn-disabled {
-            background: #7f8c8d !important;
-            color: #bdc3c7 !important;
-            cursor: not-allowed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            text-align: center;
+            width: 80%;
             pointer-events: none;
         }
 
-        /* Botón Inicial (Azul Industrial) */
-        #btn-start {
-            background: linear-gradient(135deg, #0984e3, #74b9ff);
-            color: white;
-            border-bottom: 4px solid #06528f;
-        }
-
-        /* Botón Protección (Verde Seguridad) */
-        #btn-protect {
-            background: linear-gradient(135deg, var(--color-safe), #26de81);
-            color: white;
-            border-bottom: 4px solid #218c74;
-        }
-
-        /* --- EFECTOS VISUALES DE PANTALLA COMPLETA --- */
-        /* Alerta roja pulsante para el estado de peligro */
-        .danger-overlay-effect {
-            animation: danger-pulse 1s infinite alternate;
-        }
-        @keyframes danger-pulse {
-            0% { box-shadow: inset 0 0 0 rgba(255, 56, 56, 0); }
-            100% { box-shadow: inset 0 0 80px rgba(255, 56, 56, 0.4); }
-        }
-
-        /* --- CLASES DE UTILIDAD PARA ESTADOS --- */
-        .meter-safe-state {
-            border-color: var(--color-safe) !important;
-        }
-        .text-safe-state {
-            color: var(--color-safe) !important;
-            text-shadow: 0 0 10px rgba(46, 213, 115, 0.5) !important;
-        }
-        .ui-visible {
-            transform: translateY(0) !important;
-        }
+        /* CLASES DE ESTADO */
+        .safe-mode { border-color: #2ecc71 !important; }
+        .safe-text { color: #2ecc71 !important; }
+        .safe-fill { background: #2ecc71 !important; }
+        .danger-screen { animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: inset 0 0 0 transparent; } 50% { box-shadow: inset 0 0 50px rgba(255,0,0,0.5); } 100% { box-shadow: inset 0 0 0 transparent; } }
 
     </style>
 </head>
 <body>
 
-    <div id="app-loader">
-        <div class="loader-spinner"></div>
-        <div id="loader-text">Inicializando Sistema AR...</div>
-        <small style="margin-top: 10px; color: #bdc3c7;">Verificando recursos de audio</small>
+    <div id="start-screen">
+        <div class="title-box">
+            <h1>Seguridad<br>Industrial</h1>
+            <div style="width: 50px; height: 4px; background: #f1c40f; margin: 10px auto;"></div>
+            <p>Experiencia de Realidad Aumentada</p>
+        </div>
+        
+        <p style="margin-bottom: 30px; font-size: 14px;">1. Sube el volumen.<br>2. Presiona iniciar.<br>3. Apunta al marcador.</p>
+        
+        <button id="btn-start" class="btn-big">INICIAR EXPERIENCIA</button>
+        <div id="error-msg" style="color: red; margin-top: 20px; display: none; font-size: 12px;"></div>
     </div>
 
-    <div id="ui-container">
-        
-        <div id="db-meter-panel">
-            <div class="meter-header">
-                <span>Monitor de Ruido</span>
-                <span id="status-indicator">
-                    <span id="status-icon">⚠️</span>
-                    <span id="status-text">NIVEL CRÍTICO</span>
-                </span>
-            </div>
-            
-            <div id="db-value-display">0 dB</div>
-            
-            <div class="meter-bar-container">
-                <div class="meter-scale-marks">
-                    <div class="scale-mark"></div><div class="scale-mark"></div><div class="scale-mark"></div><div class="scale-mark"></div>
-                </div>
-                <div id="meter-bar-fill"></div>
+    <div id="hud-layer">
+        <div class="top-panel">
+            <div id="db-card">
+                <div class="db-label">NIVEL DE RUIDO</div>
+                <div class="db-number" id="db-val">0 dB</div>
+                <div class="db-bar-bg"><div class="db-bar-fill" id="db-fill"></div></div>
             </div>
         </div>
 
-        <div id="bottom-controls-area">
-            <div id="scan-guide-text">📲 PASO 1: Enfoca el marcador de seguridad</div>
-            
-            <button id="btn-start" class="btn-industrial btn-disabled">
-                ⏳ Cargando Audio...
-            </button>
-            
-            <button id="btn-protect" class="btn-industrial">
-                🎧 COLOCAR PROTECCIÓN EPP
-            </button>
-        </div>
+        <div id="ar-guide">BUSCANDO MARCADOR...</div>
 
+        <div class="bottom-panel">
+            <button id="btn-protect" class="btn-big">PONERSE PROTECCIÓN 🎧</button>
+        </div>
     </div>
 
     <a-scene 
         embedded 
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960;"
-        renderer="logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true; physicallyCorrectLights: true;"
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
         vr-mode-ui="enabled: false"
-        id="main-scene">
+        renderer="logarithmicDepthBuffer: true;">
+        
+        <a-light type="ambient" intensity="0.6"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
 
-        <a-assets timeout="10000">
-            <a-mixin id="metal-mat" material="metalness: 0.6; roughness: 0.3;"></a-mixin>
-            <a-mixin id="plastic-mat" material="metalness: 0.1; roughness: 0.8;"></a-mixin>
-        </a-assets>
-
-        <a-light type="ambient" color="#ffffff" intensity="0.4"></a-light>
-        <a-light type="directional" color="#ffd700" intensity="1.8" position="2 4 3" cast-shadow="true"></a-light>
-        <a-light type="point" color="#3498db" intensity="0.5" position="-2 1 0"></a-light>
-
-
-        <a-marker type="pattern" url="pattern-marker.patt" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
-            
-            <a-entity id="ar-content-root" visible="false">
+        <a-marker type="pattern" url="pattern-marker.patt" smooth="true">
+            <a-entity id="ar-content" visible="false">
                 
-                <a-entity id="headphones-model-group">
+                <a-entity id="headphones" position="0 0.5 0" animation="property: position; dir: alternate; to: 0 0.6 0; loop: true; dur: 2000">
                     
-                    <a-animation 
-                        attribute="scale" 
-                        from="0 0 0" to="1 1 1" 
-                        dur="1200" 
-                        fill="forwards" 
-                        easing="ease-out-elastic"
-                        begin="markerFoundTrigger">
-                    </a-animation>
-
-                    <a-entity animation="property: position; dir: alternate; to: 0 0.15 0; dur: 2500; loop: true; easing: ease-in-out-sine">
-                        
-                        <a-torus 
-                            mixin="plastic-mat"
-                            color="#1e272e" 
-                            arc="200" 
-                            radius="0.55" 
-                            radius-tubular="0.07" 
-                            rotation="90 0 0" 
-                            position="0 0.3 0">
-                        </a-torus>
-                        
-                        <a-torus 
-                            mixin="plastic-mat"
-                            color="#000000" 
-                            arc="160" 
-                            radius="0.53" 
-                            radius-tubular="0.08" 
-                            rotation="90 0 0" 
-                            position="0 0.28 0"
-                            roughness="1">
-                        </a-torus>
-
-                        <a-entity position="-0.58 0.3 0">
-                            <a-cylinder color="#f1c40f" height="0.25" radius="0.28" rotation="0 0 90" material="roughness: 0.5;"></a-cylinder>
-                            <a-torus color="#111" radius="0.28" radius-tubular="0.09" rotation="0 90 0" position="-0.08 0 0" scale="1 1 0.5" roughness="0.9"></a-torus>
-                            <a-cylinder mixin="metal-mat" color="#bdc3c7" height="0.15" radius="0.04" position="0 0.15 0"></a-cylinder>
-                            <a-sphere mixin="metal-mat" color="#7f8c8d" radius="0.05" position="-0.15 0 0"></a-sphere>
-                            <a-text value="PELIGRO\nRUIDO" color="#c0392b" rotation="0 -90 0" position="-0.3 0 0" align="center" width="2.5" font="roboto"></a-text>
-                        </a-entity>
-
-                        <a-entity position="0.58 0.3 0">
-                            <a-cylinder color="#f1c40f" height="0.25" radius="0.28" rotation="0 0 90" material="roughness: 0.5;"></a-cylinder>
-                            <a-torus color="#111" radius="0.28" radius-tubular="0.09" rotation="0 90 0" position="0.08 0 0" scale="1 1 0.5" roughness="0.9"></a-torus>
-                             <a-cylinder mixin="metal-mat" color="#bdc3c7" height="0.15" radius="0.04" position="0 0.15 0"></a-cylinder>
-                             <a-sphere mixin="metal-mat" color="#7f8c8d" radius="0.05" position="0.15 0 0"></a-sphere>
-                             <a-text value=">95 dB\nCRITICO" color="#c0392b" rotation="0 90 0" position="0.3 0 0" align="center" width="2.5" font="roboto"></a-text>
-                        </a-entity>
-
-                    </a-entity> <a-circle color="#000" opacity="0.4" radius="0.8" rotation="-90 0 0" position="0 -0.2 0" roughness="1"></a-circle>
-
-                </a-entity> <a-entity id="final-success-message" visible="false" position="0 0.4 0" scale="0 0 0">
+                    <a-torus color="#111" radius="0.5" radius-tubular="0.06" arc="190" rotation="90 0 0" position="0 0.3 0"></a-torus>
                     
-                    <a-animation 
-                        attribute="scale" from="0 0 0" to="1 1 1" dur="800" fill="forwards" easing="ease-out-back" begin="protectionActiveTrigger">
-                    </a-animation>
-                    
-                    <a-entity rotation="-20 0 0">
-                        <a-plane color="#2c3e50" opacity="0.95" width="3.5" height="2" radius="0.1" metalness="0.2"></a-plane>
-                        <a-plane color="#2ecc71" width="3.4" height="0.1" position="0 0.9 0.01"></a-plane> </a-entity>
-
-                    <a-entity rotation="-20 0 0" position="0 0 0.1">
-                        <a-text value="ZONA SEGURA EPP" color="#2ecc71" align="center" position="0 0.6 0" width="4" font="roboto" font-weight="bold" letter-spacing="1"></a-text>
-                        <a-text value="Tus oídos están protegidos.\nEl nivel de ruido ha bajado\na un rango seguro." align="center" color="#ecf0f1" position="0 0.1 0" width="2.8" font="roboto" wrap-count="25"></a-text>
-                        <a-circle color="#2ecc71" radius="0.25" position="0 -0.5 0">
-                            <a-text value="OK" align="center" color="white" width="5" position="0 0 0"></a-text>
-                        </a-circle>
+                    <a-entity position="-0.55 0.3 0">
+                        <a-cylinder color="#f1c40f" height="0.25" radius="0.25" rotation="0 0 90"></a-cylinder>
+                        <a-torus color="#222" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="-0.05 0 0" scale="1 1 0.6"></a-torus>
+                        <a-text value="PELIGRO" color="red" rotation="0 -90 0" position="-0.3 0 0" align="center" width="3"></a-text>
                     </a-entity>
+
+                    <a-entity position="0.55 0.3 0">
+                        <a-cylinder color="#f1c40f" height="0.25" radius="0.25" rotation="0 0 90"></a-cylinder>
+                        <a-torus color="#222" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="0.05 0 0" scale="1 1 0.6"></a-torus>
+                        <a-text value="RUIDO" color="red" rotation="0 90 0" position="0.3 0 0" align="center" width="3"></a-text>
+                    </a-entity>
+
                 </a-entity>
 
-            </a-entity> </a-marker>
+                <a-entity id="msg-final" visible="false" position="0 0.5 0" rotation="-45 0 0">
+                    <a-plane color="#000" opacity="0.9" width="3.5" height="1.8"></a-plane>
+                    <a-text value="¡PROTEGIDO!" color="#2ecc71" align="center" width="6" position="0 0.4 0.1"></a-text>
+                    <a-text value="Nivel de ruido seguro." color="#fff" align="center" width="4" position="0 0 0.1"></a-text>
+                    <a-circle color="#2ecc71" radius="0.2" position="0 -0.5 0.1"></a-circle>
+                </a-entity>
 
-        <a-entity camera look-controls="enabled: false"></a-entity>
-        
+            </a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        // =======================================================================
-        // CONFIGURACIÓN Y VARIABLES DE ESTADO GLOBAL
-        // =======================================================================
+        // CONFIGURACIÓN
+        const audioFile = 'Sonidos_De_Fabrica.wav';
+
+        // REFERENCIAS
+        const startScreen = document.getElementById('start-screen');
+        const hudLayer = document.getElementById('hud-layer');
+        const btnStart = document.getElementById('btn-start');
+        const btnProtect = document.getElementById('btn-protect');
+        const errorMsg = document.getElementById('error-msg');
         
-        // *** IMPORTANTE: NOMBRE EXACTO DEL ARCHIVO DE AUDIO EN GITHUB ***
-        const CONFIG = {
-            audioFileName: 'Sonidos_De_Fabrica.wav', // Debe coincidir mayúsculas/minúsculas
-            meterUpdateInterval: 100, // ms entre actualizaciones del medidor
-            dangerThresholdDB: 90 // Umbral visual para rojo
-        };
+        // ELEMENTOS HUD
+        const dbCard = document.getElementById('db-card');
+        const dbVal = document.getElementById('db-val');
+        const dbFill = document.getElementById('db-fill');
+        const arGuide = document.getElementById('ar-guide');
+        
+        // ELEMENTOS AR
+        const marker = document.querySelector('a-marker');
+        const arContent = document.getElementById('ar-content');
+        const headphones = document.getElementById('headphones');
+        const msgFinal = document.getElementById('msg-final');
 
-        // Estado del sistema
-        const APP_STATE = {
-            isAudioLoaded: false,
-            isExperienceStarted: false,
-            isProtected: false,
-            markerVisible: false,
-            currentDB: 0
-        };
+        // AUDIO SYSTEM
+        let audioCtx, source, gainNode, filterNode;
+        let isProtected = false;
+        let meterInterval;
 
-        // Variables del sistema de audio (Web Audio API)
-        let audioSystem = {
-            context: null,      // AudioContext principal
-            sourceNode: null,   // Nodo fuente del archivo
-            gainNode: null,     // Nodo de control de volumen
-            filterNode: null,   // Nodo de filtro (LowPass)
-            audioBuffer: null   // Datos crudos del audio cargado
-        };
+        // 1. CLICK EN INICIAR (CARGA SEGURA)
+        btnStart.addEventListener('click', async () => {
+            btnStart.innerText = "CARGANDO...";
+            btnStart.style.opacity = "0.7";
 
-        // Referencias a elementos del DOM (Interfaz Gráfica)
-        const UI = {
-            loader: document.getElementById('app-loader'),
-            loaderText: document.getElementById('loader-text'),
-            meterPanel: document.getElementById('db-meter-panel'),
-            dbDisplay: document.getElementById('db-value-display'),
-            barFill: document.getElementById('meter-bar-fill'),
-            statusText: document.getElementById('status-text'),
-            statusIcon: document.getElementById('status-icon'),
-            guideText: document.getElementById('scan-guide-text'),
-            btnStart: document.getElementById('btn-start'),
-            btnProtect: document.getElementById('btn-protect')
-        };
-
-        // Referencias a elementos de la escena AR (A-Frame)
-        const AR = {
-            scene: document.querySelector('a-scene'),
-            marker: document.querySelector('a-marker'),
-            contentRoot: document.getElementById('ar-content-root'),
-            headphonesGroup: document.getElementById('headphones-model-group'),
-            finalMessage: document.getElementById('final-success-message')
-        };
-
-        let simulationInterval; // Referencia al timer del medidor
-
-        // =======================================================================
-        // FASE 1: INICIALIZACIÓN Y PRE-CARGA (CRÍTICO PARA EL AUDIO)
-        // =======================================================================
-
-        // Se ejecuta cuando la ventana del navegador ha cargado lo básico
-        window.addEventListener('load', initSystem);
-
-        async function initSystem() {
-            console.log("SISTEMA: Iniciando...");
-            
-            // 1. Intentar pre-cargar el archivo de audio inmediatamente
             try {
-                console.log(`AUDIO: Intentando cargar '${CONFIG.audioFileName}'...`);
-                const response = await fetch(CONFIG.audioFileName);
+                // Crear contexto de audio (Web Audio API)
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+
+                // Cargar archivo
+                const response = await fetch(audioFile);
+                if (!response.ok) throw new Error("404 No encontrado");
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                // Convertir la respuesta a un ArrayBuffer (datos crudos de audio)
                 const arrayBuffer = await response.arrayBuffer();
-                
-                // Inicializar el contexto de audio temporalmente para decodificar
-                const tempContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Decodificar los datos de audio (esto puede tomar unos segundos)
-                audioSystem.audioBuffer = await tempContext.decodeAudioData(arrayBuffer);
-                
-                console.log("AUDIO: Archivo decodificado y listo en memoria.");
-                APP_STATE.isAudioLoaded = true;
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-                // Actualizar UI: Audio listo
-                UI.loaderText.innerText = "Sistema Listo.";
+                // Configurar nodos
+                source = audioCtx.createBufferSource();
+                source.buffer = audioBuffer;
+                source.loop = true;
+
+                filterNode = audioCtx.createBiquadFilter();
+                filterNode.type = 'lowpass';
+                filterNode.frequency.value = 22000; // Abierto
+
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 1.0;
+
+                // Conectar
+                source.connect(filterNode);
+                filterNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                // Reproducir
+                source.start(0);
+
+                // TRANSICIÓN EXITOSA
+                startScreen.style.display = 'none';
+                hudLayer.style.display = 'flex';
+                document.body.classList.add('danger-screen'); // Efecto rojo
+                simulateNoise(); // Iniciar números
+
+            } catch (e) {
+                console.error(e);
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "Error: No se encuentra 'Sonidos_De_Fabrica.wav'. Revisa GitHub.";
+                btnStart.innerText = "REINTENTAR";
+                btnStart.style.opacity = "1";
+                // AUNQUE FALLE, DEJAMOS ENTRAR PARA PROBAR AR
                 setTimeout(() => {
-                    // Ocultar pantalla de carga
-                    UI.loader.style.opacity = '0';
-                    setTimeout(() => UI.loader.style.display = 'none', 500);
-                    
-                    // Habilitar el botón de inicio
-                    UI.btnStart.classList.remove('btn-disabled');
-                    UI.btnStart.innerHTML = "🔊 ACTIVAR SIMULACIÓN";
-                    UI.btnStart.style.display = 'block'; // Mostrar el botón
-                }, 1000);
-
-            } catch (error) {
-                // ERROR CRÍTICO: El archivo no existe o falló la red.
-                console.error("AUDIO ERROR FATAL:", error);
-                UI.loaderText.innerText = "ERROR: Archivo de audio no encontrado.";
-                UI.loaderText.style.color = var(--color-danger);
-                UI.loader.querySelector('small').innerText = `Verifica que '${CONFIG.audioFileName}' esté en GitHub.`;
-                UI.loader.querySelector('.loader-spinner').style.borderTopColor = var(--color-danger);
-                // No habilitamos el botón de inicio, bloqueando la app.
-            }
-        }
-
-
-        // =======================================================================
-        // FASE 2: INTERACCIÓN DEL USUARIO Y CONTROL DE AUDIO
-        // =======================================================================
-
-        // Evento: Click en "ACTIVAR SIMULACIÓN"
-        UI.btnStart.addEventListener('click', startExperience);
-
-        function startExperience() {
-            if (!APP_STATE.isAudioLoaded || APP_STATE.isExperienceStarted) return;
-            
-            console.log("USUARIO: Iniciando experiencia...");
-            APP_STATE.isExperienceStarted = true;
-
-            // 1. Configurar el sistema de audio final (Web Audio API)
-            // Es necesario crearlo dentro de un evento de usuario por políticas del navegador.
-            audioSystem.context = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Crear nodo fuente desde el buffer cargado en memoria
-            audioSystem.sourceNode = audioSystem.context.createBufferSource();
-            audioSystem.sourceNode.buffer = audioSystem.audioBuffer;
-            audioSystem.sourceNode.loop = true; // Repetir el sonido de fábrica
-
-            // Crear nodo de Filtro (LowPass) para el efecto de protección
-            audioSystem.filterNode = audioSystem.context.createBiquadFilter();
-            audioSystem.filterNode.type = 'lowpass';
-            // Frecuencia inicial alta (22kHz) = sonido abierto, sin filtro
-            audioSystem.filterNode.frequency.setValueAtTime(22000, audioSystem.context.currentTime);
-            audioSystem.filterNode.Q.value = 1; // Factor de calidad del filtro
-
-            // Crear nodo de Ganancia (Volumen)
-            audioSystem.gainNode = audioSystem.context.createGain();
-            audioSystem.gainNode.gain.setValueAtTime(1.0, audioSystem.context.currentTime); // Volumen máximo
-
-            // CONECTAR LOS CABLES VIRTUALES DE AUDIO:
-            // Fuente -> Filtro -> Volumen -> Altavoces del dispositivo
-            audioSystem.sourceNode.connect(audioSystem.filterNode);
-            audioSystem.filterNode.connect(audioSystem.gainNode);
-            audioSystem.gainNode.connect(audioSystem.context.destination);
-
-            // REPRODUCIR EL SONIDO REAL
-            audioSystem.sourceNode.start(0);
-            console.log("AUDIO: Reproduciendo sonido de fábrica.");
-
-            // 2. Actualizar Interfaz Gráfica (Transición)
-            UI.btnStart.style.display = 'none'; // Ocultar botón inicio
-            UI.guideText.style.opacity = '1'; // Mostrar texto guía
-            
-            // Mostrar el panel del medidor (deslizar hacia abajo)
-            UI.meterPanel.classList.add('ui-visible');
-            
-            // Activar efecto visual de peligro en toda la pantalla
-            document.body.classList.add('danger-overlay-effect');
-
-            // 3. Iniciar la simulación visual del medidor de decibelios
-            startDecibelMeterSimulation();
-        }
-
-
-        // =======================================================================
-        // FASE 3: LÓGICA DE REALIDAD AUMENTADA (DETECCIÓN)
-        // =======================================================================
-
-        // Evento: Marcador Detectado por la cámara
-        AR.marker.addEventListener('markerFound', () => {
-            if (!APP_STATE.isExperienceStarted) return; // Ignorar si no ha iniciado
-
-            console.log("AR: Marcador encontrado.");
-            APP_STATE.markerVisible = true;
-
-            // Hacer visible el contenido 3D
-            AR.contentRoot.setAttribute('visible', true);
-            
-            // Disparar la animación de entrada de los auriculares
-            // Se usa 'emit' para activar la etiqueta <a-animation begin="...">
-            AR.headphonesGroup.emit('markerFoundTrigger');
-
-            // Actualizar UI
-            UI.guideText.style.display = 'none'; // Ocultar guía
-            if (!APP_STATE.isProtected) {
-                // Mostrar botón de protección solo si no está protegido aún
-                UI.btnProtect.style.display = 'block';
-            }
-        });
-
-        // Evento: Marcador Perdido
-        AR.marker.addEventListener('markerLost', () => {
-             if (!APP_STATE.isExperienceStarted) return;
-             console.log("AR: Marcador perdido.");
-             APP_STATE.markerVisible = false;
-             // Opcional: Podríamos ocultar el botón si se pierde el marcador
-             // UI.btnProtect.style.display = 'none';
-        });
-
-
-        // =======================================================================
-        // FASE 4: ACTIVACIÓN DE PROTECCIÓN (EL EFECTO PRINCIPAL)
-        // =======================================================================
-
-        // Evento: Click en "COLOCAR PROTECCIÓN EPP"
-        UI.btnProtect.addEventListener('click', activateProtection);
-
-        function activateProtection() {
-            if (APP_STATE.isProtected) return;
-            console.log("USUARIO: Activando EPP.");
-            APP_STATE.isProtected = true;
-
-            const currTime = audioSystem.context.currentTime;
-            const transitionTime = 1.5; // Segundos que dura el efecto de "ponerse" los cascos
-
-            // 1. APLICAR EFECTOS DE AUDIO (WEB AUDIO API)
-            // Programamos rampas exponenciales para un cambio suave y natural al oído.
-            
-            // A) Cerrar el Filtro Paso Bajo (Efecto "Ahogado")
-            // Baja la frecuencia de corte de 22000Hz a 350Hz. Solo pasan los graves.
-            audioSystem.filterNode.frequency.cancelScheduledValues(currTime);
-            audioSystem.filterNode.frequency.setValueAtTime(audioSystem.filterNode.frequency.value, currTime);
-            audioSystem.filterNode.frequency.exponentialRampToValueAtTime(350, currTime + transitionTime);
-
-            // B) Reducir el Volumen General
-            // Baja la ganancia de 1.0 (100%) a 0.2 (20%)
-            audioSystem.gainNode.gain.cancelScheduledValues(currTime);
-            audioSystem.gainNode.gain.setValueAtTime(audioSystem.gainNode.gain.value, currTime);
-            audioSystem.gainNode.gain.exponentialRampToValueAtTime(0.2, currTime + transitionTime);
-
-
-            // 2. ACTUALIZAR INTERFAZ GRÁFICA (UI)
-            UI.btnProtect.style.display = 'none'; // Ocultar botón
-            
-            // Quitar efecto de peligro de fondo
-            document.body.classList.remove('danger-overlay-effect');
-            document.body.style.backgroundColor = var(--color-dark);
-
-            // Actualizar estado del medidor a "SEGURO"
-            UI.meterPanel.classList.add('meter-safe-state');
-            UI.statusText.innerText = "NIVEL SEGURO";
-            UI.statusText.classList.add('text-safe-state');
-            UI.statusIcon.innerText = "✅";
-            UI.dbDisplay.classList.add('text-safe-state');
-
-
-            // 3. ACTUALIZAR ESCENA 3D (AR)
-            // Ocultar el modelo de los auriculares (porque "ya los tiene puestos")
-            AR.headphonesGroup.setAttribute('visible', false);
-            
-            // Mostrar el mensaje final de éxito
-            AR.finalMessage.setAttribute('visible', true);
-            // Disparar su animación de entrada
-            AR.finalMessage.emit('protectionActiveTrigger');
-        }
-
-
-        // =======================================================================
-        // FASE 5: SIMULACIÓN DEL MEDIDOR DE DECIBELIOS (HUD)
-        // =======================================================================
-
-        /**
-         * Función que actualiza visualmente el medidor de DB en un bucle.
-         * Genera números aleatorios dentro de rangos realistas según el estado.
-         */
-        function startDecibelMeterSimulation() {
-            // Limpiar intervalo previo si existiera
-            if (simulationInterval) clearInterval(simulationInterval);
-
-            simulationInterval = setInterval(() => {
-                let targetDB, noiseFactor, percentage;
-
-                if (!APP_STATE.isProtected) {
-                    // --- ESTADO: SIN PROTECCIÓN (PELIGRO) ---
-                    // Rango de ruido industrial fuerte: 92dB a 105dB
-                    // noiseFactor genera una fluctuación aleatoria realista
-                    noiseFactor = Math.random() * (105 - 92);
-                    targetDB = Math.floor(92 + noiseFactor);
-                    
-                    // Cálculo de porcentaje para la barra (asumiendo max 110dB)
-                    percentage = (targetDB / 110) * 100;
-
-                    // Aplicar vibración visual si es muy alto
-                    if (targetDB > 100) {
-                         UI.meterPanel.style.transform = `translateY(0) translateX(${Math.random()*2 - 1}px)`;
-                    } else {
-                         UI.meterPanel.style.transform = 'translateY(0)';
+                    if(confirm("El audio falló. ¿Entrar sin sonido?")) {
+                        startScreen.style.display = 'none';
+                        hudLayer.style.display = 'flex';
                     }
+                }, 500);
+            }
+        });
 
+        // 2. DETECTAR MARCADOR
+        marker.addEventListener('markerFound', () => {
+            arContent.setAttribute('visible', true);
+            arGuide.style.display = 'none';
+            if(!isProtected) btnProtect.style.display = 'block';
+        });
+
+        marker.addEventListener('markerLost', () => {
+            // arContent.setAttribute('visible', false); // Opcional
+        });
+
+        // 3. PROTEGER
+        btnProtect.addEventListener('click', () => {
+            isProtected = true;
+
+            // Audio Effect
+            if(audioCtx) {
+                const now = audioCtx.currentTime;
+                filterNode.frequency.exponentialRampToValueAtTime(300, now + 1);
+                gainNode.gain.exponentialRampToValueAtTime(0.2, now + 1);
+            }
+
+            // Visual Effect
+            btnProtect.style.display = 'none';
+            document.body.classList.remove('danger-screen');
+            
+            dbCard.classList.add('safe-mode');
+            dbVal.classList.add('safe-text');
+            dbFill.classList.add('safe-fill');
+            
+            headphones.setAttribute('visible', false);
+            msgFinal.setAttribute('visible', true);
+        });
+
+        // SIMULADOR VISUAL DE DB
+        function simulateNoise() {
+            meterInterval = setInterval(() => {
+                let db, width;
+                if(!isProtected) {
+                    db = Math.floor(Math.random() * (105 - 95) + 95);
+                    width = (db / 110) * 100;
                 } else {
-                    // --- ESTADO: PROTEGIDO (SEGURO) ---
-                    // Rango de ruido atenuado por EPP: 68dB a 75dB
-                    noiseFactor = Math.random() * (75 - 68);
-                    targetDB = Math.floor(68 + noiseFactor);
-                    
-                    percentage = (targetDB / 110) * 100;
-                    UI.meterPanel.style.transform = 'translateY(0)'; // Sin vibración
+                    db = Math.floor(Math.random() * (75 - 65) + 65);
+                    width = (db / 110) * 100;
                 }
-
-                // Actualizar el DOM
-                APP_STATE.currentDB = targetDB;
-                UI.dbDisplay.innerText = `${targetDB} dB`;
-                UI.barFill.style.width = `${percentage}%`;
-
-                // Cambiar color de la barra dinámicamente según el nivel
-                if (percentage < 65) { // Verde
-                    UI.barFill.style.background = `linear-gradient(90deg, var(--color-safe), var(--color-safe))`;
-                } else if (percentage < 85) { // Amarillo
-                     UI.barFill.style.background = `linear-gradient(90deg, var(--color-safe), var(--color-warning))`;
-                } else { // Rojo intenso
-                     UI.barFill.style.background = `linear-gradient(90deg, var(--color-warning), var(--color-danger))`;
-                }
-
-            }, CONFIG.meterUpdateInterval);
+                dbVal.innerText = db + " dB";
+                dbFill.style.width = width + "%";
+            }, 100);
         }
 
     </script>
