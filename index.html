@@ -57,6 +57,18 @@
             color: var(--pure-white);
         }
 
+        /* VIDEO BACKGROUND PARA AR */
+        #cameraVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            display: none;
+        }
+
         /* VIEWS */
         .view {
             position: absolute;
@@ -643,14 +655,15 @@
             transform: scale(0.95);
         }
 
-        /* A-FRAME FULL SCREEN */
+        /* A-FRAME */
         #arScene {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             width: 100% !important;
             height: 100% !important;
-            z-index: 0 !important;
+            z-index: 5 !important;
+            pointer-events: none !important;
         }
 
         .a-canvas {
@@ -671,6 +684,9 @@
     </style>
 </head>
 <body>
+
+    <!-- VIDEO CAMERA BACKGROUND -->
+    <video id="cameraVideo" playsinline autoplay muted></video>
 
     <div id="dangerOverlay" class="danger-overlay"></div>
 
@@ -715,7 +731,7 @@
         </div>
 
         <div class="home-footer">
-            LANXESS AR • v14.0 PRO
+            LANXESS AR • v15.0 PRO
         </div>
     </div>
 
@@ -763,59 +779,45 @@
     <!-- A-FRAME SCENE -->
     <a-scene 
         id="arScene"
-        device-orientation-permission-ui="enabled: false"
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true;"
         loading-screen="enabled: false"
         embedded
+        background="transparent"
         style="display: none;">
 
         <a-assets timeout="30000">
             <a-asset-item id="headphonesModel" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
         </a-assets>
 
-        <!-- CÁMARA CON LOOK CONTROLS -->
         <a-camera 
             id="mainCamera" 
             position="0 1.6 0"
-            look-controls="enabled: true; 
-                          touchEnabled: true; 
-                          magicWindowTrackingEnabled: true;
-                          mouseEnabled: true;
-                          pointerLockEnabled: false"
+            look-controls="enabled: true; touchEnabled: true; magicWindowTrackingEnabled: true; mouseEnabled: true; pointerLockEnabled: false"
             wasd-controls="enabled: false">
-            
-            <!-- VIDEO BACKGROUND -->
-            <a-entity 
-                id="videoBackground" 
-                geometry="primitive: sphere; radius: 500; segmentsWidth: 64; segmentsHeight: 32" 
-                material="shader: flat; side: back; opacity: 0"
-                scale="-1 1 1"
-                visible="false">
-            </a-entity>
         </a-camera>
 
         <!-- ILUMINACIÓN -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 0.8"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.2" position="5 10 5"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-5 8 -5"></a-entity>
-        <a-entity light="type: point; color: #D71920; intensity: 1.5; distance: 20" position="0 2 -4"></a-entity>
+        <a-entity light="type: ambient; color: #FFF; intensity: 1"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="5 10 5"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1" position="-5 8 -5"></a-entity>
+        <a-entity light="type: point; color: #D71920; intensity: 2; distance: 20" position="0 2 -3"></a-entity>
 
-        <!-- AURICULARES 3D (FRENTE) -->
+        <!-- AURICULARES 3D -->
         <a-entity id="headphonesContainer" position="0 1.6 -2.5" visible="false">
             <a-entity 
                 id="headphonesModel3D"
                 gltf-model="#headphonesModel"
-                scale="2 2 2"
+                scale="2.5 2.5 2.5"
                 rotation="0 0 0"
-                animation="property: position; from: 0 0 0; to: 0 0.3 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
-                animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 12000; loop: true; easing: linear">
+                animation="property: position; from: 0 0 0; to: 0 0.4 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
+                animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 15000; loop: true; easing: linear">
             </a-entity>
         </a-entity>
 
-        <!-- TALADRO (IZQUIERDA) -->
-        <a-entity id="drill1" position="-3 1 -3" rotation="0 45 0" visible="false">
-            <a-cylinder radius="0.3" height="1.5" color="#555555" rotation="0 0 0" position="0 0.75 0"></a-cylinder>
+        <!-- TALADRO -->
+        <a-entity id="drill1" position="-3 1 -3.5" rotation="0 45 0" visible="false">
+            <a-cylinder radius="0.3" height="1.5" color="#555555" position="0 0.75 0"></a-cylinder>
             <a-cone radius-bottom="0.3" radius-top="0.15" height="0.8" color="#888888" position="0 0.2 0"></a-cone>
             <a-cylinder radius="0.05" height="0.6" color="#CCCCCC" position="0 -0.3 0"></a-cylinder>
             <a-sphere radius="0.1" color="#FF0000" position="0 1.6 0">
@@ -824,8 +826,8 @@
             <a-animation attribute="rotation" from="0 45 -2" to="0 45 2" direction="alternate" dur="100" repeat="indefinite"></a-animation>
         </a-entity>
 
-        <!-- PRENSA (DERECHA) -->
-        <a-entity id="press1" position="3 1 -3" rotation="0 -45 0" visible="false">
+        <!-- PRENSA -->
+        <a-entity id="press1" position="3 1 -3.5" rotation="0 -45 0" visible="false">
             <a-box width="1.5" height="2" depth="1" color="#444444" position="0 1 0"></a-box>
             <a-box width="1.2" height="0.3" depth="0.8" color="#666666" position="0 0.3 0">
                 <a-animation attribute="position" from="0 0.3 0" to="0 -0.2 0" direction="alternate" dur="1500" repeat="indefinite" easing="ease-in-out-cubic"></a-animation>
@@ -835,16 +837,16 @@
             </a-plane>
         </a-entity>
 
-        <!-- SIERRA (ATRÁS IZQUIERDA) -->
-        <a-entity id="saw1" position="-2 1.2 -5" rotation="0 30 0" visible="false">
+        <!-- SIERRA -->
+        <a-entity id="saw1" position="-2 1.2 -5.5" rotation="0 30 0" visible="false">
             <a-cylinder radius="0.8" height="0.1" color="#999999" segments-radial="32">
                 <a-animation attribute="rotation" from="0 0 0" to="0 360 0" dur="800" repeat="indefinite" easing="linear"></a-animation>
             </a-cylinder>
             <a-cylinder radius="0.2" height="0.15" color="#333333"></a-cylinder>
         </a-entity>
 
-        <!-- MÁQUINA (ATRÁS DERECHA) -->
-        <a-entity id="machine1" position="2 0.8 -5" rotation="0 -30 0" visible="false">
+        <!-- MÁQUINA -->
+        <a-entity id="machine1" position="2 0.8 -5.5" rotation="0 -30 0" visible="false">
             <a-box width="1.2" height="1.6" depth="0.8" color="#3a3a3a"></a-box>
             <a-cylinder radius="0.15" height="0.6" color="#666666" position="0 1.2 0"></a-cylinder>
             <a-sphere radius="0.08" color="#00FF00" position="0 1.7 0">
@@ -853,17 +855,12 @@
         </a-entity>
 
         <!-- CHISPAS -->
-        <a-entity id="sparks1" position="-3 1.5 -3" visible="false"
+        <a-entity id="sparks1" position="-3 1.5 -3.5" visible="false"
             particle-system="preset: dust; color: #FFA500,#FFFF00,#FF4500; particleCount: 150; size: 0.05; maxAge: 1.5; velocityValue: 2 2 2; velocitySpread: 1 1 1; accelerationValue: 0 -3 0; opacity: 0.9">
         </a-entity>
 
-        <!-- HUMO -->
-        <a-entity id="smoke1" position="3 2.5 -3" visible="false"
-            particle-system="preset: dust; color: #666666,#888888; particleCount: 80; size: 0.3; maxAge: 4; velocityValue: 0 0.5 0; velocitySpread: 0.3 0.2 0.3; opacity: 0.4">
-        </a-entity>
-
-        <!-- TEXTO ADVERTENCIA (ARRIBA) -->
-        <a-entity id="warningText" position="0 3 -2" look-at="#mainCamera" visible="false">
+        <!-- TEXTO ADVERTENCIA -->
+        <a-entity id="warningText" position="0 3 -2.5" look-at="#mainCamera" visible="false">
             <a-plane width="3" height="1.2" color="#000000" opacity="0.9"></a-plane>
             <a-plane width="2.9" height="1.1" color="#D71920" position="0 0 0.01"></a-plane>
             <a-plane width="2.8" height="1" color="#000000" opacity="0.95" position="0 0 0.02"></a-plane>
@@ -875,8 +872,8 @@
             <a-text value="NIVEL PELIGROSO" color="#FFFFFF" align="center" width="3" position="0 -0.35 0.05"></a-text>
         </a-entity>
 
-        <!-- ANILLO PELIGRO (SUELO) -->
-        <a-entity id="dangerRing" position="0 0.05 -2" visible="false">
+        <!-- ANILLO PELIGRO -->
+        <a-entity id="dangerRing" position="0 0.05 -2.5" visible="false">
             <a-torus radius="2" radius-tubular="0.06" color="#D71920" rotation="90 0 0" opacity="0.7">
                 <a-animation attribute="rotation" from="90 0 0" to="90 360 0" dur="6000" repeat="indefinite" easing="linear"></a-animation>
             </a-torus>
@@ -884,8 +881,6 @@
                 <a-animation attribute="rotation" from="90 0 0" to="90 -360 0" dur="4500" repeat="indefinite" easing="linear"></a-animation>
             </a-torus>
         </a-entity>
-
-        <a-sky color="#1a1a1a"></a-sky>
     </a-scene>
 
     <script>
@@ -1090,12 +1085,16 @@
             dbUpdateInterval: null,
             scene: null,
             videoStream: null,
-            videoTexture: null,
+            cameraVideo: null,
 
             async init() {
-                console.log('🎯 AR System Init');
+                console.log('🎯 AR Init');
                 
                 this.scene = document.getElementById('arScene');
+                this.cameraVideo = document.getElementById('cameraVideo');
+                
+                await this.startCamera();
+                
                 this.scene.style.display = 'block';
                 
                 if (!this.initialized) {
@@ -1103,7 +1102,6 @@
                     this.initialized = true;
                 }
                 
-                await this.startCamera();
                 this.resetCompleteState();
                 this.showInitialElements();
             },
@@ -1119,40 +1117,20 @@
                         }
                     });
                     
-                    const videoEl = document.createElement('video');
-                    videoEl.setAttribute('playsinline', '');
-                    videoEl.setAttribute('autoplay', '');
-                    videoEl.setAttribute('muted', '');
-                    videoEl.srcObject = this.videoStream;
-                    videoEl.play();
+                    this.cameraVideo.srcObject = this.videoStream;
+                    this.cameraVideo.style.display = 'block';
                     
-                    videoEl.addEventListener('loadedmetadata', () => {
-                        console.log('✅ Cámara lista');
-                        
-                        const videoTexture = new THREE.VideoTexture(videoEl);
-                        videoTexture.minFilter = THREE.LinearFilter;
-                        videoTexture.magFilter = THREE.LinearFilter;
-                        
-                        const videoBg = document.getElementById('videoBackground');
-                        if (videoBg) {
-                            videoBg.setAttribute('visible', 'true');
-                            videoBg.setAttribute('material', 'shader', 'flat');
-                            videoBg.setAttribute('material', 'src', videoEl);
-                            videoBg.setAttribute('material', 'opacity', '1');
-                            
-                            videoBg.object3D.children[0].material.map = videoTexture;
-                            videoBg.object3D.children[0].material.needsUpdate = true;
-                        }
-                    });
+                    await this.cameraVideo.play();
+                    console.log('✅ Cámara OK');
                     
                 } catch (error) {
                     console.error('Error cámara:', error);
-                    alert('⚠️ Necesitas dar permiso a la cámara para AR');
+                    alert('⚠️ Necesitas dar permiso a la cámara');
                 }
             },
 
             destroy() {
-                console.log('🗑️ AR System Destroy');
+                console.log('🗑️ AR Destroy');
                 
                 if (this.source) {
                     try { this.source.stop(); } catch(e) {}
@@ -1167,6 +1145,11 @@
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => track.stop());
                     this.videoStream = null;
+                }
+                
+                if (this.cameraVideo) {
+                    this.cameraVideo.style.display = 'none';
+                    this.cameraVideo.srcObject = null;
                 }
                 
                 if (this.hudInterval) clearInterval(this.hudInterval);
@@ -1186,7 +1169,7 @@
                 btnStart.disabled = false;
                 
                 document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = 'Mueve tu dispositivo para explorar el entorno industrial';
+                document.getElementById('arStatusText').textContent = 'Mueve tu dispositivo para explorar';
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
                 document.getElementById('hudValue').textContent = '0 dB';
@@ -1211,7 +1194,7 @@
 
             hideAllElements() {
                 const elements = ['headphonesContainer', 'warningText', 'dangerRing', 
-                                'drill1', 'press1', 'saw1', 'machine1', 'sparks1', 'smoke1'];
+                                'drill1', 'press1', 'saw1', 'machine1', 'sparks1'];
                 
                 elements.forEach(id => {
                     const el = document.getElementById(id);
@@ -1221,7 +1204,7 @@
 
             showIndustrialMachines() {
                 setTimeout(() => {
-                    const machines = ['drill1', 'press1', 'saw1', 'machine1', 'sparks1', 'smoke1'];
+                    const machines = ['drill1', 'press1', 'saw1', 'machine1', 'sparks1'];
                     machines.forEach(id => {
                         const el = document.getElementById(id);
                         if (el) el.setAttribute('visible', 'true');
@@ -1293,7 +1276,7 @@
                     
                     btn.classList.remove('visible');
                     document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso! Protégete ahora';
+                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso! Protégete';
                     document.getElementById('dangerOverlay').classList.add('active');
                     
                     this.showIndustrialMachines();
@@ -1304,7 +1287,7 @@
                     this.isAudioLoaded = true;
                     btn.classList.remove('visible');
                     document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ Modo Demo';
+                    document.getElementById('arStatusText').textContent = '⚠️ Demo (sin audio)';
                     this.showIndustrialMachines();
                     this.startHUD();
                 }
@@ -1351,6 +1334,9 @@
                     texts[2].setAttribute('color', '#34c759');
                 }
                 
+                const dbInd = document.getElementById('dbIndicator');
+                if (dbInd) dbInd.setAttribute('color', '#34c759');
+                
                 this.animateProtectionSequence();
             },
 
@@ -1361,7 +1347,7 @@
                 hp.setAttribute('animation__approach', {
                     property: 'position',
                     from: '0 1.6 -2.5',
-                    to: '0 1.6 -1',
+                    to: '0 1.6 -0.8',
                     dur: 2500,
                     easing: 'easeInOutCubic'
                 });
@@ -1369,7 +1355,7 @@
                 hp.setAttribute('animation__grow', {
                     property: 'scale',
                     from: '1 1 1',
-                    to: '2 2 2',
+                    to: '2.5 2.5 2.5',
                     dur: 2500,
                     easing: 'easeInOutCubic'
                 });
@@ -1389,7 +1375,7 @@
         };
 
         window.addEventListener('load', () => {
-            console.log('🚀 LANXESS AR PRO v14.0');
+            console.log('🚀 LANXESS AR PRO v15.0');
             Router.init();
         });
     </script>
