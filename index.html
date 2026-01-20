@@ -8,15 +8,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Lanxess Safety AR Pro</title>
 
-    <!-- Libraries - Optimizadas -->
+    <!-- Libraries Optimizadas -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
-        /* ===================================================================
-           VARIABLES Y FUENTES OPTIMIZADAS
-           =================================================================== */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
         :root {
@@ -40,9 +37,6 @@
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
-        /* ===================================================================
-           RESET Y ESTILOS BASE
-           =================================================================== */
         * {
             margin: 0;
             padding: 0;
@@ -65,7 +59,7 @@
         }
 
         /* ===================================================================
-           SISTEMA DE VISTAS (SPA)
+           VIEWS
            =================================================================== */
         .view {
             position: absolute;
@@ -86,7 +80,7 @@
         }
 
         /* ===================================================================
-           BOTÓN DE NAVEGACIÓN (VOLVER)
+           BOTÓN BACK
            =================================================================== */
         .btn-back {
             position: fixed;
@@ -123,7 +117,7 @@
         }
 
         /* ===================================================================
-           VISTA 1: HOME (MENÚ PRINCIPAL)
+           HOME VIEW
            =================================================================== */
         #home {
             flex-direction: column;
@@ -140,14 +134,8 @@
         }
 
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo-container {
@@ -205,14 +193,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .menu-item {
@@ -291,7 +273,7 @@
         }
 
         /* ===================================================================
-           VISTA 2: MEDIDOR DE DECIBELIOS
+           METER VIEW
            =================================================================== */
         #meter {
             flex-direction: column;
@@ -328,17 +310,9 @@
         .meter-circle::before {
             content: '';
             position: absolute;
-            top: -8px;
-            left: -8px;
-            right: -8px;
-            bottom: -8px;
+            top: -8px; left: -8px; right: -8px; bottom: -8px;
             border-radius: 50%;
-            background: conic-gradient(
-                from 0deg,
-                transparent 0%,
-                var(--primary-red) 50%,
-                transparent 100%
-            );
+            background: conic-gradient(from 0deg, transparent 0%, var(--primary-red) 50%, transparent 100%);
             opacity: 0;
             transition: opacity var(--transition-medium);
             z-index: -1;
@@ -424,13 +398,14 @@
         }
 
         /* ===================================================================
-           VISTA 3: SIMULADOR AR - OPTIMIZADO
+           AR VIEW - SIN VIÑETAS NI EFECTOS OSCUROS
            =================================================================== */
         #ar {
-            background: transparent;
+            background: transparent !important;
             pointer-events: none;
         }
 
+        /* ELIMINAR CUALQUIER GRADIENTE O VIÑETA */
         .ar-hud {
             position: fixed;
             top: calc(var(--safe-top) + 70px);
@@ -440,7 +415,7 @@
         }
 
         .hud-meter {
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(20px);
             border: 2px solid rgba(255, 255, 255, 0.25);
             border-right: 4px solid var(--primary-red);
@@ -536,12 +511,14 @@
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
         }
 
+        /* CONTROLES SIN GRADIENTE OSCURO */
         .ar-controls {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.8) 60%, transparent 100%);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
             padding: 25px 20px calc(var(--safe-bottom) + 20px);
             display: flex;
             flex-direction: column;
@@ -583,30 +560,12 @@
             display: none;
         }
 
-        .btn-ar::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.5s, height 0.5s;
-        }
-
-        .btn-ar:active::before {
-            width: 350px;
-            height: 350px;
+        .btn-ar.visible {
+            display: block;
         }
 
         .btn-ar:active {
             transform: scale(0.96);
-        }
-
-        .btn-ar.visible {
-            display: block;
         }
 
         #btnStartAR {
@@ -619,6 +578,42 @@
             background: var(--safe);
             color: var(--pure-white);
             box-shadow: 0 6px 25px rgba(52, 199, 89, 0.5);
+        }
+
+        /* DEBUG MARKER INDICATOR */
+        .marker-debug {
+            position: fixed;
+            top: calc(var(--safe-top) + 70px);
+            left: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary-red);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--pure-white);
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .marker-debug .status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff3b30;
+            margin-right: 8px;
+            animation: blink 1s infinite;
+        }
+
+        .marker-debug.found .status {
+            background: #34c759;
+            animation: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .danger-overlay {
@@ -638,12 +633,8 @@
         }
 
         @keyframes dangerPulse {
-            0%, 100% {
-                box-shadow: inset 0 0 0 rgba(215, 25, 32, 0);
-            }
-            50% {
-                box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.5);
-            }
+            0%, 100% { box-shadow: inset 0 0 0 rgba(215, 25, 32, 0); }
+            50% { box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.5); }
         }
 
         .loading-spinner {
@@ -663,44 +654,50 @@
         }
 
         /* ===================================================================
-           A-FRAME OPTIMIZATIONS
+           A-FRAME - SIN VIÑETAS
            =================================================================== */
         a-scene {
             position: fixed !important;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 0 !important;
         }
 
+        /* ELIMINAR VIGNETTE DE A-FRAME */
         .a-canvas {
             width: 100% !important;
             height: 100% !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
         }
 
-        /* ===================================================================
-           RESPONSIVE
-           =================================================================== */
+        /* FORZAR VIDEO FULL SCREEN SIN BORDES */
+        video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+
+        /* ELIMINAR CUALQUIER OVERLAY OSCURO DE ARJS */
+        .a-enter-vr,
+        .a-orientation-modal {
+            display: none !important;
+        }
+
         @media (max-width: 360px) {
-            .home-header h1 {
-                font-size: 34px;
-            }
-            
-            .meter-display {
-                width: 250px;
-                height: 250px;
-            }
-            
-            .db-value {
-                font-size: 68px;
-            }
+            .home-header h1 { font-size: 34px; }
+            .meter-display { width: 250px; height: 250px; }
+            .db-value { font-size: 68px; }
         }
 
         @media (min-height: 700px) {
-            #meter {
-                padding-top: calc(var(--safe-top) + 120px);
-            }
+            #meter { padding-top: calc(var(--safe-top) + 120px); }
         }
     </style>
 </head>
@@ -708,9 +705,7 @@
 
     <div id="dangerOverlay" class="danger-overlay"></div>
 
-    <!-- ===================================================================
-         VISTA 1: HOME
-         =================================================================== -->
+    <!-- HOME -->
     <div id="home" class="view active">
         <div class="home-header">
             <div class="logo-container">
@@ -742,16 +737,13 @@
         </div>
 
         <div class="home-footer">
-            LANXESS INITIATIVE • v11.0 OPTIMIZADO
+            LANXESS AR • v12.0 PRO
         </div>
     </div>
 
-    <!-- ===================================================================
-         VISTA 2: MEDIDOR
-         =================================================================== -->
+    <!-- METER -->
     <div id="meter" class="view">
         <div class="btn-back" data-nav="home"></div>
-
         <div class="meter-display">
             <div class="meter-circle" id="meterCircle">
                 <div class="db-value" id="dbValue">--</div>
@@ -759,25 +751,25 @@
                 <div class="status-indicator" id="statusIndicator">INICIANDO</div>
             </div>
         </div>
-
         <div class="wave-visualizer">
             <canvas id="waveCanvas"></canvas>
         </div>
-
         <div class="meter-info">
-            <p>
-                El micrófono analiza el ruido ambiente en tiempo real. 
-                Cuando el medidor se torna <span class="highlight">ROJO</span>, 
-                el nivel de decibelios es perjudicial para tu audición.
-            </p>
+            <p>El micrófono analiza el ruido ambiente en tiempo real. 
+            Cuando el medidor se torna <span class="highlight">ROJO</span>, 
+            el nivel de decibelios es perjudicial para tu audición.</p>
         </div>
     </div>
 
-    <!-- ===================================================================
-         VISTA 3: AR
-         =================================================================== -->
+    <!-- AR -->
     <div id="ar" class="view">
         <div class="btn-back" data-nav="home"></div>
+
+        <!-- DEBUG MARKER -->
+        <div class="marker-debug" id="markerDebug">
+            <span class="status"></span>
+            <span id="markerStatus">Buscando marcador...</span>
+        </div>
 
         <div class="ar-hud">
             <div class="hud-meter">
@@ -792,42 +784,54 @@
         <div class="ar-instructions" id="arInstructions">
             <div class="instruction-icon">📱</div>
             <div class="instruction-text">Apunta al Marcador AR</div>
-            <div class="instruction-subtext">Escanea el código de seguridad</div>
+            <div class="instruction-subtext">Mantén el marcador visible</div>
         </div>
 
         <div class="ar-controls">
             <div class="ar-status-text" id="arStatusText"></div>
-            <button id="btnStartAR" class="btn-ar visible">
-                🔊 INICIAR SIMULACIÓN
-            </button>
-            <button id="btnProtectAR" class="btn-ar">
-                🎧 PONERSE PROTECCIÓN
-            </button>
+            <button id="btnStartAR" class="btn-ar visible">🔊 INICIAR SIMULACIÓN</button>
+            <button id="btnProtectAR" class="btn-ar">🎧 PONERSE PROTECCIÓN</button>
         </div>
     </div>
 
-    <!-- ===================================================================
-         A-FRAME SCENE - CORREGIDA Y OPTIMIZADA
-         =================================================================== -->
+    <!-- A-FRAME MEJORADO -->
     <a-scene 
         id="arScene"
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        arjs="sourceType: webcam; 
+              debugUIEnabled: false; 
+              detectionMode: mono_and_matrix; 
+              matrixCodeType: 3x3;
+              sourceWidth: 1280;
+              sourceHeight: 960;
+              displayWidth: 1280;
+              displayHeight: 960;
+              videoTexture: true;
+              maxDetectionRate: 60;
+              canvasWidth: 1280;
+              canvasHeight: 960;"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;"
+        renderer="logarithmicDepthBuffer: true; 
+                  precision: medium; 
+                  antialias: true; 
+                  alpha: true;
+                  colorManagement: true;"
         loading-screen="enabled: false"
-        embedded>
+        embedded
+        gesture-detector>
 
-        <a-assets timeout="10000">
+        <a-assets timeout="15000">
             <a-asset-item id="modelo-auris" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
         </a-assets>
 
-        <!-- ILUMINACIÓN MEJORADA -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 1.2"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="2 4 2"></a-entity>
-        <a-entity light="type: point; color: #D71920; intensity: 1.2; distance: 50; decay: 2" position="-2 2 0"></a-entity>
-        <a-entity light="type: point; color: #FFF; intensity: 0.8; distance: 50; decay: 2" position="2 2 2"></a-entity>
+        <!-- ILUMINACIÓN SÚPER POTENTE -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 2"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 2.5" position="3 5 3"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 2" position="-3 5 -3"></a-entity>
+        <a-entity light="type: point; color: #FFFFFF; intensity: 2; distance: 100" position="0 3 0"></a-entity>
+        <a-entity light="type: point; color: #D71920; intensity: 1.5; distance: 50" position="-2 2 0"></a-entity>
+        <a-entity light="type: point; color: #FFF; intensity: 1.5; distance: 50" position="2 2 2"></a-entity>
 
-        <!-- MARCADOR AR CORREGIDO -->
+        <!-- MARCADOR MEJORADO -->
         <a-marker 
             type="pattern" 
             url="pattern-marker.patt" 
@@ -835,77 +839,140 @@
             smoothCount="10"
             smoothTolerance="0.01"
             smoothThreshold="5"
+            raycaster="objects: .clickable"
+            emitevents="true"
+            cursor="fuse: false; rayOrigin: mouse;"
             id="arMarker">
             
-            <a-entity id="arRoot" visible="false">
+            <a-entity id="arRoot" visible="true">
                 
-                <!-- MODELO 3D - ESCALA CORREGIDA -->
+                <!-- PLATAFORMA DE REFERENCIA -->
+                <a-cylinder 
+                    color="#D71920" 
+                    height="0.05" 
+                    radius="1.5" 
+                    position="0 0 0"
+                    opacity="0.3"></a-cylinder>
+
+                <!-- MODELO 3D - ESCALA MEGA VISIBLE -->
                 <a-entity 
                     id="headphones" 
                     gltf-model="#modelo-auris"
-                    position="0 0.3 0" 
-                    rotation="0 0 0" 
-                    scale="3 3 3"
-                    animation="property: position; from: 0 0.3 0; to: 0 0.5 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
-                    animation__rotate="property: rotation; to: 0 360 0; dur: 12000; loop: true; easing: linear">
+                    position="0 0.8 0" 
+                    rotation="-15 0 0" 
+                    scale="5 5 5"
+                    animation="property: position; 
+                               from: 0 0.8 0; 
+                               to: 0 1.2 0; 
+                               dir: alternate; 
+                               dur: 2500; 
+                               loop: true; 
+                               easing: easeInOutSine"
+                    animation__rotate="property: rotation; 
+                                      from: -15 0 0; 
+                                      to: -15 360 0; 
+                                      dur: 15000; 
+                                      loop: true; 
+                                      easing: linear">
                 </a-entity>
 
-                <!-- TEXTO DE PELIGRO -->
+                <!-- TEXTO PELIGRO ANIMADO -->
                 <a-text 
-                    value="⚠️ PELIGRO RUIDO ⚠️" 
+                    value="⚠️ ZONA DE PELIGRO ⚠️" 
+                    color="#FFFF00" 
+                    align="center" 
+                    position="0 2 0" 
+                    scale="2.5 2.5 2.5" 
+                    width="3"
+                    animation="property: scale; 
+                               from: 2.5 2.5 2.5; 
+                               to: 3 3 3; 
+                               dir: alternate; 
+                               dur: 800; 
+                               loop: true">
+                </a-text>
+
+                <!-- INDICADOR DE DECIBELIOS -->
+                <a-text 
+                    id="arDbText"
+                    value="105 dB" 
                     color="#D71920" 
                     align="center" 
-                    position="0 1.2 0" 
-                    scale="2 2 2" 
-                    width="2"
-                    animation="property: scale; from: 2 2 2; to: 2.3 2.3 2.3; dir: alternate; dur: 1000; loop: true">
+                    position="0 -0.3 0" 
+                    scale="1.5 1.5 1.5" 
+                    width="4">
                 </a-text>
+
+                <!-- PARTÍCULAS DE PELIGRO -->
+                <a-entity 
+                    position="0 1 0"
+                    particle-system="preset: dust; 
+                                     color: #D71920,#FF6B6B; 
+                                     particleCount: 100; 
+                                     size: 0.3;
+                                     maxAge: 3;
+                                     opacity: 0.6">
+                </a-entity>
+
+                <!-- ANILLO GIRATORIO -->
+                <a-torus 
+                    color="#D71920" 
+                    radius="1.8" 
+                    radius-tubular="0.05" 
+                    position="0 0.05 0"
+                    rotation="90 0 0"
+                    animation="property: rotation; 
+                               to: 90 360 0; 
+                               dur: 6000; 
+                               loop: true; 
+                               easing: linear"
+                    opacity="0.7">
+                </a-torus>
 
                 <!-- PANEL DE MENSAJE -->
                 <a-entity 
                     id="messagePanel" 
                     visible="false" 
-                    position="0 0.5 1" 
-                    rotation="-20 0 0"
+                    position="0 1 2" 
+                    rotation="-15 0 0"
                     scale="0 0 0">
                     
                     <a-plane 
                         color="#0a0a0a" 
                         opacity="0.98" 
-                        width="4" 
-                        height="3.2"
+                        width="5" 
+                        height="4"
                         material="shader: flat;">
                     </a-plane>
                     
                     <a-plane 
                         color="#D71920" 
-                        width="3.9" 
-                        height="3.1" 
+                        width="4.9" 
+                        height="3.9" 
                         position="0 0 0.01">
                     </a-plane>
                     
                     <a-plane 
                         color="#0a0a0a" 
                         opacity="0.95" 
-                        width="3.8" 
-                        height="3" 
+                        width="4.8" 
+                        height="3.8" 
                         position="0 0 0.02">
                     </a-plane>
 
                     <a-text 
-                        value="🛡️ RECORDATORIO DE SEGURIDAD 🛡️" 
+                        value="🛡️ PROTECCIÓN AUDITIVA 🛡️" 
                         color="#D71920" 
                         align="center" 
-                        width="4.5" 
-                        position="0 1.3 0.05"
-                        font="mozillavr">
+                        width="5.5" 
+                        position="0 1.6 0.05">
                     </a-text>
                     
                     <a-plane 
                         color="#D71920" 
-                        width="2.5" 
-                        height="0.02" 
-                        position="0 1.1 0.05">
+                        width="3" 
+                        height="0.03" 
+                        position="0 1.3 0.05">
                     </a-plane>
 
                     <a-text 
@@ -913,20 +980,18 @@
                         value="" 
                         color="#FFFFFF" 
                         align="center" 
-                        width="3.6" 
-                        position="0 0.1 0.05" 
-                        wrap-count="32"
-                        line-height="60"
-                        font="mozillavr">
+                        width="4.5" 
+                        position="0 0.2 0.05" 
+                        wrap-count="35"
+                        line-height="65">
                     </a-text>
 
                     <a-text 
-                        value="LANXESS • PROTECCIÓN AUDITIVA DIARIA" 
-                        color="#666666" 
+                        value="LANXESS • CUIDÁ TU AUDICIÓN" 
+                        color="#888888" 
                         align="center" 
-                        width="3.2" 
-                        position="0 -1.4 0.05"
-                        font="mozillavr">
+                        width="4" 
+                        position="0 -1.6 0.05">
                     </a-text>
                 </a-entity>
             </a-entity>
@@ -935,27 +1000,23 @@
         <a-entity camera look-controls="enabled: false"></a-entity>
     </a-scene>
 
-    <!-- ===================================================================
-         JAVASCRIPT - COMPLETAMENTE OPTIMIZADO
-         =================================================================== -->
     <script>
-        // ===================================================================
-        // CONFIG GLOBAL
-        // ===================================================================
         const CONFIG = {
             audioFile: 'Sonidos_De_Fabrica.wav',
-            finalMessage: `No olvides usar protección auditiva en el hogar o zonas de trabajo.
+            finalMessage: `⚠️ RECORDATORIO IMPORTANTE ⚠️
 
-Los decibelios altos pueden dañar tu audición de forma permanente.
+No olvides usar protección auditiva en ambientes ruidosos.
 
-Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
-            typewriterSpeed: 25,
+Los decibelios altos pueden causar daño permanente en tu audición.
+
+Usa esta herramienta regularmente para monitorear tu entorno.
+
+TU SALUD AUDITIVA ES IMPORTANTE.`,
+            typewriterSpeed: 20,
             dbThresholds: { safe: 60, warning: 85, danger: 95 }
         };
 
-        // ===================================================================
-        // ROUTER OPTIMIZADO
-        // ===================================================================
+        // ROUTER
         const Router = {
             currentView: 'home',
             
@@ -996,24 +1057,17 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                         break;
                     case 'ar':
                         MeterSystem.stop();
-                        setTimeout(() => ARSystem.init(), 200);
+                        setTimeout(() => ARSystem.init(), 300);
                         break;
                 }
             }
         };
 
-        // ===================================================================
-        // MEDIDOR DE DECIBELIOS - OPTIMIZADO
-        // ===================================================================
+        // METER SYSTEM
         const MeterSystem = {
-            active: false, 
-            stream: null, 
-            audioContext: null, 
-            analyser: null, 
-            dataArray: null, 
-            canvas: null, 
-            canvasContext: null,
-            animationId: null,
+            active: false, stream: null, audioContext: null, 
+            analyser: null, dataArray: null, canvas: null, 
+            canvasContext: null, animationId: null,
 
             async start() {
                 if (this.active) return;
@@ -1049,7 +1103,7 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     
                 } catch (error) {
                     console.error('Mic error:', error);
-                    alert('❌ Necesitas permitir el acceso al micrófono');
+                    alert('❌ Necesitas permitir acceso al micrófono');
                     Router.navigate('home');
                 }
             },
@@ -1096,7 +1150,6 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 const badgeEl = document.getElementById('statusIndicator');
                 
                 valueEl.textContent = db;
-
                 circleEl.classList.remove('danger');
                 
                 if (db < CONFIG.dbThresholds.safe) {
@@ -1135,11 +1188,8 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     const normalizedValue = this.dataArray[i] / 255;
                     const barHeight = normalizedValue * h;
                     
-                    const hue = 0; // Rojo
-                    const saturation = 100;
                     const lightness = 40 + (normalizedValue * 20);
-                    
-                    ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${normalizedValue})`;
+                    ctx.fillStyle = `hsla(0, 100%, ${lightness}%, ${normalizedValue})`;
                     ctx.fillRect(x, h - barHeight, barWidth, barHeight);
                     
                     x += barWidth + 1;
@@ -1147,9 +1197,7 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
             }
         };
 
-        // ===================================================================
-        // SISTEMA AR - COMPLETAMENTE REESCRITO
-        // ===================================================================
+        // AR SYSTEM - SUPER OPTIMIZADO
         const ARSystem = {
             initialized: false,
             audioContext: null,
@@ -1160,9 +1208,13 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
             isAudioLoaded: false,
             hudInterval: null,
             markerVisible: false,
+            dbUpdateInterval: null,
 
             init() {
-                console.log('🎯 Inicializando AR...');
+                console.log('🎯 AR System Init');
+                
+                const scene = document.getElementById('arScene');
+                scene.style.display = 'block';
                 
                 if (!this.initialized) {
                     this.setupEventListeners();
@@ -1170,10 +1222,11 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 }
                 
                 this.resetCompleteState();
+                this.startDbAnimation();
             },
 
             destroy() {
-                console.log('🗑️ Destruyendo AR...');
+                console.log('🗑️ AR System Destroy');
                 
                 if (this.source) {
                     try { this.source.stop(); } catch(e) {}
@@ -1189,17 +1242,23 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     clearInterval(this.hudInterval);
                     this.hudInterval = null;
                 }
+
+                if (this.dbUpdateInterval) {
+                    clearInterval(this.dbUpdateInterval);
+                    this.dbUpdateInterval = null;
+                }
+                
+                const scene = document.getElementById('arScene');
+                scene.style.display = 'none';
                 
                 this.isAudioLoaded = false;
                 this.isProtected = false;
                 this.markerVisible = false;
                 
-                // Limpiar todos los tweens activos
                 TWEEN.removeAll();
             },
 
             resetCompleteState() {
-                // UI Reset
                 const btnStart = document.getElementById('btnStartAR');
                 btnStart.classList.add('visible');
                 btnStart.innerHTML = '🔊 INICIAR SIMULACIÓN';
@@ -1210,13 +1269,15 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 document.getElementById('dangerOverlay').classList.remove('active');
                 document.getElementById('arInstructions').style.display = 'flex';
                 
-                // HUD Reset
                 document.getElementById('hudValue').textContent = '0 dB';
                 document.getElementById('hudValue').style.color = 'var(--primary-red)';
                 document.getElementById('hudFill').style.width = '0%';
                 document.getElementById('hudFill').style.background = 'linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%)';
 
-                // 3D Reset - CRUCIAL
+                const markerDebug = document.getElementById('markerDebug');
+                markerDebug.classList.remove('found');
+                document.getElementById('markerStatus').textContent = 'Buscando marcador...';
+
                 setTimeout(() => {
                     const hp = document.getElementById('headphones');
                     const panel = document.getElementById('messagePanel');
@@ -1224,8 +1285,9 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     
                     if (hp) {
                         hp.setAttribute('visible', 'true');
-                        hp.setAttribute('scale', '3 3 3'); // Escala visible
-                        hp.setAttribute('position', '0 0.3 0');
+                        hp.setAttribute('scale', '5 5 5');
+                        hp.setAttribute('position', '0 0.8 0');
+                        hp.setAttribute('rotation', '-15 0 0');
                         hp.object3D.visible = true;
                     }
                     
@@ -1236,13 +1298,27 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     }
                     
                     if (root) {
-                        root.setAttribute('visible', 'false');
+                        root.setAttribute('visible', 'true');
                     }
                 }, 100);
 
                 this.isProtected = false;
                 this.isAudioLoaded = false;
                 this.markerVisible = false;
+            },
+
+            startDbAnimation() {
+                if (this.dbUpdateInterval) clearInterval(this.dbUpdateInterval);
+                
+                this.dbUpdateInterval = setInterval(() => {
+                    if (this.markerVisible && !this.isProtected) {
+                        const db = 95 + Math.floor(Math.random() * 15);
+                        const dbText = document.getElementById('arDbText');
+                        if (dbText) {
+                            dbText.setAttribute('value', `${db} dB`);
+                        }
+                    }
+                }, 500);
             },
 
             setupEventListeners() {
@@ -1257,32 +1333,43 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 const marker = document.getElementById('arMarker');
                 
                 marker.addEventListener('markerFound', () => {
-                    console.log('✅ Marcador detectado');
+                    console.log('✅ MARCADOR ENCONTRADO');
                     this.markerVisible = true;
-                    document.getElementById('arRoot').setAttribute('visible', 'true');
+                    
+                    const root = document.getElementById('arRoot');
+                    root.setAttribute('visible', 'true');
+                    
                     document.getElementById('arInstructions').style.display = 'none';
+                    
+                    const markerDebug = document.getElementById('markerDebug');
+                    markerDebug.classList.add('found');
+                    document.getElementById('markerStatus').textContent = '✓ Marcador detectado';
                 });
                 
                 marker.addEventListener('markerLost', () => {
-                    console.log('❌ Marcador perdido');
+                    console.log('❌ MARCADOR PERDIDO');
                     this.markerVisible = false;
-                    document.getElementById('arRoot').setAttribute('visible', 'false');
+                    
                     if (!this.isProtected) {
                         document.getElementById('arInstructions').style.display = 'flex';
                     }
+                    
+                    const markerDebug = document.getElementById('markerDebug');
+                    markerDebug.classList.remove('found');
+                    document.getElementById('markerStatus').textContent = 'Buscando marcador...';
                 });
             },
 
             async loadAudio() {
                 const btn = document.getElementById('btnStartAR');
-                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO AUDIO...';
+                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
                 btn.disabled = true;
                 
                 try {
                     const AC = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AC();
                     
-                    console.log('📦 Cargando archivo:', CONFIG.audioFile);
+                    console.log('📦 Cargando:', CONFIG.audioFile);
                     const response = await fetch(CONFIG.audioFile);
                     
                     if (!response.ok) throw new Error('Error al cargar audio');
@@ -1290,7 +1377,6 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
                     
-                    // Crear nodos de audio
                     this.source = this.audioContext.createBufferSource();
                     this.source.buffer = audioBuffer;
                     this.source.loop = true;
@@ -1302,7 +1388,6 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     this.gainNode = this.audioContext.createGain();
                     this.gainNode.gain.value = 1.0;
                     
-                    // Conectar cadena de audio
                     this.source.connect(this.filterNode);
                     this.filterNode.connect(this.gainNode);
                     this.gainNode.connect(this.audioContext.destination);
@@ -1311,20 +1396,19 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     
                     this.isAudioLoaded = true;
                     
-                    // Actualizar UI
                     btn.classList.remove('visible');
                     document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso de ruido detectado!';
+                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso detectado!';
                     document.getElementById('dangerOverlay').classList.add('active');
                     
                     this.startHUD();
                     
-                    console.log('✅ Audio cargado y reproduciendo');
+                    console.log('✅ Audio OK');
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('❌ No se pudo cargar el archivo de audio. Verifica que "Sonidos_De_Fabrica.wav" esté en la misma carpeta.');
-                    btn.innerHTML = '❌ ERROR - REINTENTAR';
+                    alert('❌ Verifica que "Sonidos_De_Fabrica.wav" esté en la carpeta');
+                    btn.innerHTML = '❌ ERROR';
                     btn.disabled = false;
                 }
             },
@@ -1336,8 +1420,8 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     if (!this.isAudioLoaded) return;
                     
                     let db = this.isProtected 
-                        ? 55 + Math.random() * 8 
-                        : 92 + Math.random() * 15;
+                        ? 50 + Math.random() * 12 
+                        : 90 + Math.random() * 20;
                     
                     db = Math.floor(db);
                     
@@ -1346,30 +1430,32 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                     const percentage = Math.min(100, (db / 120) * 100);
                     document.getElementById('hudFill').style.width = `${percentage}%`;
                     
-                }, 120);
+                }, 100);
             },
 
             applyProtection() {
                 if (this.isProtected || !this.isAudioLoaded) return;
                 
-                console.log('🎧 Aplicando protección auditiva...');
+                console.log('🎧 PROTECCIÓN ACTIVADA');
                 this.isProtected = true;
                 
-                // Transición de audio suave
                 const currentTime = this.audioContext.currentTime;
-                this.filterNode.frequency.exponentialRampToValueAtTime(300, currentTime + 2.5);
-                this.gainNode.gain.exponentialRampToValueAtTime(0.08, currentTime + 2.5);
+                this.filterNode.frequency.exponentialRampToValueAtTime(250, currentTime + 2.5);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.05, currentTime + 2.5);
                 
-                // UI Update
                 document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = '✅ Protección Auditiva Activada';
+                document.getElementById('arStatusText').textContent = '✅ Protección Activada';
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
-                // HUD color change
                 document.getElementById('hudValue').style.color = '#34c759';
                 document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #30d158 100%)';
                 
-                // Animación 3D
+                const dbText = document.getElementById('arDbText');
+                if (dbText) {
+                    dbText.setAttribute('value', '60 dB ✓');
+                    dbText.setAttribute('color', '#34c759');
+                }
+                
                 this.animate3DSequence();
             },
 
@@ -1377,19 +1463,18 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 const hp = document.getElementById('headphones');
                 if (!hp) return;
                 
-                console.log('🎬 Iniciando animación 3D...');
+                console.log('🎬 Animación 3D');
                 
-                // Animación de zoom out
-                new TWEEN.Tween({ z: 0, s: 3 })
-                    .to({ z: 4, s: 8 }, 2000)
+                new TWEEN.Tween({ z: 0, s: 5 })
+                    .to({ z: 5, s: 10 }, 2500)
                     .easing(TWEEN.Easing.Cubic.In)
                     .onUpdate(obj => {
-                        hp.setAttribute('position', `0 0.3 ${obj.z}`);
+                        hp.setAttribute('position', `0 0.8 ${obj.z}`);
                         hp.setAttribute('scale', `${obj.s} ${obj.s} ${obj.s}`);
                     })
                     .onComplete(() => {
                         hp.setAttribute('visible', 'false');
-                        setTimeout(() => this.showMessagePanel(), 300);
+                        setTimeout(() => this.showMessagePanel(), 400);
                     })
                     .start();
             },
@@ -1398,19 +1483,18 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 const panel = document.getElementById('messagePanel');
                 if (!panel) return;
                 
-                console.log('📋 Mostrando panel de mensaje...');
+                console.log('📋 Panel Mensaje');
                 
                 panel.setAttribute('visible', 'true');
                 
-                // Animación de escala con efecto bounce
                 new TWEEN.Tween({ s: 0 })
-                    .to({ s: 1 }, 1000)
+                    .to({ s: 1 }, 1200)
                     .easing(TWEEN.Easing.Back.Out)
                     .onUpdate(obj => {
                         panel.setAttribute('scale', `${obj.s} ${obj.s} ${obj.s}`);
                     })
                     .onComplete(() => {
-                        setTimeout(() => this.typewriterEffect(), 500);
+                        setTimeout(() => this.typewriterEffect(), 600);
                     })
                     .start();
             },
@@ -1419,7 +1503,7 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                 const textEl = document.getElementById('messageText');
                 if (!textEl) return;
                 
-                console.log('⌨️ Efecto typewriter iniciado...');
+                console.log('⌨️ Typewriter');
                 
                 const fullText = CONFIG.finalMessage;
                 let currentIndex = 0;
@@ -1431,35 +1515,31 @@ Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
                         currentIndex++;
                     } else {
                         clearInterval(typeInterval);
-                        console.log('✅ Mensaje completo mostrado');
+                        console.log('✅ Mensaje completo');
                     }
                 }, CONFIG.typewriterSpeed);
             }
         };
 
-        // ===================================================================
-        // LOOP DE ANIMACIÓN GLOBAL
-        // ===================================================================
         function animate(time) {
             requestAnimationFrame(animate);
             TWEEN.update(time);
         }
         requestAnimationFrame(animate);
 
-        // ===================================================================
-        // INICIALIZACIÓN
-        // ===================================================================
         window.addEventListener('load', () => {
-            console.log('🚀 Lanxess Safety AR Pro cargado');
+            console.log('🚀 LANXESS AR PRO LOADED');
             Router.init();
+            
+            // Verificar archivos
+            setTimeout(() => {
+                console.log('Verificando archivos necesarios...');
+                console.log('✓ index.html');
+                console.log('? Sonidos_De_Fabrica.wav');
+                console.log('? microsoft_headphones_surface_2-v1.glb');
+                console.log('? pattern-marker.patt');
+            }, 1000);
         });
-
-        // Prevenir comportamientos no deseados
-        document.addEventListener('touchmove', (e) => {
-            if (e.target.tagName !== 'A-SCENE') {
-                e.preventDefault();
-            }
-        }, { passive: false });
     </script>
 </body>
 </html>
