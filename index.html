@@ -3,632 +3,1630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#D71920">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Lanxess Safety AR</title>
+    <title>Lanxess Safety AR Pro</title>
 
+    <!-- Libraries -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
-        /* --- FUENTES Y VARIABLES --- */
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Roboto:wght@300;400;900&display=swap');
+        /* ===================================================================
+           VARIABLES Y FUENTES
+           =================================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;900&family=Roboto:wght@300;400;500;700;900&display=swap');
 
         :root {
-            /* Paleta Corporativa Lanxess/Industrial */
-            --corp-red: #D71920;      /* Rojo Intenso */
-            --corp-black: #0F0F0F;    /* Negro Profundo */
-            --corp-dark: #1A1A1A;     /* Gris Oscuro */
-            --corp-white: #FFFFFF;    /* Blanco Puro */
-            --corp-gray: #B0B0B0;     /* Gris Plata */
+            /* Colores Corporativos */
+            --primary-red: #D71920;
+            --deep-black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --light-gray: #b0b0b0;
+            --pure-white: #ffffff;
             
             /* Estados */
-            --state-danger: #ff3b30;
-            --state-safe: #34c759;
-            --state-warning: #ffcc00;
-
-            /* Tipografía */
-            --font-head: 'Exo 2', sans-serif;
+            --danger: #ff3b30;
+            --warning: #ffcc00;
+            --safe: #34c759;
+            --info: #007aff;
+            
+            /* Tipografías */
+            --font-display: 'Orbitron', monospace;
+            --font-heading: 'Exo 2', sans-serif;
             --font-body: 'Roboto', sans-serif;
+            
+            /* Animaciones */
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- RESET GLOBAL --- */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        /* ===================================================================
+           RESET Y ESTILOS BASE
+           =================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
         
         body {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100dvh;
-            background-color: var(--corp-black);
+            width: 100vw;
+            height: 100dvh;
+            background: var(--deep-black);
             font-family: var(--font-body);
             overflow: hidden;
-            color: var(--corp-white);
+            color: var(--pure-white);
+            position: relative;
         }
 
-        /* --- SISTEMA DE VISTAS (SPA) --- */
-        .view-section {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: none; /* Oculto por defecto */
-            opacity: 0; transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        /* ===================================================================
+           SISTEMA DE VISTAS (SPA)
+           =================================================================== */
+        .view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            opacity: 0;
+            transition: opacity var(--transition-slow);
+            z-index: 1;
+        }
+
+        .view.active {
+            display: flex;
+            opacity: 1;
             z-index: 10;
-            background: var(--corp-black);
         }
 
-        .view-active {
-            display: flex; opacity: 1; z-index: 100;
-        }
-
-        /* --- BOTÓN "VOLVER" (GLOBAL Y ROBUSTO) --- */
-        .nav-back-btn {
-            position: absolute; top: 30px; left: 20px;
-            width: 50px; height: 50px;
+        /* ===================================================================
+           BOTÓN DE NAVEGACIÓN (VOLVER)
+           =================================================================== */
+        .btn-back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 56px;
+            height: 56px;
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 9999; /* Z-Index Supremo */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999;
+            transition: all var(--transition-fast);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
-        .nav-back-btn::after {
-            content: '←'; font-size: 24px; font-weight: bold; color: white;
-        }
-        .nav-back-btn:active { transform: scale(0.9); background: var(--corp-red); }
 
-        /* =========================================================
+        .btn-back::before {
+            content: '←';
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--pure-white);
+        }
+
+        .btn-back:active {
+            transform: scale(0.92);
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+
+        /* ===================================================================
            VISTA 1: HOME (MENÚ PRINCIPAL)
-           ========================================================= */
-        #view-home {
+           =================================================================== */
+        #home {
             flex-direction: column;
-            justify-content: center; align-items: center;
+            justify-content: center;
+            align-items: center;
             background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-            padding: 30px;
+            padding: 40px 20px;
         }
 
-        .brand-header {
-            margin-bottom: 60px; text-align: center;
+        /* Logo y Header */
+        .home-header {
+            text-align: center;
+            margin-bottom: 80px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
             position: relative;
         }
-        
-        .brand-header h1 {
-            font-family: var(--font-head); font-size: 48px; margin: 0;
-            text-transform: uppercase; letter-spacing: 2px;
-            background: linear-gradient(to right, #fff, #999);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+
+        .logo-icon {
+            font-size: 72px;
+            filter: drop-shadow(0 0 30px rgba(215, 25, 32, 0.5));
+            animation: pulse 2s infinite;
         }
 
-        .brand-line {
-            width: 60px; height: 4px; background: var(--corp-red);
-            margin: 10px auto; border-radius: 2px;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .brand-header p {
-            color: var(--corp-gray); font-size: 14px; letter-spacing: 1px;
+        .home-header h1 {
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--pure-white) 0%, var(--light-gray) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
         }
 
-        .menu-options {
-            display: grid; gap: 25px; width: 100%; max-width: 450px;
+        .accent-line {
+            width: 80px;
+            height: 4px;
+            background: var(--primary-red);
+            margin: 15px auto;
+            border-radius: 2px;
+            box-shadow: 0 0 20px rgba(215, 25, 32, 0.6);
         }
 
-        .menu-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-left: 5px solid var(--corp-red);
-            padding: 25px; border-radius: 12px;
-            display: flex; align-items: center;
-            cursor: pointer; position: relative; overflow: hidden;
-            transition: all 0.3s ease;
+        .home-header p {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: var(--light-gray);
+            text-transform: uppercase;
         }
 
-        .menu-card:active { transform: scale(0.98); background: rgba(255,255,255,0.08); }
-
-        .menu-icon { font-size: 32px; margin-right: 20px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
-        .menu-info h3 { margin: 0; font-family: var(--font-head); font-size: 20px; color: white; }
-        .menu-info p { margin: 5px 0 0; font-size: 12px; color: #888; }
-        .arrow-indicator { margin-left: auto; color: var(--corp-red); font-weight: bold; }
-
-        /* =========================================================
-           VISTA 2: MEDIDOR REAL (MICRÓFONO)
-           ========================================================= */
-        #view-meter {
-            background: #000;
-            flex-direction: column; align-items: center; justify-content: flex-start;
-            padding-top: 100px;
+        /* Menú de Opciones */
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 1s ease-out 0.3s both;
         }
 
-        .meter-ui-circle {
-            width: 280px; height: 280px;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-item {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary-red);
+            border-radius: 16px;
+            padding: 28px 24px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-medium);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(215, 25, 32, 0.1) 0%, transparent 100%);
+            transition: width var(--transition-medium);
+        }
+
+        .menu-item:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .menu-item:active::before {
+            width: 100%;
+        }
+
+        .menu-icon {
+            font-size: 40px;
+            min-width: 40px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .menu-content h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--pure-white);
+        }
+
+        .menu-content p {
+            font-size: 13px;
+            color: var(--light-gray);
+            line-height: 1.4;
+        }
+
+        .menu-arrow {
+            margin-left: auto;
+            font-size: 24px;
+            color: var(--primary-red);
+            font-weight: 900;
+        }
+
+        /* Footer */
+        .home-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: #444;
+            letter-spacing: 2px;
+        }
+
+        /* ===================================================================
+           VISTA 2: MEDIDOR DE DECIBELIOS REAL
+           =================================================================== */
+        #meter {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+            padding-top: 120px;
+        }
+
+        /* Medidor Circular Principal */
+        .meter-display {
+            width: 320px;
+            height: 320px;
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .meter-circle {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            border: 4px solid #333;
+            background: radial-gradient(circle, rgba(26, 26, 26, 0.8) 0%, rgba(10, 10, 10, 0.95) 100%);
+            border: 6px solid #2a2a2a;
+            box-shadow: 
+                0 0 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 60px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            transition: all var(--transition-medium);
         }
 
-        #real-db-val { font-size: 72px; font-weight: 900; font-family: monospace; z-index: 2; }
-        #real-db-unit { font-size: 18px; color: #666; margin-top: -10px; z-index: 2; }
-        
-        .status-badge {
-            margin-top: 20px; padding: 8px 16px;
-            background: #222; border-radius: 20px;
-            font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-            font-weight: bold; color: #fff; transition: background 0.3s;
+        .meter-circle::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                transparent 0%,
+                var(--primary-red) 50%,
+                transparent 100%
+            );
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+            z-index: -1;
+            animation: rotate 3s linear infinite;
         }
 
-        canvas#wave-canvas {
-            width: 100%; height: 120px;
-            position: absolute; bottom: 0; left: 0;
-            opacity: 0.5;
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* =========================================================
-           VISTA 3: SIMULADOR AR (HUD TÁCTICO)
-           ========================================================= */
-        #view-ar {
+        .meter-circle.danger::before {
+            opacity: 0.6;
+        }
+
+        .db-value {
+            font-family: var(--font-display);
+            font-size: 84px;
+            font-weight: 900;
+            color: var(--pure-white);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .db-unit {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            color: var(--light-gray);
+            letter-spacing: 2px;
+        }
+
+        .status-indicator {
+            margin-top: 25px;
+            padding: 10px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all var(--transition-fast);
+        }
+
+        /* Visualizador de Ondas */
+        .wave-visualizer {
+            width: 100%;
+            max-width: 400px;
+            height: 120px;
+            position: relative;
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        #waveCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Info Box */
+        .meter-info {
+            max-width: 340px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .meter-info p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--light-gray);
+        }
+
+        .meter-info .highlight {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        /* ===================================================================
+           VISTA 3: SIMULADOR AR
+           =================================================================== */
+        #ar {
             background: transparent;
-            pointer-events: none; /* Crucial para AR */
-        }
-
-        /* HUD SUPERIOR */
-        .ar-hud-top {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 20px 20px 0 80px; /* Padding izquierdo para no tapar botón volver */
-            display: flex; justify-content: flex-end;
             pointer-events: none;
         }
 
-        /* Medidor Táctico AR */
-        .tactical-meter {
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-right: 3px solid var(--corp-red);
-            padding: 10px 15px;
-            border-radius: 4px;
-            display: flex; flex-direction: column;
-            backdrop-filter: blur(5px);
-            min-width: 120px;
+        /* HUD Superior */
+        .ar-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            padding-left: 90px;
+            display: flex;
+            justify-content: flex-end;
+            pointer-events: none;
+            z-index: 100;
         }
-        .tm-label { font-size: 10px; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
-        .tm-value { font-size: 28px; font-weight: 900; color: var(--corp-red); font-family: monospace; text-align: right; }
-        .tm-bar { width: 100%; height: 4px; background: #333; margin-top: 5px; }
-        .tm-fill { height: 100%; width: 0%; background: var(--corp-red); transition: width 0.1s; }
 
-        /* OVERLAY INFERIOR (CONTROLES) */
+        .hud-meter {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-right: 4px solid var(--primary-red);
+            border-radius: 8px;
+            padding: 16px 20px;
+            min-width: 140px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .hud-label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            color: var(--light-gray);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .hud-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-red);
+            text-shadow: 0 0 20px rgba(215, 25, 32, 0.6);
+            line-height: 1;
+            text-align: right;
+        }
+
+        .hud-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .hud-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%);
+            border-radius: 3px;
+            transition: width 0.2s ease-out;
+            box-shadow: 0 0 10px rgba(215, 25, 32, 0.8);
+        }
+
+        /* Instrucciones AR */
+        .ar-instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 50;
+            animation: fadeInScale 1s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .instruction-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .instruction-text {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--pure-white);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .instruction-subtext {
+            font-size: 14px;
+            color: var(--light-gray);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Controles AR (Botones) */
         .ar-controls {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
-            padding: 40px 20px;
-            display: flex; flex-direction: column; align-items: center;
-            pointer-events: auto; /* Reactivar toques */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, transparent 100%);
+            padding: 50px 30px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            pointer-events: auto;
+            z-index: 100;
         }
 
-        .guide-msg {
-            color: #fff; font-size: 16px; margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8); text-align: center;
-            opacity: 0.8;
+        .ar-status-text {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            color: var(--pure-white);
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            min-height: 24px;
         }
 
-        .btn-premium {
-            background: var(--corp-white); color: var(--corp-black);
-            border: none; padding: 18px 40px; border-radius: 50px;
-            font-size: 16px; font-weight: 900; text-transform: uppercase;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-            width: 100%; max-width: 320px; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: none; /* Se activa por JS */
-        }
-        
-        #btn-start-ar { display: block; background: var(--corp-red); color: white; box-shadow: 0 0 20px rgba(215, 25, 32, 0.4); }
-        #btn-protect-ar { background: var(--state-safe); color: white; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
-
-        .btn-premium:active { transform: scale(0.96); }
-
-        /* ALERTA ROJA PANTALLA COMPLETA */
-        .hazard-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 50;
-            animation: pulse-hazard 1s infinite alternate;
+        .btn-ar {
+            width: 100%;
+            max-width: 360px;
+            padding: 20px 32px;
+            background: var(--pure-white);
+            color: var(--deep-black);
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.2);
+            transition: all var(--transition-fast);
             display: none;
         }
-        @keyframes pulse-hazard {
-            from { box-shadow: inset 0 0 0 transparent; }
-            to { box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.6); }
+
+        .btn-ar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
+        .btn-ar:active::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .btn-ar:active {
+            transform: scale(0.96);
+        }
+
+        .btn-ar.visible {
+            display: block;
+        }
+
+        #btnStartAR {
+            background: var(--primary-red);
+            color: var(--pure-white);
+            box-shadow: 0 8px 32px rgba(215, 25, 32, 0.4);
+        }
+
+        #btnProtectAR {
+            background: var(--safe);
+            color: var(--pure-white);
+            box-shadow: 0 8px 32px rgba(52, 199, 89, 0.4);
+        }
+
+        /* Overlay de Peligro */
+        .danger-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 80;
+            display: none;
+            animation: dangerPulse 1.5s infinite;
+        }
+
+        .danger-overlay.active {
+            display: block;
+        }
+
+        @keyframes dangerPulse {
+            0%, 100% {
+                box-shadow: inset 0 0 0 rgba(215, 25, 32, 0);
+            }
+            50% {
+                box-shadow: inset 0 0 120px rgba(215, 25, 32, 0.4);
+            }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--pure-white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===================================================================
+           UTILIDADES GLOBALES
+           =================================================================== */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animaciones de entrada/salida */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===================================================================
+           RESPONSIVE
+           =================================================================== */
+        @media (max-width: 400px) {
+            .home-header h1 {
+                font-size: 36px;
+            }
+            
+            .meter-display {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .db-value {
+                font-size: 72px;
+            }
+        }
+
+        /* ===================================================================
+           ESTILOS ESPECÍFICOS DE A-FRAME (OCULTOS POR DEFECTO)
+           =================================================================== */
+        a-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            visibility: hidden;
+        }
+
+        a-scene.active {
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
 
-    <div id="hazard-layer" class="hazard-overlay"></div>
+    <!-- Overlay de Peligro Global -->
+    <div id="dangerOverlay" class="danger-overlay"></div>
 
-    <div id="view-home" class="view-section view-active">
-        <div class="brand-header">
+    <!-- ===================================================================
+         VISTA 1: HOME (MENÚ PRINCIPAL)
+         =================================================================== -->
+    <div id="home" class="view active">
+        <div class="home-header">
+            <div class="logo-container">
+                <div class="logo-icon">🎧</div>
+            </div>
             <h1>Safety Suite</h1>
-            <div class="brand-line"></div>
-            <p>SISTEMA DE PROTECCIÓN AUDITIVA</p>
+            <div class="accent-line"></div>
+            <p>Sistema de Protección Auditiva</p>
         </div>
 
-        <div class="menu-options">
-            <div class="menu-card" onclick="Router.go('meter')">
+        <div class="menu-grid">
+            <div class="menu-item" data-nav="meter">
                 <div class="menu-icon">🎙️</div>
-                <div class="menu-info">
+                <div class="menu-content">
                     <h3>Medidor Ambiental</h3>
-                    <p>Análisis de dB en tiempo real</p>
+                    <p>Análisis de decibelios en tiempo real</p>
                 </div>
-                <div class="arrow-indicator">→</div>
+                <div class="menu-arrow">→</div>
             </div>
 
-            <div class="menu-card" onclick="Router.go('ar')">
+            <div class="menu-item" data-nav="ar">
                 <div class="menu-icon">🥽</div>
-                <div class="menu-info">
+                <div class="menu-content">
                     <h3>Simulación AR</h3>
-                    <p>Experiencia inmersiva EPP</p>
+                    <p>Experiencia inmersiva de protección</p>
                 </div>
-                <div class="arrow-indicator">→</div>
-            </div>
-        </div>
-        
-        <p style="position: absolute; bottom: 20px; color: #444; font-size: 10px; font-family: monospace;">LANXESS INITIATIVE v8.0</p>
-    </div>
-
-    <div id="view-meter" class="view-section">
-        <div class="nav-back-btn" onclick="Router.go('home')"></div>
-
-        <div class="meter-ui-circle" id="meter-circle">
-            <div id="real-db-val">--</div>
-            <div id="real-db-unit">dB SPL</div>
-            <div class="status-badge" id="meter-badge">INICIANDO</div>
-        </div>
-
-        <div style="padding: 20px; text-align: center; max-width: 300px; color: #aaa; font-size: 14px; line-height: 1.5;">
-            El micrófono analizará el ruido ambiente. Si el círculo se torna <span style="color:var(--corp-red)">ROJO</span>, el nivel es perjudicial.
-        </div>
-
-        <canvas id="wave-canvas"></canvas>
-    </div>
-
-    <div id="view-ar" class="view-section">
-        <div class="nav-back-btn" onclick="Router.go('home')"></div>
-
-        <div class="ar-hud-top">
-            <div class="tactical-meter">
-                <div class="tm-label">SIMULACIÓN RUIDO</div>
-                <div class="tm-value" id="ar-db-val">0 dB</div>
-                <div class="tm-bar"><div class="tm-fill" id="ar-db-bar"></div></div>
+                <div class="menu-arrow">→</div>
             </div>
         </div>
 
+        <div class="home-footer">
+            LANXESS INITIATIVE • v9.0 PRO
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         VISTA 2: MEDIDOR DE DECIBELIOS
+         =================================================================== -->
+    <div id="meter" class="view">
+        <div class="btn-back" data-nav="home"></div>
+
+        <div class="meter-display">
+            <div class="meter-circle" id="meterCircle">
+                <div class="db-value" id="dbValue">--</div>
+                <div class="db-unit">dB SPL</div>
+                <div class="status-indicator" id="statusIndicator">INICIANDO</div>
+            </div>
+        </div>
+
+        <div class="wave-visualizer">
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <div class="meter-info">
+            <p>
+                El micrófono analiza el ruido ambiente en tiempo real. 
+                Cuando el medidor se torna <span class="highlight">ROJO</span>, 
+                el nivel de decibelios es perjudicial para tu audición.
+            </p>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         VISTA 3: SIMULADOR AR
+         =================================================================== -->
+    <div id="ar" class="view">
+        <div class="btn-back" data-nav="home"></div>
+
+        <!-- HUD Superior -->
+        <div class="ar-hud">
+            <div class="hud-meter">
+                <div class="hud-label">Simulación Ruido</div>
+                <div class="hud-value" id="hudValue">0 dB</div>
+                <div class="hud-bar">
+                    <div class="hud-fill" id="hudFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="ar-instructions" id="arInstructions">
+            <div class="instruction-icon">📱</div>
+            <div class="instruction-text">Apunta al Marcador AR</div>
+            <div class="instruction-subtext">Escanea el código QR de seguridad</div>
+        </div>
+
+        <!-- Controles -->
         <div class="ar-controls">
-            <div class="guide-msg" id="ar-guide-text">Apunta al Marcador de Seguridad</div>
-            
-            <button id="btn-start-ar" class="btn-premium">🔊 INICIAR SIMULACIÓN</button>
-            <button id="btn-protect-ar" class="btn-premium">🎧 PONERSE PROTECCIÓN</button>
+            <div class="ar-status-text" id="arStatusText"></div>
+            <button id="btnStartAR" class="btn-ar visible">
+                🔊 INICIAR SIMULACIÓN
+            </button>
+            <button id="btnProtectAR" class="btn-ar">
+                🎧 PONERSE PROTECCIÓN
+            </button>
         </div>
     </div>
 
+    <!-- ===================================================================
+         ESCENA A-FRAME (AR)
+         =================================================================== -->
     <a-scene 
+        id="arScene"
         embedded 
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; colorManagement: true;"
-        style="position: absolute; top: 0; left: 0; z-index: 1;">
+        renderer="logarithmicDepthBuffer: true; colorManagement: true; antialias: true;"
+        loading-screen="enabled: false;">
 
-        <a-light type="ambient" intensity="0.5"></a-light>
-        <a-light type="directional" position="1 2 2" intensity="1.5"></a-light>
-        <a-light type="point" color="#D71920" intensity="0.8" position="-1 1 0"></a-light>
+        <!-- Iluminación -->
+        <a-light type="ambient" intensity="0.6"></a-light>
+        <a-light type="directional" position="2 3 1" intensity="1.2"></a-light>
+        <a-light type="point" color="#D71920" intensity="0.8" position="-1.5 1 0"></a-light>
 
-        <a-marker type="pattern" url="pattern-marker.patt" smooth="true" smoothCount="5">
-            <a-entity id="ar-root" visible="false">
+        <!-- Marcador AR -->
+        <a-marker 
+            type="pattern" 
+            url="pattern-marker.patt" 
+            smooth="true" 
+            smoothCount="5"
+            id="arMarker">
+            
+            <!-- Contenedor Principal -->
+            <a-entity id="arRoot" visible="false">
                 
-                <a-entity id="headphones-3d" position="0 0.5 0">
-                    <a-animation attribute="position" to="0 0.6 0" dir="alternate" dur="2000" repeat="indefinite" easing="ease-in-out"></a-animation>
+                <!-- AURICULARES 3D MEJORADOS -->
+                <a-entity id="headphones" position="0 0.5 0" rotation="0 0 0">
                     
-                    <a-torus color="#111" radius="0.55" radius-tubular="0.08" arc="190" rotation="90 0 0" position="0 0.25 0"></a-torus>
-                    <a-torus color="#000" radius="0.53" radius-tubular="0.09" arc="150" rotation="90 0 0" position="0 0.24 0"></a-torus>
+                    <!-- Animación de flotación -->
+                    <a-animation 
+                        attribute="position" 
+                        from="0 0.5 0" 
+                        to="0 0.65 0" 
+                        direction="alternate" 
+                        dur="2500" 
+                        repeat="indefinite" 
+                        easing="ease-in-out-sine">
+                    </a-animation>
                     
-                    <a-entity position="-0.58 0.25 0">
-                        <a-cylinder color="#D71920" height="0.25" radius="0.28" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#222" radius="0.28" radius-tubular="0.09" rotation="0 90 0" position="-0.08 0 0" scale="1 1 0.6"></a-torus>
-                        <a-text value="PELIGRO" color="white" rotation="0 -90 0" position="-0.3 0 0" align="center" width="2.5"></a-text>
+                    <!-- Animación de rotación continua -->
+                    <a-animation 
+                        attribute="rotation" 
+                        from="0 0 0" 
+                        to="0 360 0" 
+                        dur="8000" 
+                        repeat="indefinite" 
+                        easing="linear">
+                    </a-animation>
+
+                    <!-- Banda Superior (Diadema) -->
+                    <a-entity position="0 0.3 0">
+                        <!-- Arco principal -->
+                        <a-torus 
+                            color="#0f0f0f" 
+                            radius="0.6" 
+                            radius-tubular="0.09" 
+                            arc="200" 
+                            rotation="90 0 0"
+                            material="shader: standard; roughness: 0.3; metalness: 0.7;">
+                        </a-torus>
+                        
+                        <!-- Arco interno (acolchado) -->
+                        <a-torus 
+                            color="#1a1a1a" 
+                            radius="0.58" 
+                            radius-tubular="0.11" 
+                            arc="160" 
+                            rotation="90 0 0" 
+                            position="0 -0.01 0"
+                            material="shader: standard; roughness: 0.8; metalness: 0.2;">
+                        </a-torus>
                     </a-entity>
 
-                    <a-entity position="0.58 0.25 0">
-                        <a-cylinder color="#D71920" height="0.25" radius="0.28" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#222" radius="0.28" radius-tubular="0.09" rotation="0 90 0" position="0.08 0 0" scale="1 1 0.6"></a-torus>
-                        <a-text value="RUIDO" color="white" rotation="0 90 0" position="0.3 0 0" align="center" width="2.5"></a-text>
+                    <!-- Auricular IZQUIERDO -->
+                    <a-entity position="-0.62 0.3 0" rotation="0 -15 0">
+                        <!-- Carcasa principal -->
+                        <a-cylinder 
+                            color="#D71920" 
+                            height="0.28" 
+                            radius="0.3" 
+                            rotation="0 0 90"
+                            material="shader: standard; roughness: 0.2; metalness: 0.8;">
+                        </a-cylinder>
+                        
+                        <!-- Almohadilla (oreja) -->
+                        <a-torus 
+                            color="#2a2a2a" 
+                            radius="0.3" 
+                            radius-tubular="0.1" 
+                            rotation="0 90 0" 
+                            position="-0.1 0 0" 
+                            scale="1 1 0.5"
+                            material="shader: standard; roughness: 0.9; metalness: 0.1;">
+                        </a-torus>
+                        
+                        <!-- Texto de advertencia -->
+                        <a-text 
+                            value="PELIGRO" 
+                            color="white" 
+                            align="center" 
+                            width="2.5" 
+                            position="-0.32 0 0" 
+                            rotation="0 -90 0"
+                            font="mozillavr">
+                        </a-text>
+                        
+                        <!-- Detalle LED rojo -->
+                        <a-sphere 
+                            color="#ff0000" 
+                            radius="0.04" 
+                            position="-0.25 0.12 0"
+                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.8;">
+                            <a-animation 
+                                attribute="material.emissiveIntensity" 
+                                from="0.3" 
+                                to="1" 
+                                direction="alternate" 
+                                dur="800" 
+                                repeat="indefinite">
+                            </a-animation>
+                        </a-sphere>
+                    </a-entity>
+
+                    <!-- Auricular DERECHO -->
+                    <a-entity position="0.62 0.3 0" rotation="0 15 0">
+                        <!-- Carcasa principal -->
+                        <a-cylinder 
+                            color="#D71920" 
+                            height="0.28" 
+                            radius="0.3" 
+                            rotation="0 0 90"
+                            material="shader: standard; roughness: 0.2; metalness: 0.8;">
+                        </a-cylinder>
+                        
+                        <!-- Almohadilla (oreja) -->
+                        <a-torus 
+                            color="#2a2a2a" 
+                            radius="0.3" 
+                            radius-tubular="0.1" 
+                            rotation="0 90 0" 
+                            position="0.1 0 0" 
+                            scale="1 1 0.5"
+                            material="shader: standard; roughness: 0.9; metalness: 0.1;">
+                        </a-torus>
+                        
+                        <!-- Texto de advertencia -->
+                        <a-text 
+                            value="RUIDO" 
+                            color="white" 
+                            align="center" 
+                            width="2.5" 
+                            position="0.32 0 0" 
+                            rotation="0 90 0"
+                            font="mozillavr">
+                        </a-text>
+                        
+                        <!-- Detalle LED rojo -->
+                        <a-sphere 
+                            color="#ff0000" 
+                            radius="0.04" 
+                            position="0.25 0.12 0"
+                            material="shader: standard; emissive: #ff0000; emissiveIntensity: 0.8;">
+                            <a-animation 
+                                attribute="material.emissiveIntensity" 
+                                from="0.3" 
+                                to="1" 
+                                direction="alternate" 
+                                dur="800" 
+                                repeat="indefinite">
+                            </a-animation>
+                        </a-sphere>
+                    </a-entity>
+
+                    <!-- Efectos de partículas (opcional) -->
+                    <a-entity id="particles" position="0 0.3 0">
+                        <a-entity 
+                            position="0 0 0"
+                            particle-system="preset: dust; color: #D71920, #ff0000; particleCount: 50; maxAge: 2; size: 0.5; opacity: 0.3;">
+                        </a-entity>
                     </a-entity>
                 </a-entity>
 
-                <a-entity id="final-panel" visible="false" position="0 0.5 0.5" rotation="-45 0 0" scale="0 0 0">
+                <!-- PANEL FINAL (MENSAJE) -->
+                <a-entity 
+                    id="messagePanel" 
+                    visible="false" 
+                    position="0 0.5 0.6" 
+                    rotation="-30 0 0"
+                    scale="0 0 0">
                     
-                    <a-plane color="#000" opacity="0.9" width="4.5" height="3" material="shader: standard; roughness: 0.2; metalness: 0.8"></a-plane>
+                    <!-- Fondo Negro -->
+                    <a-plane 
+                        color="#000000" 
+                        opacity="0.95" 
+                        width="5" 
+                        height="3.5"
+                        material="shader: standard; roughness: 0.2; metalness: 0.9;">
+                    </a-plane>
                     
-                    <a-plane color="#D71920" width="4.4" height="2.9" position="0 0 -0.01"></a-plane>
+                    <!-- Borde Rojo -->
+                    <a-plane 
+                        color="#D71920" 
+                        width="4.9" 
+                        height="3.4" 
+                        position="0 0 -0.005">
+                    </a-plane>
+                    
+                    <!-- Contenido Blanco -->
+                    <a-plane 
+                        color="#000000" 
+                        opacity="0.9" 
+                        width="4.8" 
+                        height="3.3" 
+                        position="0 0 -0.01">
+                    </a-plane>
 
-                    <a-text value="RECORDATORIO DE SEGURIDAD" color="#D71920" align="center" width="5" position="0 1.1 0.1" font="exo2bold"></a-text>
+                    <!-- Título -->
+                    <a-text 
+                        value="RECORDATORIO DE SEGURIDAD" 
+                        color="#D71920" 
+                        align="center" 
+                        width="5.5" 
+                        position="0 1.3 0.05"
+                        font="mozillavr">
+                    </a-text>
                     
-                    <a-text id="typewriter-text" value="" color="#FFF" align="center" width="4.2" position="0 0.2 0.1" font="roboto" wrap-count="30" line-height="60"></a-text>
+                    <!-- Línea decorativa -->
+                    <a-plane 
+                        color="#D71920" 
+                        width="3" 
+                        height="0.02" 
+                        position="0 1.1 0.05">
+                    </a-plane>
 
-                    <a-text value="HERRAMIENTA DIARIA LANXESS" color="#666" align="center" width="3" position="0 -1.2 0.1" font="roboto"></a-text>
+                    <!-- Texto Principal (Typewriter) -->
+                    <a-text 
+                        id="messageText" 
+                        value="" 
+                        color="#FFFFFF" 
+                        align="center" 
+                        width="4.6" 
+                        position="0 0.1 0.05" 
+                        wrap-count="32"
+                        line-height="55"
+                        font="mozillavr">
+                    </a-text>
+
+                    <!-- Footer -->
+                    <a-text 
+                        value="HERRAMIENTA DIARIA LANXESS" 
+                        color="#666666" 
+                        align="center" 
+                        width="3.5" 
+                        position="0 -1.4 0.05"
+                        font="mozillavr">
+                    </a-text>
+
+                    <!-- Icono de Shield -->
+                    <a-text 
+                        value="🛡️" 
+                        align="center" 
+                        width="2" 
+                        position="0 -1.6 0.05">
+                    </a-text>
                 </a-entity>
 
             </a-entity>
         </a-marker>
+
         <a-entity camera></a-entity>
     </a-scene>
 
+    <!-- ===================================================================
+         JAVASCRIPT PRINCIPAL
+         =================================================================== -->
     <script>
+        // ===================================================================
         // CONFIGURACIÓN GLOBAL
-        const Config = {
+        // ===================================================================
+        const CONFIG = {
             audioFile: 'Sonidos_De_Fabrica.wav',
-            finalMessage: "No te olvides de usar proteccion auditiva en el hogar o zonas de trabajo.\n\nLos decibelios altos pueden perjudicar tu salud auditiva de forma permanente.\n\nUsa esta herramienta a diario para monitorear tu entorno.",
-            typewriterSpeed: 40 // ms por letra
+            finalMessage: `No te olvides de usar protección auditiva en el hogar o zonas de trabajo.
+
+Los decibelios altos pueden perjudicar tu salud auditiva de forma permanente.
+
+Usa esta herramienta a diario para monitorear tu entorno.`,
+            typewriterSpeed: 35, // ms por letra
+            dbThresholds: {
+                safe: 60,
+                warning: 85,
+                danger: 95
+            }
         };
 
-        // --- SISTEMA DE NAVEGACIÓN (ROUTER) ---
+        // ===================================================================
+        // SISTEMA DE NAVEGACIÓN (ROUTER)
+        // ===================================================================
         const Router = {
-            current: 'home',
-            go: (viewId) => {
-                // Ocultar todas las vistas
-                document.querySelectorAll('.view-section').forEach(el => {
-                    el.classList.remove('view-active');
-                    el.style.opacity = '0'; // Fade out
-                });
-
-                // Activar la nueva vista con retardo para animación
-                const target = document.getElementById(`view-${viewId}`);
-                target.classList.add('view-active');
-                
-                // Forzar reflow para la transición CSS
-                setTimeout(() => target.style.opacity = '1', 50);
-
-                // Lógica Específica
-                if (viewId === 'home') {
-                    RealMeter.stop();
-                    ARSystem.pause();
-                } else if (viewId === 'meter') {
-                    RealMeter.start();
-                    ARSystem.pause();
-                } else if (viewId === 'ar') {
-                    RealMeter.stop();
-                    ARSystem.resume();
-                }
-            }
-        };
-
-        // --- SISTEMA DE TEXTO TYPEWRITER (A-FRAME COMPONENT) ---
-        // Este sistema inyecta el texto letra por letra en el panel 3D
-        const TypewriterSys = {
-            targetEntity: null,
-            timer: null,
+            currentView: 'home',
             
-            start: (text) => {
-                const entity = document.getElementById('typewriter-text');
-                let i = 0;
-                entity.setAttribute('value', ''); // Limpiar
-                
-                if(TypewriterSys.timer) clearInterval(TypewriterSys.timer);
-
-                TypewriterSys.timer = setInterval(() => {
-                    if (i < text.length) {
-                        // Añadir letra
-                        const currentVal = entity.getAttribute('value');
-                        entity.setAttribute('value', currentVal + text.charAt(i));
-                        i++;
-                    } else {
-                        clearInterval(TypewriterSys.timer);
-                    }
-                }, Config.typewriterSpeed);
-            }
-        };
-
-        // --- SISTEMA AR (SIMULADOR) ---
-        const ARSystem = {
-            audioCtx: null, source: null, gain: null, filter: null,
-            isProtected: false, isLoaded: false, interval: null,
-
-            init: () => {
-                document.getElementById('btn-start-ar').addEventListener('click', ARSystem.start);
-                document.getElementById('btn-protect-ar').addEventListener('click', ARSystem.protect);
-                
-                // Detección de marcador
-                document.querySelector('a-marker').addEventListener('markerFound', () => {
-                    document.getElementById('ar-root').setAttribute('visible', true);
-                    document.getElementById('ar-guide-text').style.display = 'none';
-                    if(!ARSystem.isLoaded) document.getElementById('btn-start-ar').style.display = 'block';
+            init() {
+                // Event listeners para navegación
+                document.querySelectorAll('[data-nav]').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        const target = e.currentTarget.getAttribute('data-nav');
+                        this.navigate(target);
+                    });
                 });
             },
 
-            start: async () => {
-                const btn = document.getElementById('btn-start-ar');
-                btn.innerText = "CARGANDO AUDIO...";
-                
+            navigate(viewId) {
+                if (this.currentView === viewId) return;
+
+                // Ocultar vista actual
+                const currentEl = document.getElementById(this.currentView);
+                if (currentEl) {
+                    currentEl.classList.remove('active');
+                }
+
+                // Mostrar nueva vista
+                const targetEl = document.getElementById(viewId);
+                if (targetEl) {
+                    setTimeout(() => {
+                        targetEl.classList.add('active');
+                    }, 100);
+                }
+
+                // Actualizar estado
+                this.currentView = viewId;
+
+                // Ejecutar lógica específica por vista
+                this.handleViewLogic(viewId);
+            },
+
+            handleViewLogic(viewId) {
+                switch(viewId) {
+                    case 'home':
+                        MeterSystem.stop();
+                        ARSystem.pause();
+                        break;
+                    case 'meter':
+                        MeterSystem.start();
+                        ARSystem.pause();
+                        break;
+                    case 'ar':
+                        MeterSystem.stop();
+                        ARSystem.init();
+                        break;
+                }
+            }
+        };
+
+        // ===================================================================
+        // SISTEMA DE MEDIDOR DE DECIBELIOS (REAL)
+        // ===================================================================
+        const MeterSystem = {
+            active: false,
+            stream: null,
+            audioContext: null,
+            analyser: null,
+            dataArray: null,
+            canvas: null,
+            canvasContext: null,
+
+            async start() {
+                if (this.active) return;
+
                 try {
-                    const AC = window.AudioContext || window.webkitAudioContext;
-                    ARSystem.audioCtx = new AC();
-                    
-                    const resp = await fetch(Config.audioFile);
-                    if(!resp.ok) throw new Error("Audio missing");
-                    const buf = await resp.arrayBuffer();
-                    const decoded = await ARSystem.audioCtx.decodeAudioData(buf);
+                    // Solicitar permiso de micrófono
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            autoGainControl: false
+                        } 
+                    });
 
-                    ARSystem.source = ARSystem.audioCtx.createBufferSource();
-                    ARSystem.source.buffer = decoded;
-                    ARSystem.source.loop = true;
+                    // Configurar Web Audio API
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    this.analyser.smoothingTimeConstant = 0.8;
 
-                    ARSystem.filter = ARSystem.audioCtx.createBiquadFilter();
-                    ARSystem.filter.type = 'lowpass';
-                    ARSystem.filter.frequency.value = 22000;
+                    const source = this.audioContext.createMediaStreamSource(this.stream);
+                    source.connect(this.analyser);
 
-                    ARSystem.gain = ARSystem.audioCtx.createGain();
-                    ARSystem.gain.value = 1.0;
+                    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
 
-                    ARSystem.source.connect(ARSystem.filter).connect(ARSystem.gain).connect(ARSystem.audioCtx.destination);
-                    ARSystem.source.start(0);
+                    // Configurar canvas
+                    this.canvas = document.getElementById('waveCanvas');
+                    this.canvasContext = this.canvas.getContext('2d');
+                    this.canvas.width = this.canvas.offsetWidth;
+                    this.canvas.height = this.canvas.offsetHeight;
 
-                    // UI Updates
-                    ARSystem.isLoaded = true;
-                    btn.style.display = 'none';
-                    document.getElementById('btn-protect-ar').style.display = 'block';
-                    document.getElementById('hazard-layer').style.display = 'block'; // Alerta roja
-                    
-                    ARSystem.loopHUD();
+                    this.active = true;
+                    this.draw();
 
-                } catch (e) {
-                    alert("Error: No se encontró el audio. Verifica GitHub.");
-                    btn.innerText = "ERROR";
+                } catch (error) {
+                    console.error('Error al acceder al micrófono:', error);
+                    alert('No se pudo acceder al micrófono. Por favor, otorga los permisos necesarios.');
+                    Router.navigate('home');
                 }
             },
 
-            protect: () => {
-                if(ARSystem.isProtected) return;
-                ARSystem.isProtected = true;
+            stop() {
+                if (!this.active) return;
 
-                // 1. Audio Effect
-                const t = ARSystem.audioCtx.currentTime;
-                ARSystem.filter.frequency.exponentialRampToValueAtTime(300, t + 1.5);
-                ARSystem.gain.gain.exponentialRampToValueAtTime(0.2, t + 1.5);
-
-                // 2. Visuals
-                document.getElementById('btn-protect-ar').style.display = 'none';
-                document.getElementById('hazard-layer').style.display = 'none';
-                document.getElementById('ar-db-val').style.color = "#34c759";
-                document.getElementById('ar-db-bar').style.background = "#34c759";
-
-                // 3. ANIMACIÓN DE "VUELO" DE AURICULARES
-                const hp = document.getElementById('headphones-3d');
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
                 
-                // Tween Posición (Acercarse a cámara)
-                new TWEEN.Tween({z: 0, s: 1})
-                    .to({z: 2, s: 6}, 1000)
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+
+                this.active = false;
+            },
+
+            draw() {
+                if (!this.active) return;
+
+                requestAnimationFrame(() => this.draw());
+
+                this.analyser.getByteFrequencyData(this.dataArray);
+
+                // Calcular promedio
+                const average = this.dataArray.reduce((a, b) => a + b) / this.dataArray.length;
+                let db = Math.floor(average * 1.3);
+                
+                // Limitar rango
+                db = Math.max(30, Math.min(120, db));
+
+                // Actualizar UI
+                this.updateUI(db);
+                this.drawWaveform();
+            },
+
+            updateUI(db) {
+                const valueEl = document.getElementById('dbValue');
+                const circleEl = document.getElementById('meterCircle');
+                const badgeEl = document.getElementById('statusIndicator');
+
+                valueEl.textContent = db;
+
+                // Actualizar colores según umbral
+                if (db < CONFIG.dbThresholds.safe) {
+                    circleEl.style.borderColor = '#34c759';
+                    circleEl.classList.remove('danger');
+                    badgeEl.style.background = '#34c759';
+                    badgeEl.style.color = '#000';
+                    badgeEl.textContent = 'SEGURO';
+                } else if (db < CONFIG.dbThresholds.danger) {
+                    circleEl.style.borderColor = '#ffcc00';
+                    circleEl.classList.remove('danger');
+                    badgeEl.style.background = '#ffcc00';
+                    badgeEl.style.color = '#000';
+                    badgeEl.textContent = 'ALERTA';
+                } else {
+                    circleEl.style.borderColor = '#ff3b30';
+                    circleEl.classList.add('danger');
+                    badgeEl.style.background = '#ff3b30';
+                    badgeEl.style.color = '#fff';
+                    badgeEl.textContent = 'PELIGRO';
+                }
+            },
+
+            drawWaveform() {
+                if (!this.canvasContext) return;
+
+                const ctx = this.canvasContext;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+
+                // Limpiar canvas
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, width, height);
+
+                // Dibujar onda
+                const barWidth = (width / this.dataArray.length) * 2.5;
+                let x = 0;
+
+                for (let i = 0; i < this.dataArray.length; i++) {
+                    const barHeight = (this.dataArray[i] / 255) * height;
+                    
+                    // Gradiente
+                    const gradient = ctx.createLinearGradient(0, height - barHeight, 0, height);
+                    gradient.addColorStop(0, 'rgba(215, 25, 32, 0.8)');
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
+                    
+                    x += barWidth;
+                }
+            }
+        };
+
+        // ===================================================================
+        // SISTEMA AR (SIMULADOR)
+        // ===================================================================
+        const ARSystem = {
+            initialized: false,
+            audioContext: null,
+            source: null,
+            gainNode: null,
+            filterNode: null,
+            isProtected: false,
+            isAudioLoaded: false,
+            updateInterval: null,
+            markerDetected: false,
+
+            init() {
+                if (this.initialized) {
+                    this.resume();
+                    return;
+                }
+
+                // Configurar event listeners
+                this.setupEventListeners();
+                this.initialized = true;
+                this.resume();
+            },
+
+            setupEventListeners() {
+                // Botón iniciar simulación
+                document.getElementById('btnStartAR').addEventListener('click', () => {
+                    this.loadAudio();
+                });
+
+                // Botón ponerse protección
+                document.getElementById('btnProtectAR').addEventListener('click', () => {
+                    this.applyProtection();
+                });
+
+                // Detectar marcador
+                const marker = document.getElementById('arMarker');
+                
+                marker.addEventListener('markerFound', () => {
+                    this.onMarkerFound();
+                });
+
+                marker.addEventListener('markerLost', () => {
+                    this.onMarkerLost();
+                });
+            },
+
+            onMarkerFound() {
+                this.markerDetected = true;
+                document.getElementById('arRoot').setAttribute('visible', 'true');
+                document.getElementById('arInstructions').style.display = 'none';
+                
+                if (!this.isAudioLoaded) {
+                    document.getElementById('arStatusText').textContent = 'Marcador detectado';
+                }
+            },
+
+            onMarkerLost() {
+                this.markerDetected = false;
+                // No ocultar el contenido inmediatamente para mejor UX
+            },
+
+            async loadAudio() {
+                const btn = document.getElementById('btnStartAR');
+                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
+                btn.disabled = true;
+
+                try {
+                    // Crear contexto de audio
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+
+                    // Cargar archivo de audio
+                    const response = await fetch(CONFIG.audioFile);
+                    if (!response.ok) throw new Error('Audio no encontrado');
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+
+                    // Configurar nodos de audio
+                    this.source = this.audioContext.createBufferSource();
+                    this.source.buffer = audioBuffer;
+                    this.source.loop = true;
+
+                    // Filtro para simular auriculares
+                    this.filterNode = this.audioContext.createBiquadFilter();
+                    this.filterNode.type = 'lowpass';
+                    this.filterNode.frequency.value = 22000;
+
+                    // Control de ganancia
+                    this.gainNode = this.audioContext.createGain();
+                    this.gainNode.gain.value = 1.0;
+
+                    // Conectar nodos
+                    this.source
+                        .connect(this.filterNode)
+                        .connect(this.gainNode)
+                        .connect(this.audioContext.destination);
+
+                    // Iniciar reproducción
+                    this.source.start(0);
+
+                    // Actualizar UI
+                    this.isAudioLoaded = true;
+                    btn.style.display = 'none';
+                    document.getElementById('btnProtectAR').classList.add('visible');
+                    document.getElementById('arStatusText').textContent = '¡Nivel peligroso de ruido!';
+                    document.getElementById('dangerOverlay').classList.add('active');
+
+                    // Iniciar actualización de HUD
+                    this.startHUDUpdate();
+
+                } catch (error) {
+                    console.error('Error al cargar audio:', error);
+                    alert('Error: No se pudo cargar el archivo de audio. Asegúrate de que "Sonidos_De_Fabrica.wav" esté disponible en el repositorio.');
+                    btn.textContent = 'ERROR AL CARGAR';
+                    btn.style.background = '#ff3b30';
+                }
+            },
+
+            startHUDUpdate() {
+                if (this.updateInterval) clearInterval(this.updateInterval);
+
+                this.updateInterval = setInterval(() => {
+                    if (!this.isAudioLoaded) return;
+
+                    let db;
+                    if (!this.isProtected) {
+                        // Simular ruido peligroso
+                        db = 95 + Math.floor(Math.random() * 15);
+                    } else {
+                        // Simular protección efectiva
+                        db = 60 + Math.floor(Math.random() * 10);
+                    }
+
+                    // Actualizar HUD
+                    document.getElementById('hudValue').textContent = `${db} dB`;
+                    const percentage = Math.min(100, (db / 120) * 100);
+                    document.getElementById('hudFill').style.width = `${percentage}%`;
+
+                }, 150);
+            },
+
+            applyProtection() {
+                if (this.isProtected || !this.isAudioLoaded) return;
+
+                this.isProtected = true;
+
+                // Efectos de audio
+                const currentTime = this.audioContext.currentTime;
+                this.filterNode.frequency.exponentialRampToValueAtTime(400, currentTime + 1.8);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.15, currentTime + 1.8);
+
+                // Actualizar UI
+                document.getElementById('btnProtectAR').style.display = 'none';
+                document.getElementById('arStatusText').textContent = 'Protección aplicada';
+                document.getElementById('dangerOverlay').classList.remove('active');
+                
+                // Cambiar color del HUD a verde
+                document.getElementById('hudValue').style.color = '#34c759';
+                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #66ff66 100%)';
+
+                // Animar auriculares
+                this.animateHeadphones();
+            },
+
+            animateHeadphones() {
+                const headphones = document.getElementById('headphones');
+                
+                // Detener animaciones previas
+                headphones.removeAttribute('animation');
+                headphones.removeAttribute('animation__2');
+
+                // Animación de acercamiento a cámara
+                new TWEEN.Tween({ z: 0, scale: 1 })
+                    .to({ z: 3.5, scale: 8 }, 1200)
                     .easing(TWEEN.Easing.Quadratic.In)
                     .onUpdate((obj) => {
-                        hp.setAttribute('position', `0 0.5 ${obj.z}`);
-                        hp.setAttribute('scale', `${obj.s} ${obj.s} ${obj.s}`);
+                        headphones.setAttribute('position', `0 0.5 ${obj.z}`);
+                        headphones.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
                     })
                     .onComplete(() => {
-                        hp.setAttribute('visible', false);
+                        // Ocultar auriculares
+                        headphones.setAttribute('visible', 'false');
                         
-                        // MOSTRAR PANEL FINAL
-                        const panel = document.getElementById('final-panel');
-                        panel.setAttribute('visible', true);
-                        
-                        // Animar escala del panel (Pop up)
-                        new TWEEN.Tween({s: 0}).to({s: 1}, 800)
-                            .easing(TWEEN.Easing.Elastic.Out)
-                            .onUpdate((o) => panel.setAttribute('scale', `${o.s} ${o.s} ${o.s}`))
-                            .start();
-                        
-                        // Iniciar efecto máquina de escribir
-                        TypewriterSys.start(Config.finalMessage);
+                        // Mostrar panel de mensaje
+                        this.showMessagePanel();
                     })
                     .start();
             },
 
-            loopHUD: () => {
-                ARSystem.interval = setInterval(() => {
-                    if(!ARSystem.isLoaded) return;
-                    let db = 0;
-                    if (!ARSystem.isProtected) db = Math.floor(Math.random()*(105-95)+95);
-                    else db = Math.floor(Math.random()*(75-65)+65);
-                    
-                    document.getElementById('ar-db-val').innerText = db + " dB";
-                    document.getElementById('ar-db-bar').style.width = (db/110)*100 + "%";
-                }, 100);
+            showMessagePanel() {
+                const panel = document.getElementById('messagePanel');
+                panel.setAttribute('visible', 'true');
+
+                // Animación de aparición (escala)
+                new TWEEN.Tween({ scale: 0 })
+                    .to({ scale: 1 }, 900)
+                    .easing(TWEEN.Easing.Elastic.Out)
+                    .onUpdate((obj) => {
+                        panel.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
+                    })
+                    .onComplete(() => {
+                        // Iniciar efecto typewriter
+                        this.startTypewriter();
+                    })
+                    .start();
             },
 
-            pause: () => {
-                document.querySelector('a-scene').style.visibility = 'hidden';
-                if(ARSystem.audioCtx) ARSystem.audioCtx.suspend();
-            },
-            resume: () => {
-                document.querySelector('a-scene').style.visibility = 'visible';
-                if(ARSystem.audioCtx) ARSystem.audioCtx.resume();
-            }
-        };
+            startTypewriter() {
+                const textEl = document.getElementById('messageText');
+                const message = CONFIG.finalMessage;
+                let index = 0;
 
-        // --- SISTEMA MEDIDOR REAL ---
-        const RealMeter = {
-            active: false, stream: null, ctx: null, analyser: null,
-            start: async () => {
-                if(RealMeter.active) return;
-                try {
-                    RealMeter.stream = await navigator.mediaDevices.getUserMedia({audio: true});
-                    RealMeter.ctx = new (window.AudioContext||window.webkitAudioContext)();
-                    RealMeter.analyser = RealMeter.ctx.createAnalyser();
-                    const src = RealMeter.ctx.createMediaStreamSource(RealMeter.stream);
-                    src.connect(RealMeter.analyser);
-                    RealMeter.active = true;
-                    RealMeter.draw();
-                } catch(e) {
-                    alert("Permiso de micrófono denegado.");
-                    Router.go('home');
+                textEl.setAttribute('value', '');
+
+                const typeInterval = setInterval(() => {
+                    if (index < message.length) {
+                        const currentText = textEl.getAttribute('value');
+                        textEl.setAttribute('value', currentText + message.charAt(index));
+                        index++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, CONFIG.typewriterSpeed);
+            },
+
+            pause() {
+                document.getElementById('arScene').classList.remove('active');
+                if (this.audioContext && this.audioContext.state === 'running') {
+                    this.audioContext.suspend();
+                }
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
                 }
             },
-            stop: () => {
-                if(!RealMeter.active) return;
-                RealMeter.stream.getTracks().forEach(t=>t.stop());
-                RealMeter.ctx.close();
-                RealMeter.active = false;
-            },
-            draw: () => {
-                if(!RealMeter.active) return;
-                requestAnimationFrame(RealMeter.draw);
-                
-                const buffer = new Uint8Array(RealMeter.analyser.frequencyBinCount);
-                RealMeter.analyser.getByteFrequencyData(buffer);
-                
-                // Promedio
-                const avg = buffer.reduce((a,b)=>a+b) / buffer.length;
-                let db = Math.floor(avg * 1.5); 
-                if(db>110) db=110; if(db<30) db=30;
 
-                // UI
-                const circle = document.getElementById('meter-circle');
-                const badge = document.getElementById('meter-badge');
-                document.getElementById('real-db-val').innerText = db;
-
-                if(db < 60) {
-                    circle.style.borderColor = "#34c759"; badge.style.background="#34c759"; badge.innerText="SEGURO";
-                } else if(db < 85) {
-                    circle.style.borderColor = "#ffcc00"; badge.style.background="#ffcc00"; badge.innerText="ALERTA";
-                } else {
-                    circle.style.borderColor = "#ff3b30"; badge.style.background="#ff3b30"; badge.innerText="PELIGRO";
+            resume() {
+                document.getElementById('arScene').classList.add('active');
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
                 }
-
-                // Canvas Ondas
-                const cvs = document.getElementById('wave-canvas');
-                const c = cvs.getContext('2d');
-                c.clearRect(0,0,300,150);
-                c.fillStyle = `rgba(255,255,255,0.2)`;
-                const w = 300/buffer.length * 2.5;
-                let x = 0;
-                for(let i=0; i<buffer.length; i++) {
-                    c.fillRect(x, 150 - buffer[i]/2, w, buffer[i]/2);
-                    x += w + 1;
+                if (this.isAudioLoaded && !this.updateInterval) {
+                    this.startHUDUpdate();
                 }
             }
         };
 
-        // Bucle de Animación Global (TWEEN)
+        // ===================================================================
+        // SISTEMA DE ANIMACIÓN GLOBAL (TWEEN)
+        // ===================================================================
         function animate(time) {
             requestAnimationFrame(animate);
             TWEEN.update(time);
         }
         requestAnimationFrame(animate);
 
-        // INICIO
+        // ===================================================================
+        // INICIALIZACIÓN
+        // ===================================================================
         window.addEventListener('load', () => {
-            ARSystem.init();
-            console.log("System v8.0 Online");
+            Router.init();
+            console.log('%c🎧 Lanxess Safety Suite v9.0 PRO', 'color: #D71920; font-size: 16px; font-weight: bold;');
+            console.log('%cSistema iniciado correctamente', 'color: #34c759; font-size: 12px;');
         });
 
+        // Prevenir errores de A-Frame en consola
+        window.addEventListener('error', (e) => {
+            if (e.message.includes('A-Frame')) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
