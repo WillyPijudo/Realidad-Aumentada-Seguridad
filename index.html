@@ -3,175 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#111111">
-    <title>Seguridad Industrial AR</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>SafetyApp: Suite Industrial</title>
 
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
-        /* --- ESTILOS VISUALES CORREGIDOS --- */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap');
+        /* =========================================
+           ESTILOS GENERALES Y TIPOGRAFÍA
+           ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto:wght@400;900&display=swap');
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --primary: #f1c40f;   /* Amarillo Industrial */
+            --accent: #e67e22;    /* Naranja Alerta */
+            --danger: #ff4757;    /* Rojo Peligro */
+            --safe: #2ed573;      /* Verde Seguro */
+            --dark: #1e272e;      /* Gris Oscuro */
+            --glass: rgba(30, 39, 46, 0.95);
+            --font-tech: 'Rajdhani', sans-serif;
+            --font-body: 'Roboto', sans-serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 
         body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            /* dvh = Dynamic Viewport Height (Se adapta a la barra del navegador) */
-            height: 100dvh; 
+            margin: 0; padding: 0;
+            width: 100vw; height: 100dvh;
             background-color: #000;
-            font-family: 'Roboto', sans-serif;
+            font-family: var(--font-body);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            color: white;
         }
 
-        /* --- PANTALLA DE INICIO (OVERLAY) --- */
-        #start-screen {
-            position: absolute;
-            top: 0; left: 0;
+        /* SISTEMA DE VISTAS (SPA - Single Page App) */
+        .app-view {
+            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            z-index: 9999; /* Siempre encima de todo */
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .view-active {
             display: flex;
-            flex-direction: column;
-            justify-content: center; /* Centrado Vertical REAL */
-            align-items: center;     /* Centrado Horizontal REAL */
-            padding: 20px;
+            opacity: 1;
+            z-index: 100;
+        }
+
+        /* BOTONES GLOBALES */
+        .btn-icon-back {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white; width: 45px; height: 45px;
+            border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        /* =========================================
+           VISTA 1: HOME (MENÚ PRINCIPAL)
+           ========================================= */
+        #view-home {
+            background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
             text-align: center;
         }
 
-        .title-box {
-            margin-bottom: 40px;
-            border: 2px solid #f1c40f;
+        .logo-container {
+            margin-bottom: 50px;
+            border: 2px solid var(--primary);
             padding: 20px;
-            background: rgba(241, 196, 15, 0.1);
+            position: relative;
+        }
+        
+        .logo-container::before {
+            content: ''; position: absolute; top: -5px; left: -5px; 
+            width: 10px; height: 10px; background: var(--primary);
+        }
+        .logo-container::after {
+            content: ''; position: absolute; bottom: -5px; right: -5px; 
+            width: 10px; height: 10px; background: var(--primary);
         }
 
-        h1 {
-            color: #f1c40f;
-            font-size: 28px;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        h1.main-title {
+            font-family: var(--font-tech);
+            font-size: 42px; text-transform: uppercase;
+            margin: 0; color: var(--primary); letter-spacing: 2px;
+        }
+        p.subtitle { color: #bdc3c7; font-size: 14px; margin-top: 5px; }
+
+        .menu-grid {
+            display: grid; gap: 20px; width: 100%; max-width: 400px;
         }
 
-        p { color: #ccc; font-size: 16px; margin-top: 10px; max-width: 300px; line-height: 1.5; }
-
-        /* --- UI DURANTE LA EXPERIENCIA --- */
-        #hud-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1000;
-            pointer-events: none; /* Dejar pasar toques al 3D */
-            display: none; /* Oculto al inicio */
-            flex-direction: column;
-            justify-content: space-between;
+        .card-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 25px; border-radius: 15px;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center;
+            text-align: left;
         }
 
-        /* Panel Superior (Medidor) */
-        .top-panel {
-            padding: 20px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
-            display: flex; justify-content: center;
+        .card-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
+
+        .card-icon { font-size: 32px; margin-right: 20px; }
+        .card-text h3 { margin: 0; font-family: var(--font-tech); font-size: 22px; color: white; }
+        .card-text p { margin: 5px 0 0 0; font-size: 12px; color: #aaa; }
+
+
+        /* =========================================
+           VISTA 2: MEDIDOR REAL (MICRÓFONO)
+           ========================================= */
+        #view-meter {
+            background: #111;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 80px;
         }
 
-        #db-card {
-            background: #1e272e;
-            border: 2px solid #ff4757;
-            padding: 15px 25px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            min-width: 200px;
+        .meter-display-circle {
+            width: 250px; height: 250px;
+            border-radius: 50%;
+            border: 10px solid #333;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .db-label { font-size: 12px; color: #aaa; letter-spacing: 1px; margin-bottom: 5px; }
-        .db-number { font-size: 32px; font-weight: 900; color: #ff4757; }
-        .db-bar-bg { width: 100%; height: 8px; background: #333; margin-top: 5px; border-radius: 4px; }
-        .db-bar-fill { width: 100%; height: 100%; background: #ff4757; border-radius: 4px; transition: width 0.1s; }
-
-        /* Panel Inferior (Botones) */
-        .bottom-panel {
-            padding: 40px 20px;
-            text-align: center;
-            pointer-events: auto; /* Reactivar toques */
+        #meter-value { font-size: 60px; font-weight: 900; font-family: monospace; }
+        #meter-unit { font-size: 20px; color: #777; }
+        #meter-status { 
+            position: absolute; bottom: 40px; 
+            font-size: 14px; font-weight: bold; 
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* BOTONES GRANDES */
-        .btn-big {
-            background: white;
-            color: black;
-            border: none;
-            padding: 20px 40px;
-            font-size: 18px;
-            font-weight: 900;
-            border-radius: 50px;
-            text-transform: uppercase;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
-            width: 100%;
-            max-width: 320px;
-            cursor: pointer;
-            transition: transform 0.1s;
+        canvas#audio-visualizer {
+            width: 100%; height: 150px;
+            background: rgba(0,0,0,0.3);
         }
 
-        .btn-big:active { transform: scale(0.95); }
+        .meter-info-box {
+            padding: 20px; text-align: center; color: #aaa; font-size: 14px; line-height: 1.6;
+        }
 
-        #btn-start { background: #3498db; color: white; }
-        #btn-protect { background: #2ecc71; color: white; display: none; margin: 0 auto; }
+        /* =========================================
+           VISTA 3: EXPERIENCIA AR (SIMULADOR)
+           ========================================= */
+        #view-ar {
+            pointer-events: none; /* Deja pasar clicks al 3D */
+        }
+        
+        #ar-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 30px; pointer-events: auto;
+            display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(0deg, black 0%, transparent 100%);
+        }
 
-        /* TEXTO GUÍA FLOTANTE */
-        #ar-guide {
-            position: absolute;
-            top: 50%; left: 50%;
+        .hud-top {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(0,0,0,0.8); border: 2px solid var(--primary);
+            padding: 10px 20px; border-radius: 8px;
+            text-align: right; pointer-events: auto;
+        }
+
+        .hud-db-val { font-size: 24px; font-weight: bold; color: var(--danger); font-family: monospace; }
+        .hud-label { font-size: 10px; color: #aaa; letter-spacing: 1px; }
+
+        .btn-action {
+            width: 100%; max-width: 300px;
+            padding: 18px; border-radius: 50px;
+            border: none; font-size: 16px; font-weight: bold;
+            text-transform: uppercase; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            margin-bottom: 10px; display: none;
+        }
+
+        #btn-ar-start { background: #3498db; color: white; display: block; }
+        #btn-ar-protect { background: var(--safe); color: white; }
+
+        .guide-text {
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: rgba(255,255,255,0.7);
-            font-size: 18px;
-            text-align: center;
-            width: 80%;
-            pointer-events: none;
+            text-align: center; color: rgba(255,255,255,0.7);
+            font-size: 18px; width: 80%; pointer-events: none;
         }
 
-        /* CLASES DE ESTADO */
-        .safe-mode { border-color: #2ecc71 !important; }
-        .safe-text { color: #2ecc71 !important; }
-        .safe-fill { background: #2ecc71 !important; }
-        .danger-screen { animation: pulse-red 1s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: inset 0 0 0 transparent; } 50% { box-shadow: inset 0 0 50px rgba(255,0,0,0.5); } 100% { box-shadow: inset 0 0 0 transparent; } }
+        /* Animación de Peligro Global */
+        .danger-mode { animation: flash-red 0.8s infinite alternate; }
+        @keyframes flash-red { from { box-shadow: inset 0 0 0 transparent; } to { box-shadow: inset 0 0 80px rgba(255, 0, 0, 0.4); } }
 
     </style>
 </head>
 <body>
 
-    <div id="start-screen">
-        <div class="title-box">
-            <h1>Seguridad<br>Industrial</h1>
-            <div style="width: 50px; height: 4px; background: #f1c40f; margin: 10px auto;"></div>
-            <p>Experiencia de Realidad Aumentada</p>
+    <div id="view-home" class="app-view view-active">
+        <div class="logo-container">
+            <h1 class="main-title">Safety<br>Suite</h1>
+            <p class="subtitle">PREVENCIÓN DE HIPOACUSIA</p>
         </div>
-        
-        <p style="margin-bottom: 30px; font-size: 14px;">1. Sube el volumen.<br>2. Presiona iniciar.<br>3. Apunta al marcador.</p>
-        
-        <button id="btn-start" class="btn-big">INICIAR EXPERIENCIA</button>
-        <div id="error-msg" style="color: red; margin-top: 20px; display: none; font-size: 12px;"></div>
-    </div>
 
-    <div id="hud-layer">
-        <div class="top-panel">
-            <div id="db-card">
-                <div class="db-label">NIVEL DE RUIDO</div>
-                <div class="db-number" id="db-val">0 dB</div>
-                <div class="db-bar-bg"><div class="db-bar-fill" id="db-fill"></div></div>
+        <div class="menu-grid">
+            <div class="card-btn" onclick="App.navigate('meter')">
+                <div class="card-icon">🎙️</div>
+                <div class="card-text">
+                    <h3>Medidor Real</h3>
+                    <p>Usa tu micrófono para medir dB</p>
+                </div>
+            </div>
+
+            <div class="card-btn" onclick="App.navigate('ar')">
+                <div class="card-icon">🥽</div>
+                <div class="card-text">
+                    <h3>Simulador AR</h3>
+                    <p>Experiencia educativa 3D</p>
+                </div>
             </div>
         </div>
+        
+        <p style="position: absolute; bottom: 20px; color: #444; font-size: 10px;">v7.0 - Developed for Mateo</p>
+    </div>
 
-        <div id="ar-guide">BUSCANDO MARCADOR...</div>
+    <div id="view-meter" class="app-view">
+        <div class="btn-icon-back" onclick="App.navigate('home')">←</div>
 
-        <div class="bottom-panel">
-            <button id="btn-protect" class="btn-big">PONERSE PROTECCIÓN 🎧</button>
+        <div class="meter-display-circle" id="meter-circle">
+            <div id="meter-value">--</div>
+            <div id="meter-unit">dB (Est.)</div>
+            <div id="meter-status">Iniciando...</div>
+        </div>
+
+        <canvas id="audio-visualizer"></canvas>
+
+        <div class="meter-info-box">
+            <p><strong>¿CÓMO FUNCIONA?</strong><br>
+            Esta herramienta analiza la entrada de tu micrófono para estimar la presión sonora. Si el círculo se pone ROJO, necesitas protección.</p>
+        </div>
+    </div>
+
+    <div id="view-ar" class="app-view">
+        <div class="btn-icon-back" onclick="App.navigate('home')">←</div>
+
+        <div class="hud-top">
+            <div class="hud-label">SIMULACIÓN RUIDO</div>
+            <div class="hud-db-val" id="ar-db-display">0 dB</div>
+        </div>
+
+        <div class="guide-text" id="ar-guide">PULSA INICIAR PARA CARGAR</div>
+
+        <div id="ar-overlay">
+            <button id="btn-ar-start" class="btn-action">🔊 INICIAR EXPERIENCIA</button>
+            <button id="btn-ar-protect" class="btn-action">🎧 PONERSE PROTECCIÓN</button>
         </div>
     </div>
 
@@ -179,37 +275,41 @@
         embedded 
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true;">
-        
-        <a-light type="ambient" intensity="0.6"></a-light>
+        renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+        style="position: absolute; top: 0; left: 0; z-index: 1;">
+
+        <a-light type="ambient" intensity="0.7"></a-light>
         <a-light type="directional" position="1 2 1" intensity="1.5"></a-light>
 
         <a-marker type="pattern" url="pattern-marker.patt" smooth="true">
             <a-entity id="ar-content" visible="false">
                 
-                <a-entity id="headphones" position="0 0.5 0" animation="property: position; dir: alternate; to: 0 0.6 0; loop: true; dur: 2000">
+                <a-entity id="headphones-group" position="0 0.5 0">
                     
-                    <a-torus color="#111" radius="0.5" radius-tubular="0.06" arc="190" rotation="90 0 0" position="0 0.3 0"></a-torus>
-                    
-                    <a-entity position="-0.55 0.3 0">
-                        <a-cylinder color="#f1c40f" height="0.25" radius="0.25" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#222" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="-0.05 0 0" scale="1 1 0.6"></a-torus>
-                        <a-text value="PELIGRO" color="red" rotation="0 -90 0" position="-0.3 0 0" align="center" width="3"></a-text>
+                    <a-entity animation="property: position; from: 0 0 0; to: 0 0.1 0; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine">
+                        
+                        <a-torus color="#111" radius="0.55" radius-tubular="0.06" arc="190" rotation="90 0 0" position="0 0.3 0"></a-torus>
+                        
+                        <a-entity position="-0.6 0.3 0">
+                            <a-cylinder color="#f1c40f" height="0.25" radius="0.28" rotation="0 0 90"></a-cylinder>
+                            <a-torus color="#222" radius="0.28" radius-tubular="0.08" rotation="0 90 0" position="-0.05 0 0" scale="1 1 0.6"></a-torus>
+                            <a-text value="PELIGRO" color="red" rotation="0 -90 0" position="-0.3 0 0" align="center" width="3"></a-text>
+                        </a-entity>
+
+                        <a-entity position="0.6 0.3 0">
+                            <a-cylinder color="#f1c40f" height="0.25" radius="0.28" rotation="0 0 90"></a-cylinder>
+                            <a-torus color="#222" radius="0.28" radius-tubular="0.08" rotation="0 90 0" position="0.05 0 0" scale="1 1 0.6"></a-torus>
+                            <a-text value="95 dB" color="red" rotation="0 90 0" position="0.3 0 0" align="center" width="3"></a-text>
+                        </a-entity>
                     </a-entity>
 
-                    <a-entity position="0.55 0.3 0">
-                        <a-cylinder color="#f1c40f" height="0.25" radius="0.25" rotation="0 0 90"></a-cylinder>
-                        <a-torus color="#222" radius="0.25" radius-tubular="0.08" rotation="0 90 0" position="0.05 0 0" scale="1 1 0.6"></a-torus>
-                        <a-text value="RUIDO" color="red" rotation="0 90 0" position="0.3 0 0" align="center" width="3"></a-text>
-                    </a-entity>
-
-                </a-entity>
-
-                <a-entity id="msg-final" visible="false" position="0 0.5 0" rotation="-45 0 0">
-                    <a-plane color="#000" opacity="0.9" width="3.5" height="1.8"></a-plane>
-                    <a-text value="¡PROTEGIDO!" color="#2ecc71" align="center" width="6" position="0 0.4 0.1"></a-text>
-                    <a-text value="Nivel de ruido seguro." color="#fff" align="center" width="4" position="0 0 0.1"></a-text>
-                    <a-circle color="#2ecc71" radius="0.2" position="0 -0.5 0.1"></a-circle>
+                </a-entity> <a-entity id="ar-final-msg" visible="false" position="0 0.5 0" rotation="-45 0 0" scale="0 0 0">
+                    <a-plane color="#000" opacity="0.9" width="3.5" height="2"></a-plane>
+                    <a-text value="ZONA SEGURA" color="#2ecc71" align="center" width="6" position="0 0.5 0.1" font="roboto" font-weight="bold"></a-text>
+                    <a-text value="Oidos protegidos correctamente." color="#fff" align="center" width="4" position="0 0 0.1" font="roboto"></a-text>
+                    <a-circle color="#2ecc71" radius="0.25" position="0 -0.5 0.1">
+                        <a-text value="OK" align="center" width="5" position="0 0 0"></a-text>
+                    </a-circle>
                 </a-entity>
 
             </a-entity>
@@ -217,142 +317,307 @@
         <a-entity camera></a-entity>
     </a-scene>
 
+
     <script>
         // CONFIGURACIÓN
-        const audioFile = 'Sonidos_De_Fabrica.wav';
+        const CONFIG = {
+            audioFile: 'Sonidos_De_Fabrica.wav',
+            micSensitivity: 1.5 // Ajuste para el medidor real
+        };
 
-        // REFERENCIAS
-        const startScreen = document.getElementById('start-screen');
-        const hudLayer = document.getElementById('hud-layer');
-        const btnStart = document.getElementById('btn-start');
-        const btnProtect = document.getElementById('btn-protect');
-        const errorMsg = document.getElementById('error-msg');
-        
-        // ELEMENTOS HUD
-        const dbCard = document.getElementById('db-card');
-        const dbVal = document.getElementById('db-val');
-        const dbFill = document.getElementById('db-fill');
-        const arGuide = document.getElementById('ar-guide');
-        
-        // ELEMENTOS AR
-        const marker = document.querySelector('a-marker');
-        const arContent = document.getElementById('ar-content');
-        const headphones = document.getElementById('headphones');
-        const msgFinal = document.getElementById('msg-final');
-
-        // AUDIO SYSTEM
-        let audioCtx, source, gainNode, filterNode;
-        let isProtected = false;
-        let meterInterval;
-
-        // 1. CLICK EN INICIAR (CARGA SEGURA)
-        btnStart.addEventListener('click', async () => {
-            btnStart.innerText = "CARGANDO...";
-            btnStart.style.opacity = "0.7";
-
-            try {
-                // Crear contexto de audio (Web Audio API)
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-
-                // Cargar archivo
-                const response = await fetch(audioFile);
-                if (!response.ok) throw new Error("404 No encontrado");
+        // --- MÓDULO 1: NAVEGACIÓN Y ROUTER ---
+        const App = {
+            currentView: 'home',
+            
+            navigate: (viewId) => {
+                // Ocultar todas las vistas
+                document.querySelectorAll('.app-view').forEach(el => el.classList.remove('view-active'));
                 
-                const arrayBuffer = await response.arrayBuffer();
-                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-
-                // Configurar nodos
-                source = audioCtx.createBufferSource();
-                source.buffer = audioBuffer;
-                source.loop = true;
-
-                filterNode = audioCtx.createBiquadFilter();
-                filterNode.type = 'lowpass';
-                filterNode.frequency.value = 22000; // Abierto
-
-                gainNode = audioCtx.createGain();
-                gainNode.gain.value = 1.0;
-
-                // Conectar
-                source.connect(filterNode);
-                filterNode.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-
-                // Reproducir
-                source.start(0);
-
-                // TRANSICIÓN EXITOSA
-                startScreen.style.display = 'none';
-                hudLayer.style.display = 'flex';
-                document.body.classList.add('danger-screen'); // Efecto rojo
-                simulateNoise(); // Iniciar números
-
-            } catch (e) {
-                console.error(e);
-                errorMsg.style.display = 'block';
-                errorMsg.innerText = "Error: No se encuentra 'Sonidos_De_Fabrica.wav'. Revisa GitHub.";
-                btnStart.innerText = "REINTENTAR";
-                btnStart.style.opacity = "1";
-                // AUNQUE FALLE, DEJAMOS ENTRAR PARA PROBAR AR
-                setTimeout(() => {
-                    if(confirm("El audio falló. ¿Entrar sin sonido?")) {
-                        startScreen.style.display = 'none';
-                        hudLayer.style.display = 'flex';
-                    }
-                }, 500);
-            }
-        });
-
-        // 2. DETECTAR MARCADOR
-        marker.addEventListener('markerFound', () => {
-            arContent.setAttribute('visible', true);
-            arGuide.style.display = 'none';
-            if(!isProtected) btnProtect.style.display = 'block';
-        });
-
-        marker.addEventListener('markerLost', () => {
-            // arContent.setAttribute('visible', false); // Opcional
-        });
-
-        // 3. PROTEGER
-        btnProtect.addEventListener('click', () => {
-            isProtected = true;
-
-            // Audio Effect
-            if(audioCtx) {
-                const now = audioCtx.currentTime;
-                filterNode.frequency.exponentialRampToValueAtTime(300, now + 1);
-                gainNode.gain.exponentialRampToValueAtTime(0.2, now + 1);
-            }
-
-            // Visual Effect
-            btnProtect.style.display = 'none';
-            document.body.classList.remove('danger-screen');
-            
-            dbCard.classList.add('safe-mode');
-            dbVal.classList.add('safe-text');
-            dbFill.classList.add('safe-fill');
-            
-            headphones.setAttribute('visible', false);
-            msgFinal.setAttribute('visible', true);
-        });
-
-        // SIMULADOR VISUAL DE DB
-        function simulateNoise() {
-            meterInterval = setInterval(() => {
-                let db, width;
-                if(!isProtected) {
-                    db = Math.floor(Math.random() * (105 - 95) + 95);
-                    width = (db / 110) * 100;
+                // Mostrar la deseada
+                document.getElementById(`view-${viewId}`).classList.add('view-active');
+                
+                // Lógica específica al entrar/salir
+                if(viewId === 'meter') {
+                    RealMeter.start();
+                    ARSystem.pause(); // Pausar AR para ahorrar recursos
+                } else if (viewId === 'ar') {
+                    RealMeter.stop();
+                    ARSystem.resume();
                 } else {
-                    db = Math.floor(Math.random() * (75 - 65) + 65);
-                    width = (db / 110) * 100;
+                    // Home
+                    RealMeter.stop();
+                    ARSystem.pause();
                 }
-                dbVal.innerText = db + " dB";
-                dbFill.style.width = width + "%";
-            }, 100);
-        }
+            }
+        };
+
+        // --- MÓDULO 2: MEDIDOR REAL (MICRÓFONO) ---
+        const RealMeter = {
+            stream: null,
+            audioContext: null,
+            analyser: null,
+            source: null,
+            animationFrame: null,
+            isActive: false,
+
+            start: async () => {
+                if(RealMeter.isActive) return;
+                try {
+                    RealMeter.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    RealMeter.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    RealMeter.analyser = RealMeter.audioContext.createAnalyser();
+                    RealMeter.analyser.fftSize = 256;
+                    RealMeter.source = RealMeter.audioContext.createMediaStreamSource(RealMeter.stream);
+                    RealMeter.source.connect(RealMeter.analyser);
+                    RealMeter.isActive = true;
+                    RealMeter.loop();
+                } catch (e) {
+                    alert("Error: Necesitas dar permiso al micrófono para usar esta herramienta.");
+                    App.navigate('home');
+                }
+            },
+
+            stop: () => {
+                if(!RealMeter.isActive) return;
+                if(RealMeter.stream) RealMeter.stream.getTracks().forEach(track => track.stop());
+                if(RealMeter.audioContext) RealMeter.audioContext.close();
+                cancelAnimationFrame(RealMeter.animationFrame);
+                RealMeter.isActive = false;
+            },
+
+            loop: () => {
+                if(!RealMeter.isActive) return;
+                RealMeter.animationFrame = requestAnimationFrame(RealMeter.loop);
+
+                const bufferLength = RealMeter.analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                RealMeter.analyser.getByteFrequencyData(dataArray);
+
+                // 1. Calcular Volumen Promedio (RMS)
+                let sum = 0;
+                for(let i = 0; i < bufferLength; i++) { sum += dataArray[i]; }
+                const average = sum / bufferLength;
+                
+                // 2. Mapear a dB (Simulado, no calibrado profesionalmente)
+                // Multiplicamos por sensibilidad para que reaccione mejor
+                let db = Math.floor((average * CONFIG.micSensitivity)); 
+                if(db > 110) db = 110;
+                if(db < 30) db = 30; // Ruido base
+
+                // 3. Actualizar UI
+                RealMeter.updateUI(db);
+                RealMeter.drawCanvas(dataArray);
+            },
+
+            updateUI: (db) => {
+                const circle = document.getElementById('meter-circle');
+                const val = document.getElementById('meter-value');
+                const status = document.getElementById('meter-status');
+                
+                val.innerText = db;
+
+                if(db < 60) {
+                    circle.style.borderColor = "#2ed573";
+                    status.innerText = "AMBIENTE SEGURO";
+                    status.style.color = "#2ed573";
+                    circle.style.boxShadow = "0 0 20px rgba(46, 213, 115, 0.2)";
+                } else if (db < 85) {
+                    circle.style.borderColor = "#f1c40f";
+                    status.innerText = "PRECAUCIÓN";
+                    status.style.color = "#f1c40f";
+                    circle.style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.4)";
+                } else {
+                    circle.style.borderColor = "#ff4757";
+                    status.innerText = "PELIGROSO - USAR EPP";
+                    status.style.color = "#ff4757";
+                    circle.style.boxShadow = "0 0 50px rgba(255, 71, 87, 0.6)";
+                }
+            },
+
+            drawCanvas: (dataArray) => {
+                const canvas = document.getElementById('audio-visualizer');
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#111';
+                ctx.fillRect(0, 0, width, height);
+
+                const barWidth = (width / dataArray.length) * 2.5;
+                let barHeight;
+                let x = 0;
+
+                for(let i = 0; i < dataArray.length; i++) {
+                    barHeight = dataArray[i] / 2;
+                    ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+                    ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                }
+            }
+        };
+
+        // --- MÓDULO 3: SISTEMA AR (SIMULADOR) ---
+        const ARSystem = {
+            audioCtx: null,
+            source: null,
+            gainNode: null,
+            filterNode: null,
+            isProtected: false,
+            isLoaded: false,
+            elements: {},
+
+            init: () => {
+                // Cachear elementos
+                ARSystem.elements = {
+                    btnStart: document.getElementById('btn-ar-start'),
+                    btnProtect: document.getElementById('btn-ar-protect'),
+                    guide: document.getElementById('ar-guide'),
+                    headphones: document.getElementById('headphones-group'),
+                    finalMsg: document.getElementById('ar-final-msg'),
+                    arContent: document.getElementById('ar-content'),
+                    hudVal: document.getElementById('ar-db-display'),
+                    scene: document.querySelector('a-scene')
+                };
+
+                // Event Listeners
+                ARSystem.elements.btnStart.addEventListener('click', ARSystem.startExperience);
+                ARSystem.elements.btnProtect.addEventListener('click', ARSystem.activateProtection);
+                
+                const marker = document.querySelector('a-marker');
+                marker.addEventListener('markerFound', () => {
+                    ARSystem.elements.arContent.setAttribute('visible', true);
+                    if(!ARSystem.isLoaded) ARSystem.elements.guide.innerText = "PULSA INICIAR";
+                    else ARSystem.elements.guide.style.display = 'none';
+                });
+            },
+
+            startExperience: async () => {
+                ARSystem.elements.btnStart.innerText = "CARGANDO...";
+                try {
+                    // Cargar Audio
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    ARSystem.audioCtx = new AC();
+                    
+                    const response = await fetch(CONFIG.audioFile);
+                    if(!response.ok) throw new Error("Audio no encontrado");
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await ARSystem.audioCtx.decodeAudioData(arrayBuffer);
+
+                    // Setup Nodos
+                    ARSystem.source = ARSystem.audioCtx.createBufferSource();
+                    ARSystem.source.buffer = audioBuffer;
+                    ARSystem.source.loop = true;
+
+                    ARSystem.filterNode = ARSystem.audioCtx.createBiquadFilter();
+                    ARSystem.filterNode.type = 'lowpass';
+                    ARSystem.filterNode.frequency.value = 22000;
+
+                    ARSystem.gainNode = ARSystem.audioCtx.createGain();
+                    ARSystem.gainNode.value = 1.0;
+
+                    ARSystem.source.connect(ARSystem.filterNode).connect(ARSystem.gainNode).connect(ARSystem.audioCtx.destination);
+                    ARSystem.source.start(0);
+
+                    // UI Updates
+                    ARSystem.isLoaded = true;
+                    ARSystem.elements.btnStart.style.display = 'none';
+                    ARSystem.elements.btnProtect.style.display = 'block';
+                    ARSystem.elements.guide.style.display = 'none';
+                    document.body.classList.add('danger-mode');
+                    ARSystem.simulateHUD();
+
+                } catch (e) {
+                    alert("Error cargando audio. Revisa el archivo en GitHub.");
+                    ARSystem.elements.btnStart.innerText = "ERROR DE CARGA";
+                }
+            },
+
+            activateProtection: () => {
+                if(ARSystem.isProtected) return;
+                ARSystem.isProtected = true;
+
+                // 1. Audio Effect
+                const now = ARSystem.audioCtx.currentTime;
+                ARSystem.filterNode.frequency.exponentialRampToValueAtTime(300, now + 1.5);
+                ARSystem.gainNode.gain.exponentialRampToValueAtTime(0.2, now + 1.5);
+
+                // 2. UI Updates
+                ARSystem.elements.btnProtect.style.display = 'none';
+                document.body.classList.remove('danger-mode');
+                ARSystem.elements.hudVal.style.color = "#2ecc71";
+
+                // 3. ANIMACIÓN INMERSIVA (Auriculares vuelan hacia la cámara)
+                // Obtenemos la entidad de los auriculares
+                const headphones = ARSystem.elements.headphones;
+                
+                // Posición actual
+                const startPos = { x: 0, y: 0.5, z: 0 };
+                const endPos = { x: 0, y: 0, z: 2 }; // Z=2 los acerca mucho a la cámara
+                
+                // Escala actual
+                const startScale = { x: 1, y: 1, z: 1 };
+                const endScale = { x: 5, y: 5, z: 5 }; // Crecen para "cubrir" la vista
+
+                // Usamos TWEEN para animar valores
+                new TWEEN.Tween(startPos)
+                    .to(endPos, 1000) // 1 segundo
+                    .easing(TWEEN.Easing.Quadratic.In)
+                    .onUpdate(() => {
+                        headphones.setAttribute('position', `${startPos.x} ${startPos.y} ${startPos.z}`);
+                    })
+                    .start();
+
+                new TWEEN.Tween(startScale)
+                    .to(endScale, 1000)
+                    .easing(TWEEN.Easing.Quadratic.In)
+                    .onUpdate(() => {
+                        headphones.setAttribute('scale', `${startScale.x} ${startScale.y} ${startScale.z}`);
+                    })
+                    .onComplete(() => {
+                        // Al terminar la animación: Ocultar y mostrar mensaje final
+                        headphones.setAttribute('visible', false);
+                        ARSystem.elements.finalMsg.setAttribute('visible', true);
+                        // Animar entrada del mensaje
+                        ARSystem.elements.finalMsg.setAttribute('scale', '1 1 1'); 
+                    })
+                    .start();
+                
+                // Bucle de animación para TWEEN
+                function animate(time) {
+                    requestAnimationFrame(animate);
+                    TWEEN.update(time);
+                }
+                requestAnimationFrame(animate);
+            },
+
+            simulateHUD: () => {
+                setInterval(() => {
+                    if(!ARSystem.isLoaded) return;
+                    let db = 0;
+                    if(!ARSystem.isProtected) db = Math.floor(Math.random() * (105 - 95) + 95);
+                    else db = Math.floor(Math.random() * (75 - 65) + 65);
+                    ARSystem.elements.hudVal.innerText = db + " dB";
+                }, 150);
+            },
+
+            pause: () => {
+                // Ocultar escena para ahorrar batería
+                ARSystem.elements.scene.style.visibility = 'hidden';
+                if(ARSystem.audioCtx) ARSystem.audioCtx.suspend();
+            },
+
+            resume: () => {
+                ARSystem.elements.scene.style.visibility = 'visible';
+                if(ARSystem.audioCtx) ARSystem.audioCtx.resume();
+            }
+        };
+
+        // INICIALIZACIÓN GLOBAL
+        window.addEventListener('load', () => {
+            ARSystem.init();
+            console.log("Safety Suite v7.0 Ready");
+        });
 
     </script>
 </body>
