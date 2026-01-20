@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Lanxess Safety AR Pro</title>
 
-    <!-- Libraries -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
@@ -77,7 +76,6 @@
             z-index: 10;
         }
 
-        /* BOTÓN BACK */
         .btn-back {
             position: fixed;
             top: calc(var(--safe-top) + 10px);
@@ -456,7 +454,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
             padding: 25px 20px calc(var(--safe-bottom) + 20px);
             display: flex;
@@ -556,7 +554,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* FLOATING MESSAGE */
         .floating-message {
             position: fixed;
             top: 50%;
@@ -646,8 +643,8 @@
             transform: scale(0.95);
         }
 
-        /* A-FRAME */
-        a-scene {
+        /* A-FRAME FULL SCREEN */
+        #arScene {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
@@ -659,18 +656,6 @@
         .a-canvas {
             width: 100% !important;
             height: 100% !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-        }
-
-        video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
         }
 
         .a-enter-vr,
@@ -683,17 +668,12 @@
             .meter-display { width: 250px; height: 250px; }
             .db-value { font-size: 68px; }
         }
-
-        @media (min-height: 700px) {
-            #meter { padding-top: calc(var(--safe-top) + 120px); }
-        }
     </style>
 </head>
 <body>
 
     <div id="dangerOverlay" class="danger-overlay"></div>
 
-    <!-- FLOATING MESSAGE -->
     <div id="floatingMessage" class="floating-message">
         <div class="message-header">
             <div class="message-icon">🛡️</div>
@@ -735,7 +715,7 @@
         </div>
 
         <div class="home-footer">
-            LANXESS AR • v13.0 PRO
+            LANXESS AR • v14.0 PRO
         </div>
     </div>
 
@@ -774,7 +754,7 @@
         </div>
 
         <div class="ar-controls">
-            <div class="ar-status-text" id="arStatusText">Mueve tu dispositivo para ver el entorno industrial</div>
+            <div class="ar-status-text" id="arStatusText">Mueve tu dispositivo para explorar</div>
             <button id="btnStartAR" class="btn-ar visible">🔊 INICIAR SIMULACIÓN</button>
             <button id="btnProtectAR" class="btn-ar">🎧 PONERSE PROTECCIÓN</button>
         </div>
@@ -783,390 +763,129 @@
     <!-- A-FRAME SCENE -->
     <a-scene 
         id="arScene"
+        device-orientation-permission-ui="enabled: false"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; 
-                  precision: medium; 
-                  antialias: true; 
-                  alpha: true;
-                  colorManagement: true;"
+        renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true;"
         loading-screen="enabled: false"
-        embedded>
+        embedded
+        style="display: none;">
 
         <a-assets timeout="30000">
-            <!-- Preload any assets here if needed -->
+            <a-asset-item id="headphonesModel" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
         </a-assets>
 
-        <!-- CAMERA CON CONTROLES LOOK -->
-        <a-entity id="camera-rig" position="0 1.6 0">
-            <a-camera 
-                id="mainCamera" 
-                look-controls="enabled: true; touchEnabled: true; magicWindowTrackingEnabled: true"
-                wasd-controls="enabled: false">
-            </a-camera>
-        </a-entity>
-
-        <!-- ILUMINACIÓN AMBIENTE -->
-        <a-entity light="type: ambient; color: #888; intensity: 1.2"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="5 10 5"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1" position="-5 8 -5"></a-entity>
-        
-        <!-- LUCES INDUSTRIALES -->
-        <a-entity light="type: point; color: #D71920; intensity: 2; distance: 20" position="-3 3 -5"></a-entity>
-        <a-entity light="type: point; color: #FFAA00; intensity: 1.5; distance: 15" position="3 3 -5"></a-entity>
-
-        <!-- SUELO INDUSTRIAL -->
-        <a-plane 
-            position="0 0 -6" 
-            rotation="-90 0 0" 
-            width="20" 
-            height="20" 
-            color="#2a2a2a"
-            shadow="receive: true">
-        </a-plane>
-
-        <!-- AURICULARES FLOTANTES -->
-        <a-entity id="headphonesContainer" position="0 1.6 -3" visible="false">
-            <!-- Simulación de auriculares con geometría primitiva -->
-            <a-entity id="headphonesGroup">
-                <!-- Banda superior -->
-                <a-torus 
-                    radius="0.4" 
-                    radius-tubular="0.04" 
-                    color="#333333"
-                    rotation="0 0 0"
-                    position="0 0.5 0"
-                    segments-tubular="20"
-                    arc="180">
-                </a-torus>
-                
-                <!-- Auricular izquierdo -->
-                <a-cylinder 
-                    radius="0.2" 
-                    height="0.08" 
-                    color="#1a1a1a"
-                    position="-0.4 0.2 0"
-                    rotation="90 0 0"
-                    metalness="0.6"
-                    roughness="0.4">
-                </a-cylinder>
-                <a-sphere 
-                    radius="0.18" 
-                    color="#333333"
-                    position="-0.4 0.2 0"
-                    segments-width="16"
-                    segments-height="12">
-                </a-sphere>
-                
-                <!-- Auricular derecho -->
-                <a-cylinder 
-                    radius="0.2" 
-                    height="0.08" 
-                    color="#1a1a1a"
-                    position="0.4 0.2 0"
-                    rotation="90 0 0"
-                    metalness="0.6"
-                    roughness="0.4">
-                </a-cylinder>
-                <a-sphere 
-                    radius="0.18" 
-                    color="#333333"
-                    position="0.4 0.2 0"
-                    segments-width="16"
-                    segments-height="12">
-                </a-sphere>
-                
-                <!-- Logo rojo -->
-                <a-circle 
-                    radius="0.08" 
-                    color="#D71920"
-                    position="-0.4 0.2 0.19"
-                    rotation="0 0 0">
-                </a-circle>
-                <a-circle 
-                    radius="0.08" 
-                    color="#D71920"
-                    position="0.4 0.2 0.19"
-                    rotation="0 0 0">
-                </a-circle>
+        <!-- CÁMARA CON LOOK CONTROLS -->
+        <a-camera 
+            id="mainCamera" 
+            position="0 1.6 0"
+            look-controls="enabled: true; 
+                          touchEnabled: true; 
+                          magicWindowTrackingEnabled: true;
+                          mouseEnabled: true;
+                          pointerLockEnabled: false"
+            wasd-controls="enabled: false">
+            
+            <!-- VIDEO BACKGROUND -->
+            <a-entity 
+                id="videoBackground" 
+                geometry="primitive: sphere; radius: 500; segmentsWidth: 64; segmentsHeight: 32" 
+                material="shader: flat; side: back; opacity: 0"
+                scale="-1 1 1"
+                visible="false">
             </a-entity>
-            
-            <!-- Animación flotante -->
-            <a-animation
-                attribute="position"
-                from="0 1.6 -3"
-                to="0 2.0 -3"
-                direction="alternate"
-                dur="2500"
-                repeat="indefinite"
-                easing="ease-in-out-sine">
-            </a-animation>
-            
-            <!-- Animación rotación -->
-            <a-animation
-                attribute="rotation"
-                from="0 0 0"
-                to="0 360 0"
-                dur="12000"
-                repeat="indefinite"
-                easing="linear">
-            </a-animation>
+        </a-camera>
+
+        <!-- ILUMINACIÓN -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 0.8"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1.2" position="5 10 5"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-5 8 -5"></a-entity>
+        <a-entity light="type: point; color: #D71920; intensity: 1.5; distance: 20" position="0 2 -4"></a-entity>
+
+        <!-- AURICULARES 3D (FRENTE) -->
+        <a-entity id="headphonesContainer" position="0 1.6 -2.5" visible="false">
+            <a-entity 
+                id="headphonesModel3D"
+                gltf-model="#headphonesModel"
+                scale="2 2 2"
+                rotation="0 0 0"
+                animation="property: position; from: 0 0 0; to: 0 0.3 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
+                animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 12000; loop: true; easing: linear">
+            </a-entity>
         </a-entity>
 
-        <!-- MÁQUINAS INDUSTRIALES -->
-        <!-- Taladro Industrial 1 -->
-        <a-entity id="drill1" position="-4 0.5 -8" visible="false">
-            <!-- Cuerpo del taladro -->
-            <a-cylinder 
-                radius="0.3" 
-                height="1.5" 
-                color="#555555"
-                rotation="0 0 0"
-                position="0 0.75 0">
-            </a-cylinder>
-            <a-cone 
-                radius-bottom="0.3" 
-                radius-top="0.15" 
-                height="0.8" 
-                color="#888888"
-                position="0 0.2 0">
-            </a-cone>
-            <a-cylinder 
-                radius="0.05" 
-                height="0.6" 
-                color="#CCCCCC"
-                position="0 -0.3 0">
-            </a-cylinder>
-            
-            <!-- Luz de advertencia -->
-            <a-sphere 
-                radius="0.1" 
-                color="#FF0000"
-                position="0 1.6 0">
-                <a-animation
-                    attribute="opacity"
-                    from="1"
-                    to="0.3"
-                    direction="alternate"
-                    dur="800"
-                    repeat="indefinite">
-                </a-animation>
+        <!-- TALADRO (IZQUIERDA) -->
+        <a-entity id="drill1" position="-3 1 -3" rotation="0 45 0" visible="false">
+            <a-cylinder radius="0.3" height="1.5" color="#555555" rotation="0 0 0" position="0 0.75 0"></a-cylinder>
+            <a-cone radius-bottom="0.3" radius-top="0.15" height="0.8" color="#888888" position="0 0.2 0"></a-cone>
+            <a-cylinder radius="0.05" height="0.6" color="#CCCCCC" position="0 -0.3 0"></a-cylinder>
+            <a-sphere radius="0.1" color="#FF0000" position="0 1.6 0">
+                <a-animation attribute="opacity" from="1" to="0.3" direction="alternate" dur="800" repeat="indefinite"></a-animation>
             </a-sphere>
-            
-            <!-- Animación vibración -->
-            <a-animation
-                attribute="rotation"
-                from="0 0 -2"
-                to="0 0 2"
-                direction="alternate"
-                dur="100"
-                repeat="indefinite">
-            </a-animation>
+            <a-animation attribute="rotation" from="0 45 -2" to="0 45 2" direction="alternate" dur="100" repeat="indefinite"></a-animation>
         </a-entity>
 
-        <!-- Máquina Prensadora -->
-        <a-entity id="press1" position="4 0.5 -8" visible="false">
-            <a-box 
-                width="1.5" 
-                height="2" 
-                depth="1" 
-                color="#444444"
-                position="0 1 0">
+        <!-- PRENSA (DERECHA) -->
+        <a-entity id="press1" position="3 1 -3" rotation="0 -45 0" visible="false">
+            <a-box width="1.5" height="2" depth="1" color="#444444" position="0 1 0"></a-box>
+            <a-box width="1.2" height="0.3" depth="0.8" color="#666666" position="0 0.3 0">
+                <a-animation attribute="position" from="0 0.3 0" to="0 -0.2 0" direction="alternate" dur="1500" repeat="indefinite" easing="ease-in-out-cubic"></a-animation>
             </a-box>
-            <a-box 
-                width="1.2" 
-                height="0.3" 
-                depth="0.8" 
-                color="#666666"
-                position="0 0.3 0"
-                id="pressArm">
-                <a-animation
-                    attribute="position"
-                    from="0 0.3 0"
-                    to="0 -0.2 0"
-                    direction="alternate"
-                    dur="1500"
-                    repeat="indefinite"
-                    easing="ease-in-out-cubic">
-                </a-animation>
-            </a-box>
-            
-            <!-- Señal de peligro -->
-            <a-plane 
-                width="0.8" 
-                height="0.8" 
-                color="#FFCC00"
-                position="0 2.5 0.51"
-                rotation="0 0 45">
-                <a-text 
-                    value="⚠️" 
-                    align="center" 
-                    position="0 0 0.01"
-                    scale="2 2 2"
-                    color="#000000">
-                </a-text>
+            <a-plane width="0.8" height="0.8" color="#FFCC00" position="0 2.5 0.51" rotation="0 0 45">
+                <a-text value="⚠️" align="center" position="0 0 0.01" scale="2 2 2" color="#000000"></a-text>
             </a-plane>
         </a-entity>
 
-        <!-- Sierra Circular -->
-        <a-entity id="saw1" position="0 0.8 -10" visible="false">
-            <a-cylinder 
-                radius="0.8" 
-                height="0.1" 
-                color="#999999"
-                rotation="0 0 0"
-                segments-radial="32">
-                <!-- Dientes de sierra -->
-                <a-animation
-                    attribute="rotation"
-                    from="0 0 0"
-                    to="0 360 0"
-                    dur="800"
-                    repeat="indefinite"
-                    easing="linear">
-                </a-animation>
+        <!-- SIERRA (ATRÁS IZQUIERDA) -->
+        <a-entity id="saw1" position="-2 1.2 -5" rotation="0 30 0" visible="false">
+            <a-cylinder radius="0.8" height="0.1" color="#999999" segments-radial="32">
+                <a-animation attribute="rotation" from="0 0 0" to="0 360 0" dur="800" repeat="indefinite" easing="linear"></a-animation>
             </a-cylinder>
-            <a-cylinder 
-                radius="0.2" 
-                height="0.15" 
-                color="#333333"
-                position="0 0 0">
-            </a-cylinder>
+            <a-cylinder radius="0.2" height="0.15" color="#333333"></a-cylinder>
         </a-entity>
 
-        <!-- PARTÍCULAS DE CHISPAS -->
-        <a-entity 
-            id="sparks1"
-            position="-4 1 -8"
-            visible="false"
-            particle-system="preset: dust; 
-                             color: #FFA500,#FFFF00,#FF4500; 
-                             particleCount: 200; 
-                             size: 0.05;
-                             maxAge: 1.5;
-                             velocityValue: 2 2 2;
-                             velocitySpread: 1 1 1;
-                             accelerationValue: 0 -3 0;
-                             opacity: 0.9">
+        <!-- MÁQUINA (ATRÁS DERECHA) -->
+        <a-entity id="machine1" position="2 0.8 -5" rotation="0 -30 0" visible="false">
+            <a-box width="1.2" height="1.6" depth="0.8" color="#3a3a3a"></a-box>
+            <a-cylinder radius="0.15" height="0.6" color="#666666" position="0 1.2 0"></a-cylinder>
+            <a-sphere radius="0.08" color="#00FF00" position="0 1.7 0">
+                <a-animation attribute="opacity" from="1" to="0.2" direction="alternate" dur="1000" repeat="indefinite"></a-animation>
+            </a-sphere>
         </a-entity>
 
-        <!-- HUMO INDUSTRIAL -->
-        <a-entity 
-            id="smoke1"
-            position="4 2 -8"
-            visible="false"
-            particle-system="preset: dust; 
-                             color: #666666,#888888; 
-                             particleCount: 100; 
-                             size: 0.3;
-                             maxAge: 4;
-                             velocityValue: 0 0.5 0;
-                             velocitySpread: 0.3 0.2 0.3;
-                             opacity: 0.4">
+        <!-- CHISPAS -->
+        <a-entity id="sparks1" position="-3 1.5 -3" visible="false"
+            particle-system="preset: dust; color: #FFA500,#FFFF00,#FF4500; particleCount: 150; size: 0.05; maxAge: 1.5; velocityValue: 2 2 2; velocitySpread: 1 1 1; accelerationValue: 0 -3 0; opacity: 0.9">
         </a-entity>
 
-        <!-- TEXTO FLOTANTE ADVERTENCIA -->
-        <a-entity id="warningText" position="0 2.5 -4" visible="false">
-            <a-plane 
-                width="3.5" 
-                height="1.5" 
-                color="#000000"
-                opacity="0.9">
-            </a-plane>
-            <a-plane 
-                width="3.4" 
-                height="1.4" 
-                color="#D71920"
-                position="0 0 0.01">
-            </a-plane>
-            <a-plane 
-                width="3.3" 
-                height="1.3" 
-                color="#000000"
-                opacity="0.95"
-                position="0 0 0.02">
-            </a-plane>
+        <!-- HUMO -->
+        <a-entity id="smoke1" position="3 2.5 -3" visible="false"
+            particle-system="preset: dust; color: #666666,#888888; particleCount: 80; size: 0.3; maxAge: 4; velocityValue: 0 0.5 0; velocitySpread: 0.3 0.2 0.3; opacity: 0.4">
+        </a-entity>
+
+        <!-- TEXTO ADVERTENCIA (ARRIBA) -->
+        <a-entity id="warningText" position="0 3 -2" look-at="#mainCamera" visible="false">
+            <a-plane width="3" height="1.2" color="#000000" opacity="0.9"></a-plane>
+            <a-plane width="2.9" height="1.1" color="#D71920" position="0 0 0.01"></a-plane>
+            <a-plane width="2.8" height="1" color="#000000" opacity="0.95" position="0 0 0.02"></a-plane>
             
-            <a-text 
-                value="⚠️ ZONA DE PELIGRO ⚠️" 
-                color="#FFFF00" 
-                align="center" 
-                width="4"
-                position="0 0.5 0.05"
-                font="roboto">
-                <a-animation
-                    attribute="scale"
-                    from="1 1 1"
-                    to="1.1 1.1 1.1"
-                    direction="alternate"
-                    dur="600"
-                    repeat="indefinite">
-                </a-animation>
+            <a-text value="⚠️ ZONA PELIGROSA ⚠️" color="#FFFF00" align="center" width="3.5" position="0 0.4 0.05">
+                <a-animation attribute="scale" from="1 1 1" to="1.1 1.1 1.1" direction="alternate" dur="600" repeat="indefinite"></a-animation>
             </a-text>
-            
-            <a-text 
-                id="dbIndicator"
-                value="105 dB" 
-                color="#D71920" 
-                align="center" 
-                width="3"
-                position="0 0 0.05"
-                font="roboto">
-            </a-text>
-            
-            <a-text 
-                value="NIVEL PELIGROSO DETECTADO" 
-                color="#FFFFFF" 
-                align="center" 
-                width="3.5"
-                position="0 -0.4 0.05"
-                font="roboto">
-            </a-text>
-            
-            <!-- Animación look-at camera -->
-            <a-animation
-                attribute="rotation"
-                dur="100"
-                repeat="indefinite">
-            </a-animation>
+            <a-text id="dbIndicator" value="105 dB" color="#D71920" align="center" width="3" position="0 0 0.05"></a-text>
+            <a-text value="NIVEL PELIGROSO" color="#FFFFFF" align="center" width="3" position="0 -0.35 0.05"></a-text>
         </a-entity>
 
-        <!-- ANILLO PELIGRO ROTATORIO -->
-        <a-entity id="dangerRing" position="0 0.1 -4" visible="false">
-            <a-torus 
-                radius="2.5" 
-                radius-tubular="0.08" 
-                color="#D71920"
-                rotation="90 0 0"
-                opacity="0.7">
-                <a-animation
-                    attribute="rotation"
-                    from="90 0 0"
-                    to="90 360 0"
-                    dur="8000"
-                    repeat="indefinite"
-                    easing="linear">
-                </a-animation>
+        <!-- ANILLO PELIGRO (SUELO) -->
+        <a-entity id="dangerRing" position="0 0.05 -2" visible="false">
+            <a-torus radius="2" radius-tubular="0.06" color="#D71920" rotation="90 0 0" opacity="0.7">
+                <a-animation attribute="rotation" from="90 0 0" to="90 360 0" dur="6000" repeat="indefinite" easing="linear"></a-animation>
             </a-torus>
-            
-            <a-torus 
-                radius="2.8" 
-                radius-tubular="0.05" 
-                color="#FFCC00"
-                rotation="90 0 0"
-                opacity="0.5">
-                <a-animation
-                    attribute="rotation"
-                    from="90 0 0"
-                    to="90 -360 0"
-                    dur="6000"
-                    repeat="indefinite"
-                    easing="linear">
-                </a-animation>
+            <a-torus radius="2.3" radius-tubular="0.04" color="#FFCC00" rotation="90 0 0" opacity="0.5">
+                <a-animation attribute="rotation" from="90 0 0" to="90 -360 0" dur="4500" repeat="indefinite" easing="linear"></a-animation>
             </a-torus>
         </a-entity>
 
-        <!-- SKY -->
-        <a-sky color="#0a0a0a"></a-sky>
+        <a-sky color="#1a1a1a"></a-sky>
     </a-scene>
 
     <script>
@@ -1180,7 +899,6 @@
             dbThresholds: { safe: 60, warning: 85, danger: 95 }
         };
 
-        // ROUTER
         const Router = {
             currentView: 'home',
             
@@ -1227,7 +945,6 @@
             }
         };
 
-        // METER SYSTEM
         const MeterSystem = {
             active: false, stream: null, audioContext: null, 
             analyser: null, dataArray: null, canvas: null, 
@@ -1361,7 +1078,6 @@
             }
         };
 
-        // AR SYSTEM MEJORADO
         const ARSystem = {
             initialized: false,
             audioContext: null,
@@ -1373,8 +1089,10 @@
             hudInterval: null,
             dbUpdateInterval: null,
             scene: null,
+            videoStream: null,
+            videoTexture: null,
 
-            init() {
+            async init() {
                 console.log('🎯 AR System Init');
                 
                 this.scene = document.getElementById('arScene');
@@ -1385,8 +1103,52 @@
                     this.initialized = true;
                 }
                 
+                await this.startCamera();
                 this.resetCompleteState();
                 this.showInitialElements();
+            },
+
+            async startCamera() {
+                try {
+                    console.log('📹 Iniciando cámara...');
+                    this.videoStream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    const videoEl = document.createElement('video');
+                    videoEl.setAttribute('playsinline', '');
+                    videoEl.setAttribute('autoplay', '');
+                    videoEl.setAttribute('muted', '');
+                    videoEl.srcObject = this.videoStream;
+                    videoEl.play();
+                    
+                    videoEl.addEventListener('loadedmetadata', () => {
+                        console.log('✅ Cámara lista');
+                        
+                        const videoTexture = new THREE.VideoTexture(videoEl);
+                        videoTexture.minFilter = THREE.LinearFilter;
+                        videoTexture.magFilter = THREE.LinearFilter;
+                        
+                        const videoBg = document.getElementById('videoBackground');
+                        if (videoBg) {
+                            videoBg.setAttribute('visible', 'true');
+                            videoBg.setAttribute('material', 'shader', 'flat');
+                            videoBg.setAttribute('material', 'src', videoEl);
+                            videoBg.setAttribute('material', 'opacity', '1');
+                            
+                            videoBg.object3D.children[0].material.map = videoTexture;
+                            videoBg.object3D.children[0].material.needsUpdate = true;
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Error cámara:', error);
+                    alert('⚠️ Necesitas dar permiso a la cámara para AR');
+                }
             },
 
             destroy() {
@@ -1402,18 +1164,15 @@
                     this.audioContext = null;
                 }
                 
-                if (this.hudInterval) {
-                    clearInterval(this.hudInterval);
-                    this.hudInterval = null;
+                if (this.videoStream) {
+                    this.videoStream.getTracks().forEach(track => track.stop());
+                    this.videoStream = null;
                 }
-
-                if (this.dbUpdateInterval) {
-                    clearInterval(this.dbUpdateInterval);
-                    this.dbUpdateInterval = null;
-                }
+                
+                if (this.hudInterval) clearInterval(this.hudInterval);
+                if (this.dbUpdateInterval) clearInterval(this.dbUpdateInterval);
                 
                 this.scene.style.display = 'none';
-                
                 this.hideAllElements();
                 
                 this.isAudioLoaded = false;
@@ -1427,13 +1186,12 @@
                 btnStart.disabled = false;
                 
                 document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = 'Mueve tu dispositivo para ver el entorno industrial';
+                document.getElementById('arStatusText').textContent = 'Mueve tu dispositivo para explorar el entorno industrial';
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
                 document.getElementById('hudValue').textContent = '0 dB';
                 document.getElementById('hudValue').style.color = 'var(--primary-red)';
                 document.getElementById('hudFill').style.width = '0%';
-                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%)';
 
                 this.isProtected = false;
                 this.isAudioLoaded = false;
@@ -1441,13 +1199,11 @@
 
             showInitialElements() {
                 setTimeout(() => {
-                    const headphones = document.getElementById('headphonesContainer');
-                    const warning = document.getElementById('warningText');
-                    const ring = document.getElementById('dangerRing');
-                    
-                    if (headphones) headphones.setAttribute('visible', 'true');
-                    if (warning) warning.setAttribute('visible', 'true');
-                    if (ring) ring.setAttribute('visible', 'true');
+                    const elements = ['headphonesContainer', 'warningText', 'dangerRing'];
+                    elements.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.setAttribute('visible', 'true');
+                    });
                     
                     this.startDbAnimation();
                 }, 500);
@@ -1455,7 +1211,7 @@
 
             hideAllElements() {
                 const elements = ['headphonesContainer', 'warningText', 'dangerRing', 
-                                'drill1', 'press1', 'saw1', 'sparks1', 'smoke1'];
+                                'drill1', 'press1', 'saw1', 'machine1', 'sparks1', 'smoke1'];
                 
                 elements.forEach(id => {
                     const el = document.getElementById(id);
@@ -1465,17 +1221,11 @@
 
             showIndustrialMachines() {
                 setTimeout(() => {
-                    const drill = document.getElementById('drill1');
-                    const press = document.getElementById('press1');
-                    const saw = document.getElementById('saw1');
-                    const sparks = document.getElementById('sparks1');
-                    const smoke = document.getElementById('smoke1');
-                    
-                    if (drill) drill.setAttribute('visible', 'true');
-                    if (press) press.setAttribute('visible', 'true');
-                    if (saw) saw.setAttribute('visible', 'true');
-                    if (sparks) sparks.setAttribute('visible', 'true');
-                    if (smoke) smoke.setAttribute('visible', 'true');
+                    const machines = ['drill1', 'press1', 'saw1', 'machine1', 'sparks1', 'smoke1'];
+                    machines.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.setAttribute('visible', 'true');
+                    });
                 }, 300);
             },
 
@@ -1483,18 +1233,13 @@
                 if (this.dbUpdateInterval) clearInterval(this.dbUpdateInterval);
                 
                 this.dbUpdateInterval = setInterval(() => {
-                    if (!this.isProtected && this.isAudioLoaded) {
-                        const db = 95 + Math.floor(Math.random() * 15);
-                        const dbText = document.getElementById('dbIndicator');
-                        if (dbText) {
-                            dbText.setAttribute('value', `${db} dB`);
-                        }
-                    } else if (this.isProtected) {
-                        const db = 50 + Math.floor(Math.random() * 12);
-                        const dbText = document.getElementById('dbIndicator');
-                        if (dbText) {
-                            dbText.setAttribute('value', `${db} dB ✓`);
-                        }
+                    const db = this.isProtected 
+                        ? 50 + Math.floor(Math.random() * 12)
+                        : 95 + Math.floor(Math.random() * 15);
+                    
+                    const dbText = document.getElementById('dbIndicator');
+                    if (dbText) {
+                        dbText.setAttribute('value', this.isProtected ? `${db} dB ✓` : `${db} dB`);
                     }
                 }, 500);
             },
@@ -1522,10 +1267,8 @@
                     const AC = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AC();
                     
-                    console.log('📦 Cargando:', CONFIG.audioFile);
                     const response = await fetch(CONFIG.audioFile);
-                    
-                    if (!response.ok) throw new Error('Error al cargar audio');
+                    if (!response.ok) throw new Error('Audio no encontrado');
                     
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
@@ -1546,33 +1289,24 @@
                     this.gainNode.connect(this.audioContext.destination);
                     
                     this.source.start(0);
-                    
                     this.isAudioLoaded = true;
                     
                     btn.classList.remove('visible');
                     document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso detectado! Protégete ahora';
+                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso! Protégete ahora';
                     document.getElementById('dangerOverlay').classList.add('active');
                     
                     this.showIndustrialMachines();
                     this.startHUD();
                     
-                    console.log('✅ Audio OK');
-                    
                 } catch (error) {
-                    console.error('Error:', error);
-                    btn.innerHTML = '🔊 INICIAR SIMULACIÓN (Demo sin audio)';
-                    btn.disabled = false;
-                    
-                    // Modo demo sin audio
-                    setTimeout(() => {
-                        this.isAudioLoaded = true;
-                        btn.classList.remove('visible');
-                        document.getElementById('btnProtectAR').classList.add('visible');
-                        document.getElementById('arStatusText').textContent = '⚠️ Modo Demo - Sin audio';
-                        this.showIndustrialMachines();
-                        this.startHUD();
-                    }, 1000);
+                    console.log('Demo mode');
+                    this.isAudioLoaded = true;
+                    btn.classList.remove('visible');
+                    document.getElementById('btnProtectAR').classList.add('visible');
+                    document.getElementById('arStatusText').textContent = '⚠️ Modo Demo';
+                    this.showIndustrialMachines();
+                    this.startHUD();
                 }
             },
 
@@ -1580,119 +1314,83 @@
                 if (this.hudInterval) clearInterval(this.hudInterval);
                 
                 this.hudInterval = setInterval(() => {
-                    if (!this.isAudioLoaded) return;
-                    
-                    let db = this.isProtected 
-                        ? 50 + Math.random() * 12 
-                        : 90 + Math.random() * 20;
-                    
-                    db = Math.floor(db);
+                    const db = this.isProtected 
+                        ? 50 + Math.floor(Math.random() * 12)
+                        : 90 + Math.floor(Math.random() * 20);
                     
                     document.getElementById('hudValue').textContent = `${db} dB`;
-                    
                     const percentage = Math.min(100, (db / 120) * 100);
                     document.getElementById('hudFill').style.width = `${percentage}%`;
-                    
                 }, 100);
             },
 
             applyProtection() {
-                if (this.isProtected || !this.isAudioLoaded) return;
+                if (this.isProtected) return;
                 
-                console.log('🎧 PROTECCIÓN ACTIVADA');
                 this.isProtected = true;
                 
                 if (this.audioContext && this.filterNode && this.gainNode) {
-                    const currentTime = this.audioContext.currentTime;
-                    this.filterNode.frequency.exponentialRampToValueAtTime(250, currentTime + 2.5);
-                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, currentTime + 2.5);
+                    const t = this.audioContext.currentTime;
+                    this.filterNode.frequency.exponentialRampToValueAtTime(250, t + 2.5);
+                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
                 }
                 
                 document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = '✅ Protección Activada - Entorno Seguro';
+                document.getElementById('arStatusText').textContent = '✅ Protección Activada';
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
                 document.getElementById('hudValue').style.color = '#34c759';
                 document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #30d158 100%)';
                 
-                const dbText = document.getElementById('dbIndicator');
-                if (dbText) {
-                    dbText.setAttribute('color', '#34c759');
-                }
-                
-                const warningText = document.getElementById('warningText');
-                if (warningText) {
-                    warningText.querySelector('a-text').setAttribute('value', '✅ PROTECCIÓN ACTIVA ✅');
-                    warningText.querySelector('a-text').setAttribute('color', '#34c759');
-                    const lastText = warningText.querySelectorAll('a-text')[2];
-                    if (lastText) {
-                        lastText.setAttribute('value', 'ENTORNO SEGURO');
-                        lastText.setAttribute('color', '#34c759');
-                    }
+                const warning = document.getElementById('warningText');
+                if (warning) {
+                    const texts = warning.querySelectorAll('a-text');
+                    texts[0].setAttribute('value', '✅ PROTECCIÓN ACTIVA ✅');
+                    texts[0].setAttribute('color', '#34c759');
+                    texts[2].setAttribute('value', 'ENTORNO SEGURO');
+                    texts[2].setAttribute('color', '#34c759');
                 }
                 
                 this.animateProtectionSequence();
             },
 
             animateProtectionSequence() {
-                const headphones = document.getElementById('headphonesContainer');
-                if (!headphones) return;
+                const hp = document.getElementById('headphonesContainer');
+                if (!hp) return;
                 
-                console.log('🎬 Secuencia de Protección');
-                
-                // Acercar auriculares
-                headphones.setAttribute('animation__move', {
+                hp.setAttribute('animation__approach', {
                     property: 'position',
-                    from: '0 1.6 -3',
-                    to: '0 1.6 -1.5',
-                    dur: 2000,
+                    from: '0 1.6 -2.5',
+                    to: '0 1.6 -1',
+                    dur: 2500,
                     easing: 'easeInOutCubic'
                 });
                 
-                headphones.setAttribute('animation__scale', {
+                hp.setAttribute('animation__grow', {
                     property: 'scale',
                     from: '1 1 1',
-                    to: '1.5 1.5 1.5',
-                    dur: 2000,
+                    to: '2 2 2',
+                    dur: 2500,
                     easing: 'easeInOutCubic'
                 });
                 
                 setTimeout(() => {
-                    headphones.setAttribute('visible', 'false');
+                    hp.setAttribute('visible', 'false');
                     this.showFinalMessage();
-                }, 2500);
+                }, 3000);
             },
 
             showFinalMessage() {
-                console.log('📋 Mostrando mensaje final');
-                
-                const messageEl = document.getElementById('floatingMessage');
-                const contentEl = document.getElementById('messageContentText');
-                
-                contentEl.innerHTML = CONFIG.finalMessage;
-                messageEl.classList.add('visible');
+                const msg = document.getElementById('floatingMessage');
+                const content = document.getElementById('messageContentText');
+                content.innerHTML = CONFIG.finalMessage;
+                msg.classList.add('visible');
             }
         };
 
-        // TWEEN ANIMATION LOOP
-        function animate(time) {
-            requestAnimationFrame(animate);
-            TWEEN.update(time);
-        }
-        requestAnimationFrame(animate);
-
-        // INIT
         window.addEventListener('load', () => {
-            console.log('🚀 LANXESS AR PRO v13.0 LOADED');
+            console.log('🚀 LANXESS AR PRO v14.0');
             Router.init();
-            
-            setTimeout(() => {
-                console.log('✓ Sistema iniciado correctamente');
-                console.log('ℹ️ Archivos necesarios:');
-                console.log('  - Sonidos_De_Fabrica.wav (opcional)');
-                console.log('  - Sin marcadores AR requeridos');
-                console.log('✓ Experiencia AR sin marcadores activada');
-            }, 1000);
         });
     </script>
 </body>
