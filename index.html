@@ -885,7 +885,7 @@
                     gltf-model="#modelo-auris"
                     position="0 0.5 0" 
                     rotation="0 0 0" 
-                    scale="5 5 5"
+                    scale="0.5 0.5 0.5"
                     animation="property: position; from: 0 0.5 0; to: 0 0.6 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
                     animation__rot="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
                     
@@ -973,7 +973,7 @@
     <!-- ===================================================================
          JAVASCRIPT PRINCIPAL
          =================================================================== -->
-    <script>
+<script>
         // ===================================================================
         // CONFIGURACIÓN GLOBAL
         // ===================================================================
@@ -985,11 +985,7 @@ Los decibelios altos pueden perjudicar tu salud auditiva de forma permanente.
 
 Usa esta herramienta a diario para monitorear tu entorno.`,
             typewriterSpeed: 32,
-            dbThresholds: {
-                safe: 60,
-                warning: 85,
-                danger: 95
-            }
+            dbThresholds: { safe: 60, warning: 85, danger: 95 }
         };
 
         // ===================================================================
@@ -999,13 +995,10 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             currentView: 'home',
             
             init() {
-                // Event listeners para navegación
                 document.querySelectorAll('[data-nav]').forEach(el => {
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
-                        e.stopPropagation();
-                        const target = e.currentTarget.getAttribute('data-nav');
-                        this.navigate(target);
+                        this.navigate(e.currentTarget.getAttribute('data-nav'));
                     });
                 });
             },
@@ -1013,26 +1006,17 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             navigate(viewId) {
                 if (this.currentView === viewId) return;
 
-                console.log(`Navegando de ${this.currentView} a ${viewId}`);
-
                 // Ocultar vista actual
                 const currentEl = document.getElementById(this.currentView);
-                if (currentEl) {
-                    currentEl.classList.remove('active');
-                }
+                if (currentEl) currentEl.classList.remove('active');
 
-                // Mostrar nueva vista con delay
+                // Mostrar nueva vista
                 setTimeout(() => {
                     const targetEl = document.getElementById(viewId);
-                    if (targetEl) {
-                        targetEl.classList.add('active');
-                    }
+                    if (targetEl) targetEl.classList.add('active');
                 }, 150);
 
-                // Actualizar estado
                 this.currentView = viewId;
-
-                // Ejecutar lógica específica
                 this.handleViewLogic(viewId);
             },
 
@@ -1040,15 +1024,15 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 switch(viewId) {
                     case 'home':
                         MeterSystem.stop();
-                        ARSystem.pause();
+                        ARSystem.stopAndReset(); // <--- RESET COMPLETO AL SALIR
                         break;
                     case 'meter':
                         MeterSystem.start();
-                        ARSystem.pause();
+                        ARSystem.stopAndReset(); // <--- RESET COMPLETO AL SALIR
                         break;
                     case 'ar':
                         MeterSystem.stop();
-                        ARSystem.init();
+                        ARSystem.init(); // Iniciar fresco
                         break;
                 }
             }
@@ -1058,77 +1042,47 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
         // SISTEMA DE MEDIDOR DE DECIBELIOS (REAL)
         // ===================================================================
         const MeterSystem = {
-            active: false,
-            stream: null,
-            audioContext: null,
-            analyser: null,
-            dataArray: null,
-            canvas: null,
-            canvasContext: null,
+            active: false, stream: null, audioContext: null, analyser: null, 
+            dataArray: null, canvas: null, canvasContext: null,
 
             async start() {
                 if (this.active) return;
-
                 try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: {
-                            echoCancellation: false,
-                            noiseSuppression: false,
-                            autoGainControl: false
-                        } 
-                    });
-
+                    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AudioContext();
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 2048;
-                    this.analyser.smoothingTimeConstant = 0.8;
-
                     const source = this.audioContext.createMediaStreamSource(this.stream);
                     source.connect(this.analyser);
-
                     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-
                     this.canvas = document.getElementById('waveCanvas');
                     this.canvasContext = this.canvas.getContext('2d');
+                    // Ajuste de resolución canvas
                     this.canvas.width = this.canvas.offsetWidth;
                     this.canvas.height = this.canvas.offsetHeight;
-
                     this.active = true;
                     this.draw();
-
                 } catch (error) {
-                    console.error('Error al acceder al micrófono:', error);
-                    alert('No se pudo acceder al micrófono. Por favor, otorga los permisos necesarios.');
+                    alert('Permiso de micrófono requerido.');
                     Router.navigate('home');
                 }
             },
 
             stop() {
                 if (!this.active) return;
-
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                }
-                
-                if (this.audioContext) {
-                    this.audioContext.close();
-                }
-
+                if (this.stream) this.stream.getTracks().forEach(track => track.stop());
+                if (this.audioContext) this.audioContext.close();
                 this.active = false;
             },
 
             draw() {
                 if (!this.active) return;
-
                 requestAnimationFrame(() => this.draw());
-
                 this.analyser.getByteFrequencyData(this.dataArray);
-
                 const average = this.dataArray.reduce((a, b) => a + b) / this.dataArray.length;
                 let db = Math.floor(average * 1.3);
                 db = Math.max(30, Math.min(120, db));
-
                 this.updateUI(db);
                 this.drawWaveform();
             },
@@ -1137,54 +1091,34 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 const valueEl = document.getElementById('dbValue');
                 const circleEl = document.getElementById('meterCircle');
                 const badgeEl = document.getElementById('statusIndicator');
-
                 valueEl.textContent = db;
 
                 if (db < CONFIG.dbThresholds.safe) {
                     circleEl.style.borderColor = '#34c759';
-                    circleEl.classList.remove('danger');
-                    badgeEl.style.background = '#34c759';
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = 'SEGURO';
+                    badgeEl.style.background = '#34c759'; badgeEl.textContent = 'SEGURO';
                 } else if (db < CONFIG.dbThresholds.danger) {
                     circleEl.style.borderColor = '#ffcc00';
-                    circleEl.classList.remove('danger');
-                    badgeEl.style.background = '#ffcc00';
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = 'ALERTA';
+                    badgeEl.style.background = '#ffcc00'; badgeEl.textContent = 'ALERTA';
                 } else {
                     circleEl.style.borderColor = '#ff3b30';
-                    circleEl.classList.add('danger');
-                    badgeEl.style.background = '#ff3b30';
-                    badgeEl.style.color = '#fff';
-                    badgeEl.textContent = 'PELIGRO';
+                    badgeEl.style.background = '#ff3b30'; badgeEl.textContent = 'PELIGRO';
                 }
             },
 
             drawWaveform() {
                 if (!this.canvasContext) return;
-
                 const ctx = this.canvasContext;
-                const width = this.canvas.width;
-                const height = this.canvas.height;
-
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
-                ctx.fillRect(0, 0, width, height);
-
-                const barWidth = (width / this.dataArray.length) * 2.5;
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, w, h);
+                const barWidth = (w / this.dataArray.length) * 2.5;
                 let x = 0;
-
                 for (let i = 0; i < this.dataArray.length; i++) {
-                    const barHeight = (this.dataArray[i] / 255) * height;
-                    
-                    const gradient = ctx.createLinearGradient(0, height - barHeight, 0, height);
-                    gradient.addColorStop(0, 'rgba(215, 25, 32, 0.85)');
-                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
-                    
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
-                    
-                    x += barWidth;
+                    const barHeight = (this.dataArray[i] / 255) * h;
+                    ctx.fillStyle = `rgba(215, 25, 32, ${this.dataArray[i]/255})`;
+                    ctx.fillRect(x, h - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
                 }
             }
         };
@@ -1195,80 +1129,90 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
         const ARSystem = {
             initialized: false,
             audioContext: null,
-            source: null,
-            gainNode: null,
-            filterNode: null,
             isProtected: false,
             isAudioLoaded: false,
             updateInterval: null,
-            markerDetected: false,
 
             init() {
-                if (this.initialized) {
-                    this.resume();
-                    return;
+                // Activar escena
+                document.getElementById('arScene').style.display = 'block';
+                
+                if (!this.initialized) {
+                    this.setupEventListeners();
+                    this.initialized = true;
                 }
+                // IMPORTANTE: Aseguramos estado limpio al entrar
+                this.resetState(); 
+            },
 
-                this.setupEventListeners();
-                this.initialized = true;
-                this.resume();
+            stopAndReset() {
+                // Detener audio
+                if (this.audioContext) this.audioContext.close();
+                this.audioContext = null;
+                
+                // Limpiar intervalos
+                if (this.updateInterval) clearInterval(this.updateInterval);
+                
+                // Ocultar escena para ahorrar recursos
+                document.getElementById('arScene').style.display = 'none';
+                
+                this.isAudioLoaded = false;
+                this.isProtected = false;
+            },
+
+            resetState() {
+                // 1. Restaurar UI
+                const btn = document.getElementById('btnStartAR');
+                btn.style.display = 'block';
+                btn.innerHTML = '🔊 INICIAR SIMULACIÓN';
+                btn.disabled = false;
+                
+                document.getElementById('btnProtectAR').style.display = 'none';
+                document.getElementById('arStatusText').textContent = '';
+                document.getElementById('dangerOverlay').classList.remove('active');
+                
+                document.getElementById('hudValue').style.color = 'var(--primary-red)';
+                document.getElementById('hudFill').style.background = 'var(--primary-red)';
+
+                // 2. Restaurar Objetos 3D (Crucial porque TWEEN los modificó)
+                const hp = document.getElementById('headphones');
+                hp.setAttribute('visible', true);
+                // IMPORTANTE: Reseteamos la escala a la que definiste en HTML (0.8)
+                hp.setAttribute('scale', '0.8 0.8 0.8'); 
+                hp.setAttribute('position', '0 0.5 0');
+                hp.setAttribute('rotation', '0 0 0');
+
+                // 3. Restaurar Panel Mensaje
+                const panel = document.getElementById('messagePanel');
+                panel.setAttribute('visible', false);
+                panel.setAttribute('scale', '0 0 0');
+                document.getElementById('messageText').setAttribute('value', '');
             },
 
             setupEventListeners() {
-                document.getElementById('btnStartAR').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.loadAudio();
-                });
-
-                document.getElementById('btnProtectAR').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.applyProtection();
-                });
-
+                document.getElementById('btnStartAR').addEventListener('click', () => this.loadAudio());
+                document.getElementById('btnProtectAR').addEventListener('click', () => this.applyProtection());
+                
                 const marker = document.getElementById('arMarker');
-                
                 marker.addEventListener('markerFound', () => {
-                    this.onMarkerFound();
+                    document.getElementById('arRoot').setAttribute('visible', true);
+                    document.getElementById('arInstructions').style.display = 'none';
                 });
-
-                marker.addEventListener('markerLost', () => {
-                    this.onMarkerLost();
-                });
-            },
-
-            onMarkerFound() {
-                this.markerDetected = true;
-                document.getElementById('arRoot').setAttribute('visible', 'true');
-                document.getElementById('arInstructions').style.display = 'none';
-                
-                if (!this.isAudioLoaded) {
-                    document.getElementById('arStatusText').textContent = 'Marcador detectado';
-                }
-            },
-
-            onMarkerLost() {
-                this.markerDetected = false;
             },
 
             async loadAudio() {
                 const btn = document.getElementById('btnStartAR');
                 btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
-                btn.disabled = true;
-
+                
                 try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.audioContext = new AudioContext();
-
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AC();
                     const response = await fetch(CONFIG.audioFile);
-                    if (!response.ok) throw new Error('Audio no encontrado');
-                    
-                    const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    const buf = await response.arrayBuffer();
+                    const audioBuf = await this.audioContext.decodeAudioData(buf);
 
                     this.source = this.audioContext.createBufferSource();
-                    this.source.buffer = audioBuffer;
+                    this.source.buffer = audioBuf;
                     this.source.loop = true;
 
                     this.filterNode = this.audioContext.createBiquadFilter();
@@ -1276,181 +1220,98 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                     this.filterNode.frequency.value = 22000;
 
                     this.gainNode = this.audioContext.createGain();
-                    this.gainNode.gain.value = 1.0;
+                    this.gainNode.value = 1.0;
 
-                    this.source
-                        .connect(this.filterNode)
-                        .connect(this.gainNode)
-                        .connect(this.audioContext.destination);
-
+                    this.source.connect(this.filterNode).connect(this.gainNode).connect(this.audioContext.destination);
                     this.source.start(0);
 
                     this.isAudioLoaded = true;
                     btn.style.display = 'none';
-                    document.getElementById('btnProtectAR').classList.add('visible');
+                    document.getElementById('btnProtectAR').style.display = 'block';
                     document.getElementById('arStatusText').textContent = '¡Nivel peligroso de ruido!';
                     document.getElementById('dangerOverlay').classList.add('active');
+                    this.startHUD();
 
-                    this.startHUDUpdate();
-
-                } catch (error) {
-                    console.error('Error al cargar audio:', error);
-                    alert('Error: No se pudo cargar el archivo de audio. Asegúrate de que "Sonidos_De_Fabrica.wav" esté disponible.');
-                    btn.textContent = 'ERROR AL CARGAR';
-                    btn.style.background = '#ff3b30';
+                } catch (e) {
+                    alert('Error cargando audio.');
+                    btn.innerHTML = 'ERROR';
                 }
             },
 
-            startHUDUpdate() {
+            startHUD() {
                 if (this.updateInterval) clearInterval(this.updateInterval);
-
                 this.updateInterval = setInterval(() => {
                     if (!this.isAudioLoaded) return;
-
-                    let db;
-                    if (!this.isProtected) {
-                        db = 95 + Math.floor(Math.random() * 15);
-                    } else {
-                        db = 60 + Math.floor(Math.random() * 10);
-                    }
-
-                    document.getElementById('hudValue').textContent = `${db} dB`;
-                    const percentage = Math.min(100, (db / 120) * 100);
-                    document.getElementById('hudFill').style.width = `${percentage}%`;
-
+                    let db = this.isProtected ? 60 + Math.random()*5 : 95 + Math.random()*10;
+                    document.getElementById('hudValue').textContent = `${Math.floor(db)} dB`;
+                    document.getElementById('hudFill').style.width = `${Math.min(100, (db/120)*100)}%`;
                 }, 150);
             },
 
             applyProtection() {
-                if (this.isProtected || !this.isAudioLoaded) return;
-
+                if (this.isProtected) return;
                 this.isProtected = true;
 
-                const currentTime = this.audioContext.currentTime;
-                this.filterNode.frequency.exponentialRampToValueAtTime(350, currentTime + 2);
-                this.gainNode.gain.exponentialRampToValueAtTime(0.12, currentTime + 2);
+                const t = this.audioContext.currentTime;
+                this.filterNode.frequency.exponentialRampToValueAtTime(350, t + 2);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.1, t + 2);
 
                 document.getElementById('btnProtectAR').style.display = 'none';
-                document.getElementById('arStatusText').textContent = 'Protección aplicada';
+                document.getElementById('arStatusText').textContent = 'Protección Activada';
                 document.getElementById('dangerOverlay').classList.remove('active');
-                
                 document.getElementById('hudValue').style.color = '#34c759';
-                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #66ff66 100%)';
+                document.getElementById('hudFill').style.background = '#34c759';
 
-                this.animateHeadphones();
+                this.animate3D();
             },
 
-            animateHeadphones() {
-                const headphones = document.getElementById('headphones');
-                
-                headphones.removeAttribute('animation');
-                headphones.removeAttribute('animation__rot');
-
-                new TWEEN.Tween({ z: 0, scale: 0.6, rotation: 0 })
-                    .to({ z: 2.5, scale: 5, rotation: 15 }, 1400)
+            animate3D() {
+                const hp = document.getElementById('headphones');
+                // Tweens para animación suave
+                new TWEEN.Tween({z:0, s:0.8}) // Empieza en escala 0.8
+                    .to({z:3, s:6}, 1500)
                     .easing(TWEEN.Easing.Cubic.In)
-                    .onUpdate((obj) => {
-                        headphones.setAttribute('position', `0 0.2 ${obj.z}`);
-                        headphones.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
-                        headphones.setAttribute('rotation', `${obj.rotation} 0 0`);
+                    .onUpdate(o => {
+                        hp.setAttribute('position', `0 0.5 ${o.z}`);
+                        hp.setAttribute('scale', `${o.s} ${o.s} ${o.s}`);
                     })
                     .onComplete(() => {
-                        headphones.setAttribute('visible', 'false');
-                        this.showMessagePanel();
+                        hp.setAttribute('visible', false);
+                        this.showPanel();
                     })
                     .start();
             },
 
-            showMessagePanel() {
-                const panel = document.getElementById('messagePanel');
-                panel.setAttribute('visible', 'true');
-
-                new TWEEN.Tween({ scale: 0 })
-                    .to({ scale: 1 }, 1000)
-                    .easing(TWEEN.Easing.Elastic.Out)
-                    .onUpdate((obj) => {
-                        panel.setAttribute('scale', `${obj.scale} ${obj.scale} ${obj.scale}`);
-                    })
-                    .onComplete(() => {
-                        this.startTypewriter();
-                    })
+            showPanel() {
+                const p = document.getElementById('messagePanel');
+                p.setAttribute('visible', true);
+                new TWEEN.Tween({s:0}).to({s:1}, 800).easing(TWEEN.Easing.Back.Out)
+                    .onUpdate(o => p.setAttribute('scale', `${o.s} ${o.s} ${o.s}`))
+                    .onComplete(() => this.typewriter())
                     .start();
             },
 
-            startTypewriter() {
-                const textEl = document.getElementById('messageText');
-                const message = CONFIG.finalMessage;
-                let index = 0;
-
-                textEl.setAttribute('value', '');
-
-                const typeInterval = setInterval(() => {
-                    if (index < message.length) {
-                        const currentText = textEl.getAttribute('value');
-                        textEl.setAttribute('value', currentText + message.charAt(index));
-                        index++;
-                    } else {
-                        clearInterval(typeInterval);
-                    }
+            typewriter() {
+                const el = document.getElementById('messageText');
+                const txt = CONFIG.finalMessage;
+                let i = 0;
+                el.setAttribute('value', '');
+                const t = setInterval(() => {
+                    el.setAttribute('value', txt.substring(0, i++));
+                    if(i > txt.length) clearInterval(t);
                 }, CONFIG.typewriterSpeed);
-            },
-
-            pause() {
-                const scene = document.getElementById('arScene');
-                scene.classList.remove('active');
-                
-                if (this.audioContext && this.audioContext.state === 'running') {
-                    this.audioContext.suspend();
-                }
-                if (this.updateInterval) {
-                    clearInterval(this.updateInterval);
-                }
-            },
-
-            resume() {
-                const scene = document.getElementById('arScene');
-                scene.classList.add('active');
-                
-                if (this.audioContext && this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
-                if (this.isAudioLoaded && !this.updateInterval) {
-                    this.startHUDUpdate();
-                }
             }
         };
 
-        // ===================================================================
-        // SISTEMA DE ANIMACIÓN GLOBAL (TWEEN)
-        // ===================================================================
+        // Loop de animación global
         function animate(time) {
             requestAnimationFrame(animate);
             TWEEN.update(time);
         }
         requestAnimationFrame(animate);
 
-        // ===================================================================
-        // INICIALIZACIÓN
-        // ===================================================================
-        window.addEventListener('load', () => {
-            Router.init();
-            console.log('%c🎧 Lanxess Safety Suite v10.0 MOBILE', 'color: #D71920; font-size: 16px; font-weight: bold;');
-            console.log('%cOptimizado para dispositivos móviles', 'color: #34c759; font-size: 12px;');
-        });
-
-        // Prevenir errores de A-Frame en consola
-        window.addEventListener('error', (e) => {
-            if (e.message && e.message.includes('A-Frame')) {
-                e.preventDefault();
-            }
-        });
-
-        // Prevenir scroll en móvil
-        document.body.addEventListener('touchmove', (e) => {
-            if (Router.currentView !== 'home') {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        window.onload = () => Router.init();
     </script>
 </body>
 </html>
+
