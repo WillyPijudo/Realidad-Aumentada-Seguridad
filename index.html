@@ -8,43 +8,34 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Lanxess Safety AR Pro</title>
 
-    <!-- Libraries -->
+    <!-- Libraries - Optimizadas -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
         /* ===================================================================
-           VARIABLES Y FUENTES
+           VARIABLES Y FUENTES OPTIMIZADAS
            =================================================================== */
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;900&family=Roboto:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
         :root {
-            /* Colores Corporativos */
             --primary-red: #D71920;
             --deep-black: #0a0a0a;
             --dark-gray: #1a1a1a;
             --medium-gray: #2a2a2a;
             --light-gray: #b0b0b0;
             --pure-white: #ffffff;
-            
-            /* Estados */
             --danger: #ff3b30;
             --warning: #ffcc00;
             --safe: #34c759;
             --info: #007aff;
-            
-            /* Tipografías */
             --font-display: 'Orbitron', monospace;
             --font-heading: 'Exo 2', sans-serif;
             --font-body: 'Roboto', sans-serif;
-            
-            /* Animaciones */
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            /* Safe areas para móvil */
             --safe-top: env(safe-area-inset-top, 20px);
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
@@ -95,7 +86,7 @@
         }
 
         /* ===================================================================
-           BOTÓN DE NAVEGACIÓN (VOLVER) - OPTIMIZADO
+           BOTÓN DE NAVEGACIÓN (VOLVER)
            =================================================================== */
         .btn-back {
             position: fixed;
@@ -142,7 +133,6 @@
             padding: 40px 20px;
         }
 
-        /* Logo y Header */
         .home-header {
             text-align: center;
             margin-bottom: 60px;
@@ -205,7 +195,6 @@
             text-transform: uppercase;
         }
 
-        /* Menú de Opciones */
         .menu-grid {
             display: flex;
             flex-direction: column;
@@ -289,7 +278,6 @@
             font-weight: 900;
         }
 
-        /* Footer */
         .home-footer {
             position: absolute;
             bottom: calc(var(--safe-bottom) + 20px);
@@ -303,7 +291,7 @@
         }
 
         /* ===================================================================
-           VISTA 2: MEDIDOR DE DECIBELIOS REAL
+           VISTA 2: MEDIDOR DE DECIBELIOS
            =================================================================== */
         #meter {
             flex-direction: column;
@@ -313,7 +301,6 @@
             padding-top: calc(var(--safe-top) + 90px);
         }
 
-        /* Medidor Circular Principal */
         .meter-display {
             width: 280px;
             height: 280px;
@@ -398,7 +385,6 @@
             transition: all var(--transition-fast);
         }
 
-        /* Visualizador de Ondas */
         .wave-visualizer {
             width: 90%;
             max-width: 360px;
@@ -416,7 +402,6 @@
             height: 100%;
         }
 
-        /* Info Box */
         .meter-info {
             max-width: 320px;
             padding: 20px;
@@ -439,14 +424,13 @@
         }
 
         /* ===================================================================
-           VISTA 3: SIMULADOR AR - OPTIMIZADO PARA MÓVIL
+           VISTA 3: SIMULADOR AR - OPTIMIZADO
            =================================================================== */
         #ar {
             background: transparent;
             pointer-events: none;
         }
 
-        /* HUD Superior - Compacto */
         .ar-hud {
             position: fixed;
             top: calc(var(--safe-top) + 70px);
@@ -503,7 +487,6 @@
             box-shadow: 0 0 8px rgba(215, 25, 32, 0.9);
         }
 
-        /* Instrucciones AR - Centradas */
         .ar-instructions {
             position: fixed;
             top: 50%;
@@ -553,7 +536,6 @@
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
         }
 
-        /* Controles AR - Optimizados */
         .ar-controls {
             position: fixed;
             bottom: 0;
@@ -639,7 +621,6 @@
             box-shadow: 0 6px 25px rgba(52, 199, 89, 0.5);
         }
 
-        /* Overlay de Peligro */
         .danger-overlay {
             position: fixed;
             top: 0;
@@ -665,7 +646,6 @@
             }
         }
 
-        /* Loading Spinner */
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -683,36 +663,24 @@
         }
 
         /* ===================================================================
-           A-FRAME SCENE - OPTIMIZADO
+           A-FRAME OPTIMIZATIONS
            =================================================================== */
         a-scene {
-            position: fixed;
+            position: fixed !important;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 1;
-            visibility: hidden;
         }
 
-        a-scene.active {
-            visibility: visible;
-        }
-
-        /* Ocultar canvas de A-Frame cuando no está en AR */
-        #ar:not(.active) a-scene {
-            display: none;
+        .a-canvas {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         /* ===================================================================
-           UTILIDADES GLOBALES
-           =================================================================== */
-        .hidden {
-            display: none !important;
-        }
-
-        /* ===================================================================
-           RESPONSIVE OPTIMIZATIONS
+           RESPONSIVE
            =================================================================== */
         @media (max-width: 360px) {
             .home-header h1 {
@@ -728,31 +696,20 @@
                 font-size: 68px;
             }
         }
+
         @media (min-height: 700px) {
             #meter {
                 padding-top: calc(var(--safe-top) + 120px);
             }
-        } /* <--- ¡TE FALTABA ESTA LLAVE DE CIERRE! */
-
-        /* El arreglo de cámara debe estar FUERA del media query */
-        .a-canvas, video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            position: absolute !important;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 0 !important;
-            margin: 0 !important;
         }
     </style>
 </head>
 <body>
 
-    <!-- Overlay de Peligro Global -->
     <div id="dangerOverlay" class="danger-overlay"></div>
 
     <!-- ===================================================================
-         VISTA 1: HOME (MENÚ PRINCIPAL)
+         VISTA 1: HOME
          =================================================================== -->
     <div id="home" class="view active">
         <div class="home-header">
@@ -785,12 +742,12 @@
         </div>
 
         <div class="home-footer">
-            LANXESS INITIATIVE • v10.0 MOBILE
+            LANXESS INITIATIVE • v11.0 OPTIMIZADO
         </div>
     </div>
 
     <!-- ===================================================================
-         VISTA 2: MEDIDOR DE DECIBELIOS
+         VISTA 2: MEDIDOR
          =================================================================== -->
     <div id="meter" class="view">
         <div class="btn-back" data-nav="home"></div>
@@ -817,12 +774,11 @@
     </div>
 
     <!-- ===================================================================
-         VISTA 3: SIMULADOR AR
+         VISTA 3: AR
          =================================================================== -->
     <div id="ar" class="view">
         <div class="btn-back" data-nav="home"></div>
 
-        <!-- HUD Superior -->
         <div class="ar-hud">
             <div class="hud-meter">
                 <div class="hud-label">SIMULACIÓN RUIDO</div>
@@ -833,14 +789,12 @@
             </div>
         </div>
 
-        <!-- Instrucciones -->
         <div class="ar-instructions" id="arInstructions">
             <div class="instruction-icon">📱</div>
             <div class="instruction-text">Apunta al Marcador AR</div>
-            <div class="instruction-subtext">Escanea el código QR de seguridad</div>
+            <div class="instruction-subtext">Escanea el código de seguridad</div>
         </div>
 
-        <!-- Controles -->
         <div class="ar-controls">
             <div class="ar-status-text" id="arStatusText"></div>
             <button id="btnStartAR" class="btn-ar visible">
@@ -853,88 +807,105 @@
     </div>
 
     <!-- ===================================================================
-         ESCENA A-FRAME (AR) - MODELO REDUCIDO
+         A-FRAME SCENE - CORREGIDA Y OPTIMIZADA
          =================================================================== -->
     <a-scene 
         id="arScene"
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; colorManagement: true; antialias: true;"
-        loading-screen="enabled: false;">
+        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;"
+        loading-screen="enabled: false"
+        embedded>
 
-        <a-assets>
+        <a-assets timeout="10000">
             <a-asset-item id="modelo-auris" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
         </a-assets>
-        <!-- Iluminación -->
-        <a-light type="ambient" intensity="0.7"></a-light>
-        <a-light type="directional" position="2 3 1" intensity="1.3"></a-light>
-        <a-light type="point" color="#D71920" intensity="0.9" position="-1.2 1 0"></a-light>
 
-        <!-- Marcador AR -->
-<a-marker 
+        <!-- ILUMINACIÓN MEJORADA -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 1.2"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="2 4 2"></a-entity>
+        <a-entity light="type: point; color: #D71920; intensity: 1.2; distance: 50; decay: 2" position="-2 2 0"></a-entity>
+        <a-entity light="type: point; color: #FFF; intensity: 0.8; distance: 50; decay: 2" position="2 2 2"></a-entity>
+
+        <!-- MARCADOR AR CORREGIDO -->
+        <a-marker 
             type="pattern" 
             url="pattern-marker.patt" 
             smooth="true" 
-            smoothCount="5"
+            smoothCount="10"
+            smoothTolerance="0.01"
+            smoothThreshold="5"
             id="arMarker">
             
             <a-entity id="arRoot" visible="false">
                 
+                <!-- MODELO 3D - ESCALA CORREGIDA -->
                 <a-entity 
                     id="headphones" 
                     gltf-model="#modelo-auris"
-                    position="0 0.5 0" 
+                    position="0 0.3 0" 
                     rotation="0 0 0" 
-                    scale="0.1 0.1 0.1"
-                    animation="property: position; from: 0 0.5 0; to: 0 0.6 0; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"
-                    animation__rot="property: rotation; to: 0 360 0; dur: 10000; loop: true; easing: linear">
-                    
-                    <a-text value="PELIGRO RUIDO" color="red" align="center" position="0 0.5 0" scale="0.5 0.5 0.5" width="4"></a-text>
+                    scale="3 3 3"
+                    animation="property: position; from: 0 0.3 0; to: 0 0.5 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
+                    animation__rotate="property: rotation; to: 0 360 0; dur: 12000; loop: true; easing: linear">
                 </a-entity>
+
+                <!-- TEXTO DE PELIGRO -->
+                <a-text 
+                    value="⚠️ PELIGRO RUIDO ⚠️" 
+                    color="#D71920" 
+                    align="center" 
+                    position="0 1.2 0" 
+                    scale="2 2 2" 
+                    width="2"
+                    animation="property: scale; from: 2 2 2; to: 2.3 2.3 2.3; dir: alternate; dur: 1000; loop: true">
+                </a-text>
+
+                <!-- PANEL DE MENSAJE -->
                 <a-entity 
                     id="messagePanel" 
                     visible="false" 
-                    position="0 0.2 0.5" 
-                    rotation="-25 0 0"
+                    position="0 0.5 1" 
+                    rotation="-20 0 0"
                     scale="0 0 0">
                     
                     <a-plane 
-                        color="#000000" 
-                        opacity="0.96" 
-                        width="3.5" 
-                        height="2.8"
-                        material="shader: standard; roughness: 0.2; metalness: 0.9;">
+                        color="#0a0a0a" 
+                        opacity="0.98" 
+                        width="4" 
+                        height="3.2"
+                        material="shader: flat;">
                     </a-plane>
                     
                     <a-plane 
                         color="#D71920" 
-                        width="3.4" 
-                        height="2.7" 
+                        width="3.9" 
+                        height="3.1" 
                         position="0 0 0.01">
                     </a-plane>
                     
                     <a-plane 
                         color="#0a0a0a" 
                         opacity="0.95" 
-                        width="3.3" 
-                        height="2.6" 
+                        width="3.8" 
+                        height="3" 
                         position="0 0 0.02">
                     </a-plane>
 
                     <a-text 
-                        value="RECORDATORIO DE SEGURIDAD" 
+                        value="🛡️ RECORDATORIO DE SEGURIDAD 🛡️" 
                         color="#D71920" 
                         align="center" 
-                        width="4" 
-                        position="0 1.0 0.05"
+                        width="4.5" 
+                        position="0 1.3 0.05"
                         font="mozillavr">
                     </a-text>
                     
                     <a-plane 
                         color="#D71920" 
-                        width="2.2" 
-                        height="0.015" 
-                        position="0 0.85 0.05">
+                        width="2.5" 
+                        height="0.02" 
+                        position="0 1.1 0.05">
                     </a-plane>
 
                     <a-text 
@@ -942,54 +913,48 @@
                         value="" 
                         color="#FFFFFF" 
                         align="center" 
-                        width="3.2" 
-                        position="0 0 0.05" 
-                        wrap-count="28"
-                        line-height="52"
+                        width="3.6" 
+                        position="0 0.1 0.05" 
+                        wrap-count="32"
+                        line-height="60"
                         font="mozillavr">
                     </a-text>
 
                     <a-text 
-                        value="HERRAMIENTA DIARIA LANXESS" 
+                        value="LANXESS • PROTECCIÓN AUDITIVA DIARIA" 
                         color="#666666" 
                         align="center" 
-                        width="2.8" 
-                        position="0 -1.15 0.05"
+                        width="3.2" 
+                        position="0 -1.4 0.05"
                         font="mozillavr">
                     </a-text>
-
-                    <a-text 
-                        value="🛡️" 
-                        align="center" 
-                        width="1.5" 
-                        position="0 -1.35 0.05">
-                    </a-text>
-                    </a-entity>
+                </a-entity>
+            </a-entity>
         </a-marker>
 
-        <a-entity camera></a-entity>
+        <a-entity camera look-controls="enabled: false"></a-entity>
     </a-scene>
 
     <!-- ===================================================================
-         JAVASCRIPT PRINCIPAL
+         JAVASCRIPT - COMPLETAMENTE OPTIMIZADO
          =================================================================== -->
-<script>
+    <script>
         // ===================================================================
-        // CONFIGURACIÓN GLOBAL
+        // CONFIG GLOBAL
         // ===================================================================
         const CONFIG = {
             audioFile: 'Sonidos_De_Fabrica.wav',
-            finalMessage: `No te olvides de usar protección auditiva en el hogar o zonas de trabajo.
+            finalMessage: `No olvides usar protección auditiva en el hogar o zonas de trabajo.
 
-Los decibelios altos pueden perjudicar tu salud auditiva de forma permanente.
+Los decibelios altos pueden dañar tu audición de forma permanente.
 
-Usa esta herramienta a diario para monitorear tu entorno.`,
-            typewriterSpeed: 32,
+Usa esta herramienta a diario para monitorear tu entorno sonoro.`,
+            typewriterSpeed: 25,
             dbThresholds: { safe: 60, warning: 85, danger: 95 }
         };
 
         // ===================================================================
-        // SISTEMA DE NAVEGACIÓN (ROUTER)
+        // ROUTER OPTIMIZADO
         // ===================================================================
         const Router = {
             currentView: 'home',
@@ -998,6 +963,7 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 document.querySelectorAll('[data-nav]').forEach(el => {
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         this.navigate(e.currentTarget.getAttribute('data-nav'));
                     });
                 });
@@ -1006,83 +972,120 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
             navigate(viewId) {
                 if (this.currentView === viewId) return;
 
-                // Ocultar vista actual
                 const currentEl = document.getElementById(this.currentView);
                 if (currentEl) currentEl.classList.remove('active');
 
-                // Mostrar nueva vista
                 setTimeout(() => {
                     const targetEl = document.getElementById(viewId);
                     if (targetEl) targetEl.classList.add('active');
-                }, 150);
+                    this.handleViewLogic(viewId);
+                }, 100);
 
                 this.currentView = viewId;
-                this.handleViewLogic(viewId);
             },
 
             handleViewLogic(viewId) {
                 switch(viewId) {
                     case 'home':
                         MeterSystem.stop();
-                        ARSystem.stopAndReset(); // <--- RESET COMPLETO AL SALIR
+                        ARSystem.destroy();
                         break;
                     case 'meter':
-                        MeterSystem.start();
-                        ARSystem.stopAndReset(); // <--- RESET COMPLETO AL SALIR
+                        ARSystem.destroy();
+                        setTimeout(() => MeterSystem.start(), 200);
                         break;
                     case 'ar':
                         MeterSystem.stop();
-                        ARSystem.init(); // Iniciar fresco
+                        setTimeout(() => ARSystem.init(), 200);
                         break;
                 }
             }
         };
 
         // ===================================================================
-        // SISTEMA DE MEDIDOR DE DECIBELIOS (REAL)
+        // MEDIDOR DE DECIBELIOS - OPTIMIZADO
         // ===================================================================
         const MeterSystem = {
-            active: false, stream: null, audioContext: null, analyser: null, 
-            dataArray: null, canvas: null, canvasContext: null,
+            active: false, 
+            stream: null, 
+            audioContext: null, 
+            analyser: null, 
+            dataArray: null, 
+            canvas: null, 
+            canvasContext: null,
+            animationId: null,
 
             async start() {
                 if (this.active) return;
+                
                 try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: { 
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            autoGainControl: false
+                        } 
+                    });
+                    
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AudioContext();
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 2048;
+                    this.analyser.smoothingTimeConstant = 0.8;
+                    
                     const source = this.audioContext.createMediaStreamSource(this.stream);
                     source.connect(this.analyser);
+                    
                     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                    
                     this.canvas = document.getElementById('waveCanvas');
                     this.canvasContext = this.canvas.getContext('2d');
-                    // Ajuste de resolución canvas
-                    this.canvas.width = this.canvas.offsetWidth;
-                    this.canvas.height = this.canvas.offsetHeight;
+                    this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio;
+                    this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio;
+                    this.canvasContext.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    
                     this.active = true;
                     this.draw();
+                    
                 } catch (error) {
-                    alert('Permiso de micrófono requerido.');
+                    console.error('Mic error:', error);
+                    alert('❌ Necesitas permitir el acceso al micrófono');
                     Router.navigate('home');
                 }
             },
 
             stop() {
                 if (!this.active) return;
-                if (this.stream) this.stream.getTracks().forEach(track => track.stop());
-                if (this.audioContext) this.audioContext.close();
+                
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+                
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                }
+                
                 this.active = false;
             },
 
             draw() {
                 if (!this.active) return;
-                requestAnimationFrame(() => this.draw());
+                
+                this.animationId = requestAnimationFrame(() => this.draw());
+                
                 this.analyser.getByteFrequencyData(this.dataArray);
-                const average = this.dataArray.reduce((a, b) => a + b) / this.dataArray.length;
-                let db = Math.floor(average * 1.3);
+                
+                const average = this.dataArray.reduce((a, b) => a + b, 0) / this.dataArray.length;
+                let db = Math.floor(20 + average * 0.9);
                 db = Math.max(30, Math.min(120, db));
+                
                 this.updateUI(db);
                 this.drawWaveform();
             },
@@ -1091,228 +1094,372 @@ Usa esta herramienta a diario para monitorear tu entorno.`,
                 const valueEl = document.getElementById('dbValue');
                 const circleEl = document.getElementById('meterCircle');
                 const badgeEl = document.getElementById('statusIndicator');
+                
                 valueEl.textContent = db;
 
+                circleEl.classList.remove('danger');
+                
                 if (db < CONFIG.dbThresholds.safe) {
                     circleEl.style.borderColor = '#34c759';
-                    badgeEl.style.background = '#34c759'; badgeEl.textContent = 'SEGURO';
+                    badgeEl.style.background = '#34c759'; 
+                    badgeEl.style.color = '#000';
+                    badgeEl.textContent = '✓ SEGURO';
                 } else if (db < CONFIG.dbThresholds.danger) {
                     circleEl.style.borderColor = '#ffcc00';
-                    badgeEl.style.background = '#ffcc00'; badgeEl.textContent = 'ALERTA';
+                    badgeEl.style.background = '#ffcc00'; 
+                    badgeEl.style.color = '#000';
+                    badgeEl.textContent = '⚠ ALERTA';
                 } else {
                     circleEl.style.borderColor = '#ff3b30';
-                    badgeEl.style.background = '#ff3b30'; badgeEl.textContent = 'PELIGRO';
+                    circleEl.classList.add('danger');
+                    badgeEl.style.background = '#ff3b30'; 
+                    badgeEl.style.color = '#fff';
+                    badgeEl.textContent = '✖ PELIGRO';
                 }
             },
 
             drawWaveform() {
                 if (!this.canvasContext) return;
+                
                 const ctx = this.canvasContext;
-                const w = this.canvas.width;
-                const h = this.canvas.height;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                const w = this.canvas.width / window.devicePixelRatio;
+                const h = this.canvas.height / window.devicePixelRatio;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
                 ctx.fillRect(0, 0, w, h);
+                
                 const barWidth = (w / this.dataArray.length) * 2.5;
                 let x = 0;
+                
                 for (let i = 0; i < this.dataArray.length; i++) {
-                    const barHeight = (this.dataArray[i] / 255) * h;
-                    ctx.fillStyle = `rgba(215, 25, 32, ${this.dataArray[i]/255})`;
+                    const normalizedValue = this.dataArray[i] / 255;
+                    const barHeight = normalizedValue * h;
+                    
+                    const hue = 0; // Rojo
+                    const saturation = 100;
+                    const lightness = 40 + (normalizedValue * 20);
+                    
+                    ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${normalizedValue})`;
                     ctx.fillRect(x, h - barHeight, barWidth, barHeight);
+                    
                     x += barWidth + 1;
                 }
             }
         };
 
         // ===================================================================
-        // SISTEMA AR (SIMULADOR)
+        // SISTEMA AR - COMPLETAMENTE REESCRITO
         // ===================================================================
         const ARSystem = {
             initialized: false,
             audioContext: null,
+            source: null,
+            filterNode: null,
+            gainNode: null,
             isProtected: false,
             isAudioLoaded: false,
-            updateInterval: null,
+            hudInterval: null,
+            markerVisible: false,
 
             init() {
-                // Activar escena
-                document.getElementById('arScene').style.display = 'block';
+                console.log('🎯 Inicializando AR...');
                 
                 if (!this.initialized) {
                     this.setupEventListeners();
                     this.initialized = true;
                 }
-                // IMPORTANTE: Aseguramos estado limpio al entrar
-                this.resetState(); 
+                
+                this.resetCompleteState();
             },
 
-            stopAndReset() {
-                // Detener audio
-                if (this.audioContext) this.audioContext.close();
-                this.audioContext = null;
+            destroy() {
+                console.log('🗑️ Destruyendo AR...');
                 
-                // Limpiar intervalos
-                if (this.updateInterval) clearInterval(this.updateInterval);
+                if (this.source) {
+                    try { this.source.stop(); } catch(e) {}
+                    this.source = null;
+                }
                 
-                // Ocultar escena para ahorrar recursos
-                document.getElementById('arScene').style.display = 'none';
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                }
+                
+                if (this.hudInterval) {
+                    clearInterval(this.hudInterval);
+                    this.hudInterval = null;
+                }
                 
                 this.isAudioLoaded = false;
                 this.isProtected = false;
+                this.markerVisible = false;
+                
+                // Limpiar todos los tweens activos
+                TWEEN.removeAll();
             },
 
-            resetState() {
-                // 1. Restaurar UI
-                const btn = document.getElementById('btnStartAR');
-                btn.style.display = 'block';
-                btn.innerHTML = '🔊 INICIAR SIMULACIÓN';
-                btn.disabled = false;
+            resetCompleteState() {
+                // UI Reset
+                const btnStart = document.getElementById('btnStartAR');
+                btnStart.classList.add('visible');
+                btnStart.innerHTML = '🔊 INICIAR SIMULACIÓN';
+                btnStart.disabled = false;
                 
-                document.getElementById('btnProtectAR').style.display = 'none';
+                document.getElementById('btnProtectAR').classList.remove('visible');
                 document.getElementById('arStatusText').textContent = '';
                 document.getElementById('dangerOverlay').classList.remove('active');
+                document.getElementById('arInstructions').style.display = 'flex';
                 
+                // HUD Reset
+                document.getElementById('hudValue').textContent = '0 dB';
                 document.getElementById('hudValue').style.color = 'var(--primary-red)';
-                document.getElementById('hudFill').style.background = 'var(--primary-red)';
+                document.getElementById('hudFill').style.width = '0%';
+                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%)';
 
-                // 2. Restaurar Objetos 3D (Crucial porque TWEEN los modificó)
-                const hp = document.getElementById('headphones');
-                hp.setAttribute('visible', true);
-                // IMPORTANTE: Reseteamos la escala a la que definiste en HTML (0.8)
-                hp.setAttribute('scale', '0.8 0.8 0.8'); 
-                hp.setAttribute('position', '0 0.5 0');
-                hp.setAttribute('rotation', '0 0 0');
+                // 3D Reset - CRUCIAL
+                setTimeout(() => {
+                    const hp = document.getElementById('headphones');
+                    const panel = document.getElementById('messagePanel');
+                    const root = document.getElementById('arRoot');
+                    
+                    if (hp) {
+                        hp.setAttribute('visible', 'true');
+                        hp.setAttribute('scale', '3 3 3'); // Escala visible
+                        hp.setAttribute('position', '0 0.3 0');
+                        hp.object3D.visible = true;
+                    }
+                    
+                    if (panel) {
+                        panel.setAttribute('visible', 'false');
+                        panel.setAttribute('scale', '0 0 0');
+                        document.getElementById('messageText').setAttribute('value', '');
+                    }
+                    
+                    if (root) {
+                        root.setAttribute('visible', 'false');
+                    }
+                }, 100);
 
-                // 3. Restaurar Panel Mensaje
-                const panel = document.getElementById('messagePanel');
-                panel.setAttribute('visible', false);
-                panel.setAttribute('scale', '0 0 0');
-                document.getElementById('messageText').setAttribute('value', '');
+                this.isProtected = false;
+                this.isAudioLoaded = false;
+                this.markerVisible = false;
             },
 
             setupEventListeners() {
-                document.getElementById('btnStartAR').addEventListener('click', () => this.loadAudio());
-                document.getElementById('btnProtectAR').addEventListener('click', () => this.applyProtection());
+                document.getElementById('btnStartAR').addEventListener('click', () => {
+                    this.loadAudio();
+                });
+                
+                document.getElementById('btnProtectAR').addEventListener('click', () => {
+                    this.applyProtection();
+                });
                 
                 const marker = document.getElementById('arMarker');
+                
                 marker.addEventListener('markerFound', () => {
-                    document.getElementById('arRoot').setAttribute('visible', true);
+                    console.log('✅ Marcador detectado');
+                    this.markerVisible = true;
+                    document.getElementById('arRoot').setAttribute('visible', 'true');
                     document.getElementById('arInstructions').style.display = 'none';
+                });
+                
+                marker.addEventListener('markerLost', () => {
+                    console.log('❌ Marcador perdido');
+                    this.markerVisible = false;
+                    document.getElementById('arRoot').setAttribute('visible', 'false');
+                    if (!this.isProtected) {
+                        document.getElementById('arInstructions').style.display = 'flex';
+                    }
                 });
             },
 
             async loadAudio() {
                 const btn = document.getElementById('btnStartAR');
-                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
+                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO AUDIO...';
+                btn.disabled = true;
                 
                 try {
                     const AC = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AC();
+                    
+                    console.log('📦 Cargando archivo:', CONFIG.audioFile);
                     const response = await fetch(CONFIG.audioFile);
-                    const buf = await response.arrayBuffer();
-                    const audioBuf = await this.audioContext.decodeAudioData(buf);
-
+                    
+                    if (!response.ok) throw new Error('Error al cargar audio');
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    // Crear nodos de audio
                     this.source = this.audioContext.createBufferSource();
-                    this.source.buffer = audioBuf;
+                    this.source.buffer = audioBuffer;
                     this.source.loop = true;
-
+                    
                     this.filterNode = this.audioContext.createBiquadFilter();
                     this.filterNode.type = 'lowpass';
                     this.filterNode.frequency.value = 22000;
-
+                    
                     this.gainNode = this.audioContext.createGain();
-                    this.gainNode.value = 1.0;
-
-                    this.source.connect(this.filterNode).connect(this.gainNode).connect(this.audioContext.destination);
+                    this.gainNode.gain.value = 1.0;
+                    
+                    // Conectar cadena de audio
+                    this.source.connect(this.filterNode);
+                    this.filterNode.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
+                    
                     this.source.start(0);
-
+                    
                     this.isAudioLoaded = true;
-                    btn.style.display = 'none';
-                    document.getElementById('btnProtectAR').style.display = 'block';
-                    document.getElementById('arStatusText').textContent = '¡Nivel peligroso de ruido!';
+                    
+                    // Actualizar UI
+                    btn.classList.remove('visible');
+                    document.getElementById('btnProtectAR').classList.add('visible');
+                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso de ruido detectado!';
                     document.getElementById('dangerOverlay').classList.add('active');
+                    
                     this.startHUD();
-
-                } catch (e) {
-                    alert('Error cargando audio.');
-                    btn.innerHTML = 'ERROR';
+                    
+                    console.log('✅ Audio cargado y reproduciendo');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('❌ No se pudo cargar el archivo de audio. Verifica que "Sonidos_De_Fabrica.wav" esté en la misma carpeta.');
+                    btn.innerHTML = '❌ ERROR - REINTENTAR';
+                    btn.disabled = false;
                 }
             },
 
             startHUD() {
-                if (this.updateInterval) clearInterval(this.updateInterval);
-                this.updateInterval = setInterval(() => {
+                if (this.hudInterval) clearInterval(this.hudInterval);
+                
+                this.hudInterval = setInterval(() => {
                     if (!this.isAudioLoaded) return;
-                    let db = this.isProtected ? 60 + Math.random()*5 : 95 + Math.random()*10;
-                    document.getElementById('hudValue').textContent = `${Math.floor(db)} dB`;
-                    document.getElementById('hudFill').style.width = `${Math.min(100, (db/120)*100)}%`;
-                }, 150);
+                    
+                    let db = this.isProtected 
+                        ? 55 + Math.random() * 8 
+                        : 92 + Math.random() * 15;
+                    
+                    db = Math.floor(db);
+                    
+                    document.getElementById('hudValue').textContent = `${db} dB`;
+                    
+                    const percentage = Math.min(100, (db / 120) * 100);
+                    document.getElementById('hudFill').style.width = `${percentage}%`;
+                    
+                }, 120);
             },
 
             applyProtection() {
-                if (this.isProtected) return;
+                if (this.isProtected || !this.isAudioLoaded) return;
+                
+                console.log('🎧 Aplicando protección auditiva...');
                 this.isProtected = true;
-
-                const t = this.audioContext.currentTime;
-                this.filterNode.frequency.exponentialRampToValueAtTime(350, t + 2);
-                this.gainNode.gain.exponentialRampToValueAtTime(0.1, t + 2);
-
-                document.getElementById('btnProtectAR').style.display = 'none';
-                document.getElementById('arStatusText').textContent = 'Protección Activada';
+                
+                // Transición de audio suave
+                const currentTime = this.audioContext.currentTime;
+                this.filterNode.frequency.exponentialRampToValueAtTime(300, currentTime + 2.5);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.08, currentTime + 2.5);
+                
+                // UI Update
+                document.getElementById('btnProtectAR').classList.remove('visible');
+                document.getElementById('arStatusText').textContent = '✅ Protección Auditiva Activada';
                 document.getElementById('dangerOverlay').classList.remove('active');
+                
+                // HUD color change
                 document.getElementById('hudValue').style.color = '#34c759';
-                document.getElementById('hudFill').style.background = '#34c759';
-
-                this.animate3D();
+                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #30d158 100%)';
+                
+                // Animación 3D
+                this.animate3DSequence();
             },
 
-            animate3D() {
+            animate3DSequence() {
                 const hp = document.getElementById('headphones');
-                // Tweens para animación suave
-                new TWEEN.Tween({z:0, s:0.8}) // Empieza en escala 0.8
-                    .to({z:3, s:6}, 1500)
+                if (!hp) return;
+                
+                console.log('🎬 Iniciando animación 3D...');
+                
+                // Animación de zoom out
+                new TWEEN.Tween({ z: 0, s: 3 })
+                    .to({ z: 4, s: 8 }, 2000)
                     .easing(TWEEN.Easing.Cubic.In)
-                    .onUpdate(o => {
-                        hp.setAttribute('position', `0 0.5 ${o.z}`);
-                        hp.setAttribute('scale', `${o.s} ${o.s} ${o.s}`);
+                    .onUpdate(obj => {
+                        hp.setAttribute('position', `0 0.3 ${obj.z}`);
+                        hp.setAttribute('scale', `${obj.s} ${obj.s} ${obj.s}`);
                     })
                     .onComplete(() => {
-                        hp.setAttribute('visible', false);
-                        this.showPanel();
+                        hp.setAttribute('visible', 'false');
+                        setTimeout(() => this.showMessagePanel(), 300);
                     })
                     .start();
             },
 
-            showPanel() {
-                const p = document.getElementById('messagePanel');
-                p.setAttribute('visible', true);
-                new TWEEN.Tween({s:0}).to({s:1}, 800).easing(TWEEN.Easing.Back.Out)
-                    .onUpdate(o => p.setAttribute('scale', `${o.s} ${o.s} ${o.s}`))
-                    .onComplete(() => this.typewriter())
+            showMessagePanel() {
+                const panel = document.getElementById('messagePanel');
+                if (!panel) return;
+                
+                console.log('📋 Mostrando panel de mensaje...');
+                
+                panel.setAttribute('visible', 'true');
+                
+                // Animación de escala con efecto bounce
+                new TWEEN.Tween({ s: 0 })
+                    .to({ s: 1 }, 1000)
+                    .easing(TWEEN.Easing.Back.Out)
+                    .onUpdate(obj => {
+                        panel.setAttribute('scale', `${obj.s} ${obj.s} ${obj.s}`);
+                    })
+                    .onComplete(() => {
+                        setTimeout(() => this.typewriterEffect(), 500);
+                    })
                     .start();
             },
 
-            typewriter() {
-                const el = document.getElementById('messageText');
-                const txt = CONFIG.finalMessage;
-                let i = 0;
-                el.setAttribute('value', '');
-                const t = setInterval(() => {
-                    el.setAttribute('value', txt.substring(0, i++));
-                    if(i > txt.length) clearInterval(t);
+            typewriterEffect() {
+                const textEl = document.getElementById('messageText');
+                if (!textEl) return;
+                
+                console.log('⌨️ Efecto typewriter iniciado...');
+                
+                const fullText = CONFIG.finalMessage;
+                let currentIndex = 0;
+                textEl.setAttribute('value', '');
+                
+                const typeInterval = setInterval(() => {
+                    if (currentIndex < fullText.length) {
+                        textEl.setAttribute('value', fullText.substring(0, currentIndex + 1));
+                        currentIndex++;
+                    } else {
+                        clearInterval(typeInterval);
+                        console.log('✅ Mensaje completo mostrado');
+                    }
                 }, CONFIG.typewriterSpeed);
             }
         };
 
-        // Loop de animación global
+        // ===================================================================
+        // LOOP DE ANIMACIÓN GLOBAL
+        // ===================================================================
         function animate(time) {
             requestAnimationFrame(animate);
             TWEEN.update(time);
         }
         requestAnimationFrame(animate);
 
-        window.onload = () => Router.init();
+        // ===================================================================
+        // INICIALIZACIÓN
+        // ===================================================================
+        window.addEventListener('load', () => {
+            console.log('🚀 Lanxess Safety AR Pro cargado');
+            Router.init();
+        });
+
+        // Prevenir comportamientos no deseados
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.tagName !== 'A-SCENE') {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
-
-
