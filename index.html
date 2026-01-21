@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#D71920">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Lanxess Safety AR Pro</title>
+    <title>Lanxess Safety AR - Animación Educativa</title>
 
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
@@ -18,22 +15,11 @@
         :root {
             --primary-red: #D71920;
             --deep-black: #0a0a0a;
-            --dark-gray: #1a1a1a;
-            --medium-gray: #2a2a2a;
-            --light-gray: #b0b0b0;
             --pure-white: #ffffff;
-            --danger: #ff3b30;
-            --warning: #ffcc00;
             --safe: #34c759;
-            --info: #007aff;
             --font-display: 'Orbitron', monospace;
             --font-heading: 'Exo 2', sans-serif;
             --font-body: 'Roboto', sans-serif;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            --safe-top: env(safe-area-inset-top, 20px);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         * {
@@ -49,15 +35,9 @@
             height: 100%;
             position: fixed;
             overflow: hidden;
-        }
-        
-        body {
-            background: var(--deep-black);
-            font-family: var(--font-body);
-            color: var(--pure-white);
+            background: #000;
         }
 
-        /* VIDEO BACKGROUND PARA AR */
         #cameraVideo {
             position: fixed;
             top: 0;
@@ -69,384 +49,80 @@
             display: none;
         }
 
-        /* VIEWS */
-        .view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            opacity: 0;
-            transition: opacity var(--transition-slow);
-            z-index: 1;
-        }
-
-        .view.active {
-            display: flex;
-            opacity: 1;
-            z-index: 10;
-        }
-
-        .btn-back {
+        .controls-overlay {
             position: fixed;
-            top: calc(var(--safe-top) + 10px);
-            left: 15px;
-            width: 52px;
-            height: 52px;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 99999;
-            transition: all var(--transition-fast);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-            pointer-events: auto;
-        }
-
-        .btn-back::before {
-            content: '←';
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--pure-white);
-        }
-
-        .btn-back:active {
-            transform: scale(0.88);
-            background: var(--primary-red);
-            border-color: var(--primary-red);
-        }
-
-        /* HOME VIEW */
-        #home {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-            padding: 40px 20px;
-        }
-
-        .home-header {
-            text-align: center;
-            margin-bottom: 60px;
-            animation: fadeInDown 1s ease-out;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .logo-container {
-            margin-bottom: 25px;
-        }
-
-        .logo-icon {
-            font-size: 64px;
-            filter: drop-shadow(0 0 25px rgba(215, 25, 32, 0.6));
-            animation: pulse 2.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-
-        .home-header h1 {
-            font-family: var(--font-display);
-            font-size: 38px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--pure-white) 0%, var(--light-gray) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
-        }
-
-        .accent-line {
-            width: 70px;
-            height: 4px;
-            background: var(--primary-red);
-            margin: 12px auto;
-            border-radius: 2px;
-            box-shadow: 0 0 15px rgba(215, 25, 32, 0.7);
-        }
-
-        .home-header p {
-            font-family: var(--font-heading);
-            font-size: 13px;
-            letter-spacing: 2.5px;
-            color: var(--light-gray);
-            text-transform: uppercase;
-        }
-
-        .menu-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            width: 100%;
-            max-width: 380px;
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .menu-item {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-left: 4px solid var(--primary-red);
-            border-radius: 14px;
-            padding: 24px 20px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: all var(--transition-medium);
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 100%;
-            background: linear-gradient(90deg, rgba(215, 25, 32, 0.15) 0%, transparent 100%);
-            transition: width var(--transition-medium);
-        }
-
-        .menu-item:active {
-            transform: scale(0.97);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .menu-item:active::before {
-            width: 100%;
-        }
-
-        .menu-icon {
-            font-size: 36px;
-            min-width: 36px;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-        }
-
-        .menu-content h3 {
-            font-family: var(--font-heading);
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--pure-white);
-        }
-
-        .menu-content p {
-            font-size: 12px;
-            color: var(--light-gray);
-            line-height: 1.4;
-        }
-
-        .menu-arrow {
-            margin-left: auto;
-            font-size: 22px;
-            color: var(--primary-red);
-            font-weight: 900;
-        }
-
-        .home-footer {
-            position: absolute;
-            bottom: calc(var(--safe-bottom) + 20px);
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-family: var(--font-display);
-            font-size: 9px;
-            color: #444;
-            letter-spacing: 2px;
-        }
-
-        /* METER VIEW */
-        #meter {
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
-            padding-top: calc(var(--safe-top) + 90px);
-        }
-
-        .meter-display {
-            width: 280px;
-            height: 280px;
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .meter-circle {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(26, 26, 26, 0.9) 0%, rgba(10, 10, 10, 1) 100%);
-            border: 5px solid #2a2a2a;
-            box-shadow: 
-                0 0 50px rgba(0, 0, 0, 0.9),
-                inset 0 0 50px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: all var(--transition-medium);
-        }
-
-        .meter-circle::before {
-            content: '';
-            position: absolute;
-            top: -8px; left: -8px; right: -8px; bottom: -8px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 0%, var(--primary-red) 50%, transparent 100%);
-            opacity: 0;
-            transition: opacity var(--transition-medium);
-            z-index: -1;
-            animation: rotate 3s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .meter-circle.danger::before {
-            opacity: 0.7;
-        }
-
-        .db-value {
-            font-family: var(--font-display);
-            font-size: 76px;
-            font-weight: 900;
-            color: var(--pure-white);
-            text-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
-            line-height: 1;
-            margin-bottom: 5px;
-        }
-
-        .db-unit {
-            font-family: var(--font-heading);
-            font-size: 16px;
-            color: var(--light-gray);
-            letter-spacing: 2px;
-        }
-
-        .status-indicator {
-            margin-top: 20px;
-            padding: 9px 20px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            font-family: var(--font-heading);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            transition: all var(--transition-fast);
-        }
-
-        .wave-visualizer {
-            width: 90%;
-            max-width: 360px;
-            height: 100px;
-            position: relative;
-            margin-top: 30px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            overflow: hidden;
-        }
-
-        #waveCanvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        .meter-info {
-            max-width: 320px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .meter-info p {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--light-gray);
-        }
-
-        .meter-info .highlight {
-            color: var(--primary-red);
-            font-weight: 700;
-        }
-
-        /* AR VIEW */
-        #ar {
-            background: transparent !important;
-            pointer-events: none;
-        }
-
-        .ar-hud {
-            position: fixed;
-            top: calc(var(--safe-top) + 70px);
-            right: 15px;
-            pointer-events: none;
+            top: 20px;
+            left: 20px;
             z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary-red);
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-family: var(--font-body);
+            color: white;
+            pointer-events: none;
         }
 
-        .hud-meter {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            border-right: 4px solid var(--primary-red);
-            border-radius: 8px;
-            padding: 12px 16px;
-            min-width: 120px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.7);
+        .controls-overlay h3 {
+            font-family: var(--font-display);
+            font-size: 14px;
+            color: var(--primary-red);
+            margin-bottom: 10px;
+        }
+
+        .controls-overlay p {
+            font-size: 11px;
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+
+        .hud-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary-red);
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-family: var(--font-body);
+            min-width: 180px;
         }
 
         .hud-label {
             font-family: var(--font-heading);
-            font-size: 9px;
-            color: var(--light-gray);
-            letter-spacing: 1.5px;
+            font-size: 10px;
+            color: #888;
             text-transform: uppercase;
-            margin-bottom: 6px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
         .hud-value {
             font-family: var(--font-display);
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
             color: var(--primary-red);
-            text-shadow: 0 0 18px rgba(215, 25, 32, 0.7);
+            text-shadow: 0 0 15px rgba(215, 25, 32, 0.8);
             line-height: 1;
-            text-align: right;
+            margin-bottom: 8px;
+        }
+
+        .hud-value.safe {
+            color: var(--safe);
+            text-shadow: 0 0 15px rgba(52, 199, 89, 0.8);
+        }
+
+        .hud-status {
+            font-size: 12px;
+            color: white;
+            font-weight: 600;
         }
 
         .hud-bar {
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 2px;
             margin-top: 8px;
             overflow: hidden;
@@ -455,99 +131,67 @@
         .hud-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%);
-            border-radius: 2px;
-            transition: width 0.2s ease-out;
-            box-shadow: 0 0 8px rgba(215, 25, 32, 0.9);
+            background: linear-gradient(90deg, var(--primary-red), #ff6b6b);
+            transition: width 0.3s;
         }
 
-        .ar-controls {
+        .bottom-controls {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 25px 20px calc(var(--safe-bottom) + 20px);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px 20px calc(env(safe-area-inset-bottom, 20px) + 20px);
+            z-index: 1000;
             display: flex;
             flex-direction: column;
+            gap: 15px;
             align-items: center;
-            gap: 12px;
             pointer-events: auto;
-            z-index: 1000;
         }
 
-        .ar-status-text {
+        .status-text {
             font-family: var(--font-heading);
             font-size: 15px;
-            font-weight: 600;
-            color: var(--pure-white);
+            color: white;
             text-align: center;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
             min-height: 22px;
         }
 
-        .btn-ar {
+        .btn-control {
             width: 100%;
             max-width: 340px;
             padding: 18px 28px;
-            background: var(--pure-white);
-            color: var(--deep-black);
+            background: var(--primary-red);
+            color: white;
             border: none;
             border-radius: 50px;
             font-family: var(--font-heading);
             font-size: 15px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 1px;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
-            transition: all var(--transition-fast);
-            display: none;
-        }
-
-        .btn-ar.visible {
-            display: block;
-        }
-
-        .btn-ar:active {
-            transform: scale(0.96);
-        }
-
-        #btnStartAR {
-            background: var(--primary-red);
-            color: var(--pure-white);
+            transition: all 0.2s;
             box-shadow: 0 6px 25px rgba(215, 25, 32, 0.5);
         }
 
-        #btnProtectAR {
+        .btn-control:active {
+            transform: scale(0.96);
+        }
+
+        .btn-control.secondary {
+            background: #555;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-control.success {
             background: var(--safe);
-            color: var(--pure-white);
             box-shadow: 0 6px 25px rgba(52, 199, 89, 0.5);
         }
 
-        .danger-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .btn-control:disabled {
+            opacity: 0.5;
             pointer-events: none;
-            z-index: 800;
-            display: none;
-            animation: dangerPulse 1.5s infinite;
-        }
-
-        .danger-overlay.active {
-            display: block;
-        }
-
-        @keyframes dangerPulse {
-            0%, 100% { box-shadow: inset 0 0 0 rgba(215, 25, 32, 0); }
-            50% { box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.5); }
         }
 
         .loading-spinner {
@@ -555,7 +199,7 @@
             width: 16px;
             height: 16px;
             border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: var(--pure-white);
+            border-top-color: white;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
             margin-right: 8px;
@@ -566,96 +210,27 @@
             to { transform: rotate(360deg); }
         }
 
-        .floating-message {
+        .danger-overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%;
-            max-width: 500px;
-            background: rgba(0, 0, 0, 0.95);
-            border: 3px solid var(--primary-red);
-            border-radius: 16px;
-            padding: 30px 25px;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 10px 50px rgba(215, 25, 32, 0.5);
-            pointer-events: auto;
-        }
-
-        .floating-message.visible {
-            display: block;
-            animation: messageAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes messageAppear {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        .message-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .message-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-
-        .message-title {
-            font-family: var(--font-display);
-            font-size: 22px;
-            color: var(--primary-red);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .message-content {
-            font-family: var(--font-body);
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--light-gray);
-            text-align: left;
-            margin-bottom: 25px;
-        }
-
-        .message-content p {
-            margin-bottom: 15px;
-        }
-
-        .message-content strong {
-            color: var(--pure-white);
-            font-weight: 700;
-        }
-
-        .message-close {
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 15px;
-            background: var(--primary-red);
-            color: var(--pure-white);
-            border: none;
-            border-radius: 50px;
-            font-family: var(--font-heading);
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all var(--transition-fast);
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+            display: none;
+            animation: dangerPulse 1.5s infinite;
         }
 
-        .message-close:active {
-            transform: scale(0.95);
+        .danger-overlay.active {
+            display: block;
         }
 
-        /* A-FRAME */
+        @keyframes dangerPulse {
+            0%, 100% { box-shadow: inset 0 0 0 rgba(215, 25, 32, 0); }
+            50% { box-shadow: inset 0 0 120px rgba(215, 25, 32, 0.6); }
+        }
+
         #arScene {
             position: fixed !important;
             top: 0 !important;
@@ -663,452 +238,380 @@
             width: 100% !important;
             height: 100% !important;
             z-index: 5 !important;
-            pointer-events: none !important;
         }
 
-        .a-canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .a-enter-vr,
-        .a-orientation-modal {
+        .a-enter-vr, .a-orientation-modal {
             display: none !important;
-        }
-
-        @media (max-width: 360px) {
-            .home-header h1 { font-size: 34px; }
-            .meter-display { width: 250px; height: 250px; }
-            .db-value { font-size: 68px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- VIDEO CAMERA BACKGROUND -->
     <video id="cameraVideo" playsinline autoplay muted></video>
-
     <div id="dangerOverlay" class="danger-overlay"></div>
 
-    <div id="floatingMessage" class="floating-message">
-        <div class="message-header">
-            <div class="message-icon">🛡️</div>
-            <div class="message-title">Protección Auditiva</div>
-        </div>
-        <div class="message-content" id="messageContentText"></div>
-        <button class="message-close" id="btnCloseMessage">ENTENDIDO</button>
+    <div class="controls-overlay">
+        <h3>🎮 CONTROLES</h3>
+        <p>📱 Arrastra para rotar cámara</p>
+        <p>🔍 Pinch para zoom</p>
+        <p>🎬 Explora la escena 360°</p>
     </div>
 
-    <!-- HOME -->
-    <div id="home" class="view active">
-        <div class="home-header">
-            <div class="logo-container">
-                <div class="logo-icon">🎧</div>
-            </div>
-            <h1>Safety Suite</h1>
-            <div class="accent-line"></div>
-            <p>Protección Auditiva</p>
-        </div>
-
-        <div class="menu-grid">
-            <div class="menu-item" data-nav="meter">
-                <div class="menu-icon">🎙️</div>
-                <div class="menu-content">
-                    <h3>Medidor Ambiental</h3>
-                    <p>Análisis de decibelios en tiempo real</p>
-                </div>
-                <div class="menu-arrow">→</div>
-            </div>
-
-            <div class="menu-item" data-nav="ar">
-                <div class="menu-icon">🥽</div>
-                <div class="menu-content">
-                    <h3>Simulación AR</h3>
-                    <p>Experiencia inmersiva de protección</p>
-                </div>
-                <div class="menu-arrow">→</div>
-            </div>
-        </div>
-
-        <div class="home-footer">
-            LANXESS AR • v15.0 PRO
+    <div class="hud-info">
+        <div class="hud-label">Nivel de Ruido</div>
+        <div class="hud-value" id="hudDbValue">0 dB</div>
+        <div class="hud-status" id="hudStatus">Esperando...</div>
+        <div class="hud-bar">
+            <div class="hud-fill" id="hudFill"></div>
         </div>
     </div>
 
-    <!-- METER -->
-    <div id="meter" class="view">
-        <div class="btn-back" data-nav="home"></div>
-        <div class="meter-display">
-            <div class="meter-circle" id="meterCircle">
-                <div class="db-value" id="dbValue">--</div>
-                <div class="db-unit">dB SPL</div>
-                <div class="status-indicator" id="statusIndicator">INICIANDO</div>
-            </div>
-        </div>
-        <div class="wave-visualizer">
-            <canvas id="waveCanvas"></canvas>
-        </div>
-        <div class="meter-info">
-            <p>El micrófono analiza el ruido ambiente en tiempo real. 
-            Cuando el medidor se torna <span class="highlight">ROJO</span>, 
-            el nivel de decibelios es perjudicial para tu audición.</p>
-        </div>
+    <div class="bottom-controls">
+        <div class="status-text" id="statusText">Mueve la cámara para explorar la escena</div>
+        <button id="btnStartAnimation" class="btn-control">🎬 INICIAR ANIMACIÓN</button>
+        <button id="btnResetCamera" class="btn-control secondary" style="display: none;">🔄 REINICIAR CÁMARA</button>
     </div>
 
-    <!-- AR -->
-    <div id="ar" class="view">
-        <div class="btn-back" data-nav="home"></div>
-
-        <div class="ar-hud">
-            <div class="hud-meter">
-                <div class="hud-label">SIMULACIÓN RUIDO</div>
-                <div class="hud-value" id="hudValue">0 dB</div>
-                <div class="hud-bar">
-                    <div class="hud-fill" id="hudFill"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="ar-controls">
-            <div class="ar-status-text" id="arStatusText">Mueve tu dispositivo para explorar</div>
-            <button id="btnStartAR" class="btn-ar visible">🔊 INICIAR SIMULACIÓN</button>
-            <button id="btnProtectAR" class="btn-ar">🎧 PONERSE PROTECCIÓN</button>
-        </div>
-    </div>
-
-    <!-- A-FRAME SCENE -->
     <a-scene 
         id="arScene"
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true;"
         loading-screen="enabled: false"
         embedded
-        background="transparent"
-        style="display: none;">
+        background="transparent">
 
-        <a-assets timeout="30000">
-            <a-asset-item id="headphonesModel" src="microsoft_headphones_surface_2-v1.glb"></a-asset-item>
-        </a-assets>
-
+        <!-- CÁMARA CON CONTROLES -->
         <a-camera 
             id="mainCamera" 
-            position="0 1.6 0"
-            look-controls="enabled: true; touchEnabled: true; magicWindowTrackingEnabled: true; mouseEnabled: true; pointerLockEnabled: false"
+            position="0 1.6 5"
+            look-controls="enabled: true; touchEnabled: true; mouseEnabled: true; pointerLockEnabled: false"
             wasd-controls="enabled: false">
         </a-camera>
 
-        <!-- ILUMINACIÓN -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 1"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="5 10 5"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1" position="-5 8 -5"></a-entity>
-        <a-entity light="type: point; color: #D71920; intensity: 2; distance: 20" position="0 2 -3"></a-entity>
+        <!-- ILUMINACIÓN PROFESIONAL -->
+        <a-entity light="type: ambient; color: #FFF; intensity: 0.6"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 1.2" position="5 8 3" 
+                  light="castShadow: true"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.8" position="-5 6 -3"></a-entity>
+        <a-entity id="dangerLight" light="type: point; color: #D71920; intensity: 0; distance: 15" 
+                  position="0 2 0"></a-entity>
 
-        <!-- AURICULARES 3D -->
-        <a-entity id="headphonesContainer" position="0 1.6 -2.5" visible="false">
-            <a-entity 
-                id="headphonesModel3D"
-                gltf-model="#headphonesModel"
-                scale="2.5 2.5 2.5"
-                rotation="0 0 0"
-                animation="property: position; from: 0 0 0; to: 0 0.4 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"
-                animation__rotate="property: rotation; from: 0 0 0; to: 0 360 0; dur: 15000; loop: true; easing: linear">
+        <!-- SUELO CON SOMBRAS -->
+        <a-plane 
+            position="0 0 0" 
+            rotation="-90 0 0" 
+            width="20" 
+            height="20" 
+            color="#1a1a1a"
+            shadow="receive: true"
+            material="roughness: 0.8">
+        </a-plane>
+
+        <!-- ESCENARIO PRINCIPAL -->
+        <a-entity id="mainScene">
+
+            <!-- MESA PROCEDURAL -->
+            <a-entity id="mesa" position="2.5 0 0">
+                <!-- Tablero -->
+                <a-box 
+                    width="1.5" 
+                    height="0.1" 
+                    depth="0.8" 
+                    position="0 0.8 0"
+                    color="#8B4513"
+                    shadow="cast: true"
+                    material="roughness: 0.7; metalness: 0.2">
+                </a-box>
+                
+                <!-- Patas -->
+                <a-cylinder radius="0.04" height="0.8" color="#654321" position="-0.6 0.4 -0.3"></a-cylinder>
+                <a-cylinder radius="0.04" height="0.8" color="#654321" position="0.6 0.4 -0.3"></a-cylinder>
+                <a-cylinder radius="0.04" height="0.8" color="#654321" position="-0.6 0.4 0.3"></a-cylinder>
+                <a-cylinder radius="0.04" height="0.8" color="#654321" position="0.6 0.4 0.3"></a-cylinder>
             </a-entity>
+
+            <!-- AURICULARES PROCEDURALES -->
+            <a-entity id="headphones" position="2.5 0.95 0">
+                <!-- Banda superior -->
+                <a-torus 
+                    radius="0.18" 
+                    radius-tubular="0.02" 
+                    color="#2a2a2a"
+                    rotation="0 0 0"
+                    arc="180"
+                    material="metalness: 0.8; roughness: 0.3">
+                </a-torus>
+                
+                <!-- Auricular izquierdo -->
+                <a-entity position="-0.18 -0.08 0">
+                    <a-cylinder radius="0.08" height="0.04" color="#1a1a1a" 
+                                rotation="90 0 0" material="metalness: 0.6; roughness: 0.4"></a-cylinder>
+                    <a-sphere radius="0.07" color="#2a2a2a" 
+                              material="metalness: 0.5; roughness: 0.5"></a-sphere>
+                    <a-circle radius="0.04" color="#D71920" position="0 0 0.072" 
+                              material="emissive: #D71920; emissiveIntensity: 0.5"></a-circle>
+                </a-entity>
+                
+                <!-- Auricular derecho -->
+                <a-entity position="0.18 -0.08 0">
+                    <a-cylinder radius="0.08" height="0.04" color="#1a1a1a" 
+                                rotation="90 0 0" material="metalness: 0.6; roughness: 0.4"></a-cylinder>
+                    <a-sphere radius="0.07" color="#2a2a2a" 
+                              material="metalness: 0.5; roughness: 0.5"></a-sphere>
+                    <a-circle radius="0.04" color="#D71920" position="0 0 0.072" 
+                              material="emissive: #D71920; emissiveIntensity: 0.5"></a-circle>
+                </a-entity>
+                
+                <!-- Brillo indicador -->
+                <a-entity 
+                    light="type: point; color: #00FF00; intensity: 0.8; distance: 1"
+                    position="0 0.1 0"
+                    animation="property: light.intensity; from: 0.8; to: 0.3; dir: alternate; dur: 1000; loop: true">
+                </a-entity>
+                
+                <!-- Animación flotante -->
+                <a-animation
+                    attribute="position"
+                    from="2.5 0.95 0"
+                    to="2.5 1.05 0"
+                    direction="alternate"
+                    dur="2000"
+                    repeat="indefinite"
+                    easing="easeInOutSine">
+                </a-animation>
+            </a-entity>
+
+            <!-- STICKMAN ARTICULADO -->
+            <a-entity id="stickman" position="0 0 0">
+                
+                <!-- BASE / PELVIS -->
+                <a-entity id="pelvis" position="0 0.95 0">
+                    <a-sphere radius="0.06" color="#FFE0BD"></a-sphere>
+                    
+                    <!-- COLUMNA -->
+                    <a-entity id="spine" position="0 0.35 0">
+                        <a-cylinder radius="0.04" height="0.6" color="#4A90E2"></a-cylinder>
+                        
+                        <!-- CUELLO -->
+                        <a-entity id="neck" position="0 0.35 0">
+                            <a-cylinder radius="0.03" height="0.1" color="#FFE0BD"></a-cylinder>
+                            
+                            <!-- CABEZA -->
+                            <a-entity id="head" position="0 0.15 0">
+                                <a-sphere radius="0.15" color="#FFE0BD" shadow="cast: true"></a-sphere>
+                                
+                                <!-- Ojos -->
+                                <a-sphere radius="0.02" color="#000" position="-0.05 0.03 0.14"></a-sphere>
+                                <a-sphere radius="0.02" color="#000" position="0.05 0.03 0.14"></a-sphere>
+                                
+                                <!-- Boca (cambia según estado) -->
+                                <a-entity id="mouth">
+                                    <a-torus radius="0.04" radius-tubular="0.008" color="#000" 
+                                             position="0 -0.03 0.14" rotation="0 0 0" arc="180"></a-torus>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                        
+                        <!-- HOMBROS -->
+                        <a-entity id="shoulders" position="0 0.28 0">
+                            
+                            <!-- BRAZO IZQUIERDO -->
+                            <a-entity id="leftShoulder" position="-0.15 0 0" rotation="0 0 20">
+                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                
+                                <a-entity id="leftUpperArm" rotation="0 0 0">
+                                    <a-cylinder radius="0.03" height="0.3" color="#4A90E2" 
+                                               position="0 -0.15 0"></a-cylinder>
+                                    
+                                    <a-entity id="leftElbow" position="0 -0.3 0">
+                                        <a-sphere radius="0.035" color="#FFE0BD"></a-sphere>
+                                        
+                                        <a-entity id="leftForearm" rotation="0 0 0">
+                                            <a-cylinder radius="0.025" height="0.3" color="#FFE0BD" 
+                                                       position="0 -0.15 0"></a-cylinder>
+                                            
+                                            <a-entity id="leftHand" position="0 -0.3 0">
+                                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                            </a-entity>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                            
+                            <!-- BRAZO DERECHO -->
+                            <a-entity id="rightShoulder" position="0.15 0 0" rotation="0 0 -20">
+                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                
+                                <a-entity id="rightUpperArm" rotation="0 0 0">
+                                    <a-cylinder radius="0.03" height="0.3" color="#4A90E2" 
+                                               position="0 -0.15 0"></a-cylinder>
+                                    
+                                    <a-entity id="rightElbow" position="0 -0.3 0">
+                                        <a-sphere radius="0.035" color="#FFE0BD"></a-sphere>
+                                        
+                                        <a-entity id="rightForearm" rotation="0 0 0">
+                                            <a-cylinder radius="0.025" height="0.3" color="#FFE0BD" 
+                                                       position="0 -0.15 0"></a-cylinder>
+                                            
+                                            <a-entity id="rightHand" position="0 -0.3 0">
+                                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                            </a-entity>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                    
+                    <!-- PIERNA IZQUIERDA -->
+                    <a-entity id="leftHip" position="-0.08 -0.05 0" rotation="0 0 5">
+                        <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                        
+                        <a-entity id="leftThigh" rotation="0 0 0">
+                            <a-cylinder radius="0.035" height="0.4" color="#2C3E50" 
+                                       position="0 -0.2 0"></a-cylinder>
+                            
+                            <a-entity id="leftKnee" position="0 -0.4 0">
+                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                
+                                <a-entity id="leftCalf" rotation="0 0 0">
+                                    <a-cylinder radius="0.03" height="0.4" color="#2C3E50" 
+                                               position="0 -0.2 0"></a-cylinder>
+                                    
+                                    <a-entity id="leftFoot" position="0 -0.4 0">
+                                        <a-box width="0.08" height="0.04" depth="0.12" 
+                                               color="#1a1a1a" position="0 -0.02 0.02"></a-box>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                    
+                    <!-- PIERNA DERECHA -->
+                    <a-entity id="rightHip" position="0.08 -0.05 0" rotation="0 0 -5">
+                        <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                        
+                        <a-entity id="rightThigh" rotation="0 0 0">
+                            <a-cylinder radius="0.035" height="0.4" color="#2C3E50" 
+                                       position="0 -0.2 0"></a-cylinder>
+                            
+                            <a-entity id="rightKnee" position="0 -0.4 0">
+                                <a-sphere radius="0.04" color="#FFE0BD"></a-sphere>
+                                
+                                <a-entity id="rightCalf" rotation="0 0 0">
+                                    <a-cylinder radius="0.03" height="0.4" color="#2C3E50" 
+                                               position="0 -0.2 0"></a-cylinder>
+                                    
+                                    <a-entity id="rightFoot" position="0 -0.4 0">
+                                        <a-box width="0.08" height="0.04" depth="0.12" 
+                                               color="#1a1a1a" position="0 -0.02 0.02"></a-box>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                </a-entity>
+            </a-entity>
+
+            <!-- ONDAS DE RUIDO VISUALES -->
+            <a-entity id="soundWaves" position="0 1.5 0" visible="false">
+                <a-torus radius="0.5" radius-tubular="0.05" color="#FF0000" opacity="0.6" rotation="90 0 0">
+                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
+                                dur="1500" repeat="indefinite"></a-animation>
+                    <a-animation attribute="opacity" from="0.6" to="0" 
+                                dur="1500" repeat="indefinite"></a-animation>
+                </a-torus>
+                
+                <a-torus radius="0.5" radius-tubular="0.05" color="#FF0000" opacity="0.6" rotation="90 0 0">
+                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
+                                dur="1500" delay="500" repeat="indefinite"></a-animation>
+                    <a-animation attribute="opacity" from="0.6" to="0" 
+                                dur="1500" delay="500" repeat="indefinite"></a-animation>
+                </a-torus>
+                
+                <a-torus radius="0.5" radius-tubular="0.05" color="#FF0000" opacity="0.6" rotation="90 0 0">
+                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
+                                dur="1500" delay="1000" repeat="indefinite"></a-animation>
+                    <a-animation attribute="opacity" from="0.6" to="0" 
+                                dur="1500" delay="1000" repeat="indefinite"></a-animation>
+                </a-torus>
+            </a-entity>
+
+            <!-- TEXTO INFORMATIVO 3D -->
+            <a-entity id="infoText" position="0 2.5 0" look-at="#mainCamera" visible="false">
+                <a-plane width="2.5" height="0.8" color="#000000" opacity="0.95"></a-plane>
+                <a-plane width="2.4" height="0.7" color="#D71920" position="0 0 0.01"></a-plane>
+                <a-plane width="2.3" height="0.6" color="#000000" opacity="0.95" position="0 0 0.02"></a-plane>
+                
+                <a-text 
+                    id="infoTextContent"
+                    value="⚠️ 105 dB - PELIGRO ⚠️"
+                    color="#FFFF00"
+                    align="center"
+                    width="2.8"
+                    position="0 0.15 0.05"
+                    font="roboto">
+                </a-text>
+                
+                <a-text 
+                    id="infoTextSub"
+                    value="Nivel dañino para audición"
+                    color="#FFFFFF"
+                    align="center"
+                    width="2.5"
+                    position="0 -0.15 0.05"
+                    font="roboto">
+                </a-text>
+            </a-entity>
+
+            <!-- PARTÍCULAS DE ESTRÉS -->
+            <a-entity 
+                id="stressParticles"
+                position="0 1.5 0"
+                visible="false"
+                particle-system="preset: dust; color: #FF0000,#FF6B6B; particleCount: 100; 
+                                 size: 0.03; maxAge: 2; velocityValue: 0.5 0.5 0.5; 
+                                 velocitySpread: 0.3 0.3 0.3; opacity: 0.7">
+            </a-entity>
+
         </a-entity>
 
-        <!-- TALADRO -->
-        <a-entity id="drill1" position="-3 1 -3.5" rotation="0 45 0" visible="false">
-            <a-cylinder radius="0.3" height="1.5" color="#555555" position="0 0.75 0"></a-cylinder>
-            <a-cone radius-bottom="0.3" radius-top="0.15" height="0.8" color="#888888" position="0 0.2 0"></a-cone>
-            <a-cylinder radius="0.05" height="0.6" color="#CCCCCC" position="0 -0.3 0"></a-cylinder>
-            <a-sphere radius="0.1" color="#FF0000" position="0 1.6 0">
-                <a-animation attribute="opacity" from="1" to="0.3" direction="alternate" dur="800" repeat="indefinite"></a-animation>
-            </a-sphere>
-            <a-animation attribute="rotation" from="0 45 -2" to="0 45 2" direction="alternate" dur="100" repeat="indefinite"></a-animation>
-        </a-entity>
-
-        <!-- PRENSA -->
-        <a-entity id="press1" position="3 1 -3.5" rotation="0 -45 0" visible="false">
-            <a-box width="1.5" height="2" depth="1" color="#444444" position="0 1 0"></a-box>
-            <a-box width="1.2" height="0.3" depth="0.8" color="#666666" position="0 0.3 0">
-                <a-animation attribute="position" from="0 0.3 0" to="0 -0.2 0" direction="alternate" dur="1500" repeat="indefinite" easing="ease-in-out-cubic"></a-animation>
-            </a-box>
-            <a-plane width="0.8" height="0.8" color="#FFCC00" position="0 2.5 0.51" rotation="0 0 45">
-                <a-text value="⚠️" align="center" position="0 0 0.01" scale="2 2 2" color="#000000"></a-text>
-            </a-plane>
-        </a-entity>
-
-        <!-- SIERRA -->
-        <a-entity id="saw1" position="-2 1.2 -5.5" rotation="0 30 0" visible="false">
-            <a-cylinder radius="0.8" height="0.1" color="#999999" segments-radial="32">
-                <a-animation attribute="rotation" from="0 0 0" to="0 360 0" dur="800" repeat="indefinite" easing="linear"></a-animation>
-            </a-cylinder>
-            <a-cylinder radius="0.2" height="0.15" color="#333333"></a-cylinder>
-        </a-entity>
-
-        <!-- MÁQUINA -->
-        <a-entity id="machine1" position="2 0.8 -5.5" rotation="0 -30 0" visible="false">
-            <a-box width="1.2" height="1.6" depth="0.8" color="#3a3a3a"></a-box>
-            <a-cylinder radius="0.15" height="0.6" color="#666666" position="0 1.2 0"></a-cylinder>
-            <a-sphere radius="0.08" color="#00FF00" position="0 1.7 0">
-                <a-animation attribute="opacity" from="1" to="0.2" direction="alternate" dur="1000" repeat="indefinite"></a-animation>
-            </a-sphere>
-        </a-entity>
-
-        <!-- CHISPAS -->
-        <a-entity id="sparks1" position="-3 1.5 -3.5" visible="false"
-            particle-system="preset: dust; color: #FFA500,#FFFF00,#FF4500; particleCount: 150; size: 0.05; maxAge: 1.5; velocityValue: 2 2 2; velocitySpread: 1 1 1; accelerationValue: 0 -3 0; opacity: 0.9">
-        </a-entity>
-
-        <!-- TEXTO ADVERTENCIA -->
-        <a-entity id="warningText" position="0 3 -2.5" look-at="#mainCamera" visible="false">
-            <a-plane width="3" height="1.2" color="#000000" opacity="0.9"></a-plane>
-            <a-plane width="2.9" height="1.1" color="#D71920" position="0 0 0.01"></a-plane>
-            <a-plane width="2.8" height="1" color="#000000" opacity="0.95" position="0 0 0.02"></a-plane>
-            
-            <a-text value="⚠️ ZONA PELIGROSA ⚠️" color="#FFFF00" align="center" width="3.5" position="0 0.4 0.05">
-                <a-animation attribute="scale" from="1 1 1" to="1.1 1.1 1.1" direction="alternate" dur="600" repeat="indefinite"></a-animation>
-            </a-text>
-            <a-text id="dbIndicator" value="105 dB" color="#D71920" align="center" width="3" position="0 0 0.05"></a-text>
-            <a-text value="NIVEL PELIGROSO" color="#FFFFFF" align="center" width="3" position="0 -0.35 0.05"></a-text>
-        </a-entity>
-
-        <!-- ANILLO PELIGRO -->
-        <a-entity id="dangerRing" position="0 0.05 -2.5" visible="false">
-            <a-torus radius="2" radius-tubular="0.06" color="#D71920" rotation="90 0 0" opacity="0.7">
-                <a-animation attribute="rotation" from="90 0 0" to="90 360 0" dur="6000" repeat="indefinite" easing="linear"></a-animation>
-            </a-torus>
-            <a-torus radius="2.3" radius-tubular="0.04" color="#FFCC00" rotation="90 0 0" opacity="0.5">
-                <a-animation attribute="rotation" from="90 0 0" to="90 -360 0" dur="4500" repeat="indefinite" easing="linear"></a-animation>
-            </a-torus>
-        </a-entity>
+        <a-sky color="#0a0a0a"></a-sky>
     </a-scene>
 
     <script>
-        const CONFIG = {
-            audioFile: 'Sonidos_De_Fabrica.wav',
-            finalMessage: `<p><strong>⚠️ RECORDATORIO IMPORTANTE ⚠️</strong></p>
-                           <p>No olvides usar <strong>protección auditiva</strong> en ambientes ruidosos.</p>
-                           <p>Los decibelios altos pueden causar <strong>daño permanente</strong> en tu audición.</p>
-                           <p>Usa el <strong>Medidor Ambiental</strong> regularmente para monitorear tu entorno tanto en el trabajo como en casa.</p>
-                           <p><strong>Tu salud auditiva es importante.</strong> Cuídala hoy para disfrutar del sonido mañana.</p>`,
-            dbThresholds: { safe: 60, warning: 85, danger: 95 }
-        };
+        // ============================================
+        // SISTEMA DE ANIMACIÓN PROFESIONAL
+        // ============================================
 
-        const Router = {
-            currentView: 'home',
-            
-            init() {
-                document.querySelectorAll('[data-nav]').forEach(el => {
-                    el.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.navigate(e.currentTarget.getAttribute('data-nav'));
-                    });
-                });
-            },
-
-            navigate(viewId) {
-                if (this.currentView === viewId) return;
-
-                const currentEl = document.getElementById(this.currentView);
-                if (currentEl) currentEl.classList.remove('active');
-
-                setTimeout(() => {
-                    const targetEl = document.getElementById(viewId);
-                    if (targetEl) targetEl.classList.add('active');
-                    this.handleViewLogic(viewId);
-                }, 100);
-
-                this.currentView = viewId;
-            },
-
-            handleViewLogic(viewId) {
-                switch(viewId) {
-                    case 'home':
-                        MeterSystem.stop();
-                        ARSystem.destroy();
-                        break;
-                    case 'meter':
-                        ARSystem.destroy();
-                        setTimeout(() => MeterSystem.start(), 200);
-                        break;
-                    case 'ar':
-                        MeterSystem.stop();
-                        setTimeout(() => ARSystem.init(), 300);
-                        break;
-                }
-            }
-        };
-
-        const MeterSystem = {
-            active: false, stream: null, audioContext: null, 
-            analyser: null, dataArray: null, canvas: null, 
-            canvasContext: null, animationId: null,
-
-            async start() {
-                if (this.active) return;
-                
-                try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: { 
-                            echoCancellation: false,
-                            noiseSuppression: false,
-                            autoGainControl: false
-                        } 
-                    });
-                    
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.audioContext = new AudioContext();
-                    this.analyser = this.audioContext.createAnalyser();
-                    this.analyser.fftSize = 2048;
-                    this.analyser.smoothingTimeConstant = 0.8;
-                    
-                    const source = this.audioContext.createMediaStreamSource(this.stream);
-                    source.connect(this.analyser);
-                    
-                    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-                    
-                    this.canvas = document.getElementById('waveCanvas');
-                    this.canvasContext = this.canvas.getContext('2d');
-                    this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio;
-                    this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio;
-                    this.canvasContext.scale(window.devicePixelRatio, window.devicePixelRatio);
-                    
-                    this.active = true;
-                    this.draw();
-                    
-                } catch (error) {
-                    console.error('Mic error:', error);
-                    alert('❌ Necesitas permitir acceso al micrófono');
-                    Router.navigate('home');
-                }
-            },
-
-            stop() {
-                if (!this.active) return;
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                    this.animationId = null;
-                }
-                
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                if (this.audioContext) {
-                    this.audioContext.close();
-                    this.audioContext = null;
-                }
-                
-                this.active = false;
-            },
-
-            draw() {
-                if (!this.active) return;
-                
-                this.animationId = requestAnimationFrame(() => this.draw());
-                
-                this.analyser.getByteFrequencyData(this.dataArray);
-                
-                const average = this.dataArray.reduce((a, b) => a + b, 0) / this.dataArray.length;
-                let db = Math.floor(20 + average * 0.9);
-                db = Math.max(30, Math.min(120, db));
-                
-                this.updateUI(db);
-                this.drawWaveform();
-            },
-
-            updateUI(db) {
-                const valueEl = document.getElementById('dbValue');
-                const circleEl = document.getElementById('meterCircle');
-                const badgeEl = document.getElementById('statusIndicator');
-                
-                valueEl.textContent = db;
-                circleEl.classList.remove('danger');
-                
-                if (db < CONFIG.dbThresholds.safe) {
-                    circleEl.style.borderColor = '#34c759';
-                    badgeEl.style.background = '#34c759'; 
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = '✓ SEGURO';
-                } else if (db < CONFIG.dbThresholds.danger) {
-                    circleEl.style.borderColor = '#ffcc00';
-                    badgeEl.style.background = '#ffcc00'; 
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = '⚠ ALERTA';
-                } else {
-                    circleEl.style.borderColor = '#ff3b30';
-                    circleEl.classList.add('danger');
-                    badgeEl.style.background = '#ff3b30'; 
-                    badgeEl.style.color = '#fff';
-                    badgeEl.textContent = '✖ PELIGRO';
-                }
-            },
-
-            drawWaveform() {
-                if (!this.canvasContext) return;
-                
-                const ctx = this.canvasContext;
-                const w = this.canvas.width / window.devicePixelRatio;
-                const h = this.canvas.height / window.devicePixelRatio;
-                
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-                ctx.fillRect(0, 0, w, h);
-                
-                const barWidth = (w / this.dataArray.length) * 2.5;
-                let x = 0;
-                
-                for (let i = 0; i < this.dataArray.length; i++) {
-                    const normalizedValue = this.dataArray[i] / 255;
-                    const barHeight = normalizedValue * h;
-                    
-                    const lightness = 40 + (normalizedValue * 20);
-                    ctx.fillStyle = `hsla(0, 100%, ${lightness}%, ${normalizedValue})`;
-                    ctx.fillRect(x, h - barHeight, barWidth, barHeight);
-                    
-                    x += barWidth + 1;
-                }
-            }
-        };
-
-        const ARSystem = {
-            initialized: false,
+        const AnimationSystem = {
+            phase: 0,
             audioContext: null,
             source: null,
             filterNode: null,
             gainNode: null,
-            isProtected: false,
-            isAudioLoaded: false,
-            hudInterval: null,
-            dbUpdateInterval: null,
-            scene: null,
+            isPlaying: false,
             videoStream: null,
-            cameraVideo: null,
 
+            // Inicializar
             async init() {
-                console.log('🎯 AR Init');
+                console.log('🎬 Iniciando sistema de animación');
                 
-                this.scene = document.getElementById('arScene');
-                this.cameraVideo = document.getElementById('cameraVideo');
-                
+                // Iniciar cámara
                 await this.startCamera();
                 
-                this.scene.style.display = 'block';
+                // Event listeners
+                document.getElementById('btnStartAnimation').addEventListener('click', () => {
+                    this.startSequence();
+                });
                 
-                if (!this.initialized) {
-                    this.setupEventListeners();
-                    this.initialized = true;
-                }
-                
-                this.resetCompleteState();
-                this.showInitialElements();
+                document.getElementById('btnResetCamera').addEventListener('click', () => {
+                    this.resetCamera();
+                });
             },
 
             async startCamera() {
                 try {
-                    console.log('📹 Iniciando cámara...');
                     this.videoStream = await navigator.mediaDevices.getUserMedia({
                         video: { 
                             facingMode: 'environment',
@@ -1117,141 +620,50 @@
                         }
                     });
                     
-                    this.cameraVideo.srcObject = this.videoStream;
-                    this.cameraVideo.style.display = 'block';
+                    const video = document.getElementById('cameraVideo');
+                    video.srcObject = this.videoStream;
+                    video.style.display = 'block';
+                    await video.play();
                     
-                    await this.cameraVideo.play();
-                    console.log('✅ Cámara OK');
-                    
+                    console.log('✅ Cámara iniciada');
                 } catch (error) {
-                    console.error('Error cámara:', error);
-                    alert('⚠️ Necesitas dar permiso a la cámara');
+                    console.log('⚠️ Sin cámara, modo desktop');
                 }
             },
 
-            destroy() {
-                console.log('🗑️ AR Destroy');
+            resetCamera() {
+                const camera = document.getElementById('mainCamera');
+                camera.setAttribute('position', '0 1.6 5');
+                camera.setAttribute('rotation', '0 0 0');
+            },
+
+            updateHUD(db, status) {
+                const dbValue = document.getElementById('hudDbValue');
+                const statusEl = document.getElementById('hudStatus');
+                const fill = document.getElementById('hudFill');
                 
-                if (this.source) {
-                    try { this.source.stop(); } catch(e) {}
-                    this.source = null;
+                dbValue.textContent = `${db} dB`;
+                statusEl.textContent = status;
+                
+                const percentage = Math.min(100, (db / 120) * 100);
+                fill.style.width = `${percentage}%`;
+                
+                if (db < 60) {
+                    dbValue.classList.add('safe');
+                    fill.style.background = 'linear-gradient(90deg, #34c759, #30d158)';
+                } else {
+                    dbValue.classList.remove('safe');
+                    fill.style.background = 'linear-gradient(90deg, #D71920, #ff6b6b)';
                 }
-                
-                if (this.audioContext) {
-                    this.audioContext.close();
-                    this.audioContext = null;
-                }
-                
-                if (this.videoStream) {
-                    this.videoStream.getTracks().forEach(track => track.stop());
-                    this.videoStream = null;
-                }
-                
-                if (this.cameraVideo) {
-                    this.cameraVideo.style.display = 'none';
-                    this.cameraVideo.srcObject = null;
-                }
-                
-                if (this.hudInterval) clearInterval(this.hudInterval);
-                if (this.dbUpdateInterval) clearInterval(this.dbUpdateInterval);
-                
-                this.scene.style.display = 'none';
-                this.hideAllElements();
-                
-                this.isAudioLoaded = false;
-                this.isProtected = false;
-            },
-
-            resetCompleteState() {
-                const btnStart = document.getElementById('btnStartAR');
-                btnStart.classList.add('visible');
-                btnStart.innerHTML = '🔊 INICIAR SIMULACIÓN';
-                btnStart.disabled = false;
-                
-                document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = 'Mueve tu dispositivo para explorar';
-                document.getElementById('dangerOverlay').classList.remove('active');
-                
-                document.getElementById('hudValue').textContent = '0 dB';
-                document.getElementById('hudValue').style.color = 'var(--primary-red)';
-                document.getElementById('hudFill').style.width = '0%';
-
-                this.isProtected = false;
-                this.isAudioLoaded = false;
-            },
-
-            showInitialElements() {
-                setTimeout(() => {
-                    const elements = ['headphonesContainer', 'warningText', 'dangerRing'];
-                    elements.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.setAttribute('visible', 'true');
-                    });
-                    
-                    this.startDbAnimation();
-                }, 500);
-            },
-
-            hideAllElements() {
-                const elements = ['headphonesContainer', 'warningText', 'dangerRing', 
-                                'drill1', 'press1', 'saw1', 'machine1', 'sparks1'];
-                
-                elements.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.setAttribute('visible', 'false');
-                });
-            },
-
-            showIndustrialMachines() {
-                setTimeout(() => {
-                    const machines = ['drill1', 'press1', 'saw1', 'machine1', 'sparks1'];
-                    machines.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.setAttribute('visible', 'true');
-                    });
-                }, 300);
-            },
-
-            startDbAnimation() {
-                if (this.dbUpdateInterval) clearInterval(this.dbUpdateInterval);
-                
-                this.dbUpdateInterval = setInterval(() => {
-                    const db = this.isProtected 
-                        ? 50 + Math.floor(Math.random() * 12)
-                        : 95 + Math.floor(Math.random() * 15);
-                    
-                    const dbText = document.getElementById('dbIndicator');
-                    if (dbText) {
-                        dbText.setAttribute('value', this.isProtected ? `${db} dB ✓` : `${db} dB`);
-                    }
-                }, 500);
-            },
-
-            setupEventListeners() {
-                document.getElementById('btnStartAR').addEventListener('click', () => {
-                    this.loadAudio();
-                });
-                
-                document.getElementById('btnProtectAR').addEventListener('click', () => {
-                    this.applyProtection();
-                });
-
-                document.getElementById('btnCloseMessage').addEventListener('click', () => {
-                    document.getElementById('floatingMessage').classList.remove('visible');
-                });
             },
 
             async loadAudio() {
-                const btn = document.getElementById('btnStartAR');
-                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
-                btn.disabled = true;
-                
                 try {
                     const AC = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AC();
                     
-                    const response = await fetch(CONFIG.audioFile);
-                    if (!response.ok) throw new Error('Audio no encontrado');
+                    const response = await fetch('Sonidos_De_Fabrica.wav');
+                    if (!response.ok) throw new Error('No audio');
                     
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
@@ -1272,111 +684,427 @@
                     this.gainNode.connect(this.audioContext.destination);
                     
                     this.source.start(0);
-                    this.isAudioLoaded = true;
-                    
-                    btn.classList.remove('visible');
-                    document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ ¡Nivel peligroso! Protégete';
-                    document.getElementById('dangerOverlay').classList.add('active');
-                    
-                    this.showIndustrialMachines();
-                    this.startHUD();
-                    
+                    return true;
                 } catch (error) {
-                    console.log('Demo mode');
-                    this.isAudioLoaded = true;
-                    btn.classList.remove('visible');
-                    document.getElementById('btnProtectAR').classList.add('visible');
-                    document.getElementById('arStatusText').textContent = '⚠️ Demo (sin audio)';
-                    this.showIndustrialMachines();
-                    this.startHUD();
+                    console.log('🔇 Modo silencioso');
+                    return false;
                 }
             },
 
-            startHUD() {
-                if (this.hudInterval) clearInterval(this.hudInterval);
+            // ============================================
+            // SECUENCIA DE ANIMACIÓN
+            // ============================================
+
+            async startSequence() {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
                 
-                this.hudInterval = setInterval(() => {
-                    const db = this.isProtected 
-                        ? 50 + Math.floor(Math.random() * 12)
-                        : 90 + Math.floor(Math.random() * 20);
-                    
-                    document.getElementById('hudValue').textContent = `${db} dB`;
-                    const percentage = Math.min(100, (db / 120) * 100);
-                    document.getElementById('hudFill').style.width = `${percentage}%`;
-                }, 100);
+                const btn = document.getElementById('btnStartAnimation');
+                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
+                btn.disabled = true;
+                
+                await this.loadAudio();
+                
+                btn.style.display = 'none';
+                document.getElementById('btnResetCamera').style.display = 'block';
+                
+                this.phase1_Suffering();
             },
 
-            applyProtection() {
-                if (this.isProtected) return;
+            // FASE 1: Sufrimiento por ruido
+            phase1_Suffering() {
+                console.log('📍 FASE 1: Sufrimiento');
+                this.phase = 1;
                 
-                this.isProtected = true;
+                document.getElementById('statusText').textContent = 
+                    '⚠️ Exposición a ruido industrial peligroso';
                 
+                this.updateHUD(105, 'PELIGRO');
+                
+                // Efectos visuales
+                document.getElementById('soundWaves').setAttribute('visible', 'true');
+                document.getElementById('stressParticles').setAttribute('visible', 'true');
+                document.getElementById('infoText').setAttribute('visible', 'true');
+                document.getElementById('dangerOverlay').classList.add('active');
+                
+                // Luz roja pulsante
+                const light = document.getElementById('dangerLight');
+                light.setAttribute('animation', {
+                    property: 'light.intensity',
+                    from: 0,
+                    to: 3,
+                    dir: 'alternate',
+                    dur: 800,
+                    loop: true
+                });
+                
+                // Vibración del stickman
+                const stickman = document.getElementById('stickman');
+                stickman.setAttribute('animation__shake', {
+                    property: 'rotation',
+                    from: '0 0 -3',
+                    to: '0 0 3',
+                    dir: 'alternate',
+                    dur: 100,
+                    loop: true
+                });
+                
+                // Boca en expresión de dolor
+                const mouth = document.getElementById('mouth').children[0];
+                mouth.setAttribute('rotation', '180 0 0'); // Boca hacia abajo
+                
+                setTimeout(() => this.phase2_CoveringEars(), 3000);
+            },
+
+            // FASE 2: Cubrirse los oídos
+            phase2_CoveringEars() {
+                console.log('📍 FASE 2: Cubriendo oídos');
+                this.phase = 2;
+                
+                document.getElementById('statusText').textContent = 
+                    'Protección insuficiente con las manos';
+                
+                // Animar brazos hacia la cabeza
+                const leftShoulder = document.getElementById('leftShoulder');
+                const leftUpperArm = document.getElementById('leftUpperArm');
+                const leftForearm = document.getElementById('leftForearm');
+                
+                const rightShoulder = document.getElementById('rightShoulder');
+                const rightUpperArm = document.getElementById('rightUpperArm');
+                const rightForearm = document.getElementById('rightForearm');
+                
+                // Brazo izquierdo sube
+                leftShoulder.setAttribute('animation__raise', {
+                    property: 'rotation',
+                    to: '0 0 90',
+                    dur: 800,
+                    easing: 'easeInOutQuad'
+                });
+                
+                leftUpperArm.setAttribute('animation__bend', {
+                    property: 'rotation',
+                    to: '0 0 -100',
+                    dur: 800,
+                    easing: 'easeInOutQuad'
+                });
+                
+                // Brazo derecho sube
+                rightShoulder.setAttribute('animation__raise', {
+                    property: 'rotation',
+                    to: '0 0 -90',
+                    dur: 800,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightUpperArm.setAttribute('animation__bend', {
+                    property: 'rotation',
+                    to: '0 0 100',
+                    dur: 800,
+                    easing: 'easeInOutQuad'
+                });
+                
+                this.updateHUD(95, 'TODAVÍA PELIGROSO');
+                
+                setTimeout(() => this.phase3_Walking(), 4000);
+            },
+
+            // FASE 3: Caminar hacia la mesa
+            phase3_Walking() {
+                console.log('📍 FASE 3: Caminando');
+                this.phase = 3;
+                
+                document.getElementById('statusText').textContent = 
+                    'Buscando protección auditiva adecuada...';
+                
+                // Bajar brazos
+                const leftShoulder = document.getElementById('leftShoulder');
+                const rightShoulder = document.getElementById('rightShoulder');
+                const leftUpperArm = document.getElementById('leftUpperArm');
+                const rightUpperArm = document.getElementById('rightUpperArm');
+                
+                leftShoulder.setAttribute('animation__lower', {
+                    property: 'rotation',
+                    to: '0 0 20',
+                    dur: 500
+                });
+                
+                leftUpperArm.setAttribute('animation__unbend', {
+                    property: 'rotation',
+                    to: '0 0 0',
+                    dur: 500
+                });
+                
+                rightShoulder.setAttribute('animation__lower', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 500
+                });
+                
+                rightUpperArm.setAttribute('animation__unbend', {
+                    property: 'rotation',
+                    to: '0 0 0',
+                    dur: 500
+                });
+                
+                // Rotar hacia la mesa
+                const stickman = document.getElementById('stickman');
+                stickman.removeAttribute('animation__shake');
+                
+                stickman.setAttribute('animation__turn', {
+                    property: 'rotation',
+                    to: '0 -45 0',
+                    dur: 1000,
+                    easing: 'easeInOutQuad'
+                });
+                
+                // Caminar hacia la mesa
+                setTimeout(() => {
+                    // Animación de caminar (piernas)
+                    const leftHip = document.getElementById('leftHip');
+                    const rightHip = document.getElementById('rightHip');
+                    
+                    leftHip.setAttribute('animation__walk', {
+                        property: 'rotation',
+                        from: '0 0 5',
+                        to: '30 0 5',
+                        dir: 'alternate',
+                        dur: 400,
+                        loop: 6,
+                        easing: 'easeInOutSine'
+                    });
+                    
+                    rightHip.setAttribute('animation__walk', {
+                        property: 'rotation',
+                        from: '0 0 -5',
+                        to: '-30 0 -5',
+                        dir: 'alternate',
+                        dur: 400,
+                        loop: 6,
+                        easing: 'easeInOutSine'
+                    });
+                    
+                    // Mover hacia la mesa
+                    stickman.setAttribute('animation__move', {
+                        property: 'position',
+                        to: '1.8 0 0',
+                        dur: 2400,
+                        easing: 'linear'
+                    });
+                    
+                    // Braceo al caminar
+                    leftShoulder.setAttribute('animation__swing', {
+                        property: 'rotation',
+                        from: '0 0 20',
+                        to: '30 0 20',
+                        dir: 'alternate',
+                        dur: 400,
+                        loop: 6
+                    });
+                    
+                    rightShoulder.setAttribute('animation__swing', {
+                        property: 'rotation',
+                        from: '0 0 -20',
+                        to: '-30 0 -20',
+                        dir: 'alternate',
+                        dur: 400,
+                        loop: 6
+                    });
+                    
+                }, 1000);
+                
+                setTimeout(() => this.phase4_TakingHeadphones(), 4500);
+            },
+
+            // FASE 4: Tomar auriculares
+            phase4_TakingHeadphones() {
+                console.log('📍 FASE 4: Tomando auriculares');
+                this.phase = 4;
+                
+                document.getElementById('statusText').textContent = 
+                    'Colocándose protección auditiva certificada';
+                
+                // Detener animación de caminar
+                const stickman = document.getElementById('stickman');
+                const leftHip = document.getElementById('leftHip');
+                const rightHip = document.getElementById('rightHip');
+                
+                leftHip.removeAttribute('animation__walk');
+                rightHip.removeAttribute('animation__walk');
+                leftHip.setAttribute('rotation', '0 0 5');
+                rightHip.setAttribute('rotation', '0 0 -5');
+                
+                // Brazo hacia auriculares
+                const rightShoulder = document.getElementById('rightShoulder');
+                const rightUpperArm = document.getElementById('rightUpperArm');
+                const rightForearm = document.getElementById('rightForearm');
+                
+                rightShoulder.removeAttribute('animation__swing');
+                rightShoulder.setAttribute('animation__reach', {
+                    property: 'rotation',
+                    to: '0 0 -80',
+                    dur: 1000
+                });
+                
+                rightUpperArm.setAttribute('animation__extend', {
+                    property: 'rotation',
+                    to: '0 0 40',
+                    dur: 1000
+                });
+                
+                rightForearm.setAttribute('animation__grab', {
+                    property: 'rotation',
+                    to: '0 0 -30',
+                    dur: 1000,
+                    delay: 500
+                });
+                
+                // Auriculares hacia el stickman
+                setTimeout(() => {
+                    const headphones = document.getElementById('headphones');
+                    headphones.removeAttribute('animation');
+                    
+                    headphones.setAttribute('animation__approach', {
+                        property: 'position',
+                        to: '1.8 1.5 0',
+                        dur: 1500,
+                        easing: 'easeInOutCubic'
+                    });
+                    
+                    headphones.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0.8 0.8 0.8',
+                        dur: 1500,
+                        easing: 'easeInOutCubic'
+                    });
+                }, 1200);
+                
+                setTimeout(() => this.phase5_WearingHeadphones(), 3000);
+            },
+
+            // FASE 5: Auriculares puestos
+            phase5_WearingHeadphones() {
+                console.log('📍 FASE 5: Protección aplicada');
+                this.phase = 5;
+                
+                document.getElementById('statusText').textContent = 
+                    '✅ Protección auditiva efectiva aplicada';
+                
+                // Ocultar auriculares (ahora están en la cabeza)
+                const headphones = document.getElementById('headphones');
+                headphones.setAttribute('visible', 'false');
+                
+                // Bajar brazos
+                const leftShoulder = document.getElementById('leftShoulder');
+                const rightShoulder = document.getElementById('rightShoulder');
+                const rightUpperArm = document.getElementById('rightUpperArm');
+                const rightForearm = document.getElementById('rightForearm');
+                
+                leftShoulder.removeAttribute('animation__swing');
+                leftShoulder.setAttribute('animation__down', {
+                    property: 'rotation',
+                    to: '0 0 20',
+                    dur: 800
+                });
+                
+                rightShoulder.setAttribute('animation__down', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 800
+                });
+                
+                rightUpperArm.setAttribute('animation__down', {
+                    property: 'rotation',
+                    to: '0 0 0',
+                    dur: 800
+                });
+                
+                rightForearm.setAttribute('animation__down', {
+                    property: 'rotation',
+                    to: '0 0 0',
+                    dur: 800
+                });
+                
+                // Atenuar audio
                 if (this.audioContext && this.filterNode && this.gainNode) {
                     const t = this.audioContext.currentTime;
-                    this.filterNode.frequency.exponentialRampToValueAtTime(250, t + 2.5);
-                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
+                    this.filterNode.frequency.exponentialRampToValueAtTime(250, t + 2);
+                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 2);
                 }
                 
-                document.getElementById('btnProtectAR').classList.remove('visible');
-                document.getElementById('arStatusText').textContent = '✅ Protección Activada';
+                // Detener efectos de peligro
+                document.getElementById('soundWaves').setAttribute('visible', 'false');
+                document.getElementById('stressParticles').setAttribute('visible', 'false');
                 document.getElementById('dangerOverlay').classList.remove('active');
                 
-                document.getElementById('hudValue').style.color = '#34c759';
-                document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759 0%, #30d158 100%)';
+                const light = document.getElementById('dangerLight');
+                light.removeAttribute('animation');
+                light.setAttribute('light', 'intensity', 0);
                 
-                const warning = document.getElementById('warningText');
-                if (warning) {
-                    const texts = warning.querySelectorAll('a-text');
-                    texts[0].setAttribute('value', '✅ PROTECCIÓN ACTIVA ✅');
-                    texts[0].setAttribute('color', '#34c759');
-                    texts[2].setAttribute('value', 'ENTORNO SEGURO');
-                    texts[2].setAttribute('color', '#34c759');
-                }
+                // Cambiar boca a sonrisa
+                const mouth = document.getElementById('mouth').children[0];
+                mouth.setAttribute('rotation', '0 0 0');
                 
-                const dbInd = document.getElementById('dbIndicator');
-                if (dbInd) dbInd.setAttribute('color', '#34c759');
+                // Actualizar texto
+                document.getElementById('infoTextContent').setAttribute('value', '✅ 60 dB - SEGURO ✅');
+                document.getElementById('infoTextContent').setAttribute('color', '#00FF00');
+                document.getElementById('infoTextSub').setAttribute('value', 'Protección efectiva aplicada');
                 
-                this.animateProtectionSequence();
+                this.updateHUD(60, 'SEGURO');
+                
+                setTimeout(() => this.phase6_Final(), 3000);
             },
 
-            animateProtectionSequence() {
-                const hp = document.getElementById('headphonesContainer');
-                if (!hp) return;
+            // FASE 6: Mensaje final
+            phase6_Final() {
+                console.log('📍 FASE 6: Mensaje final');
+                this.phase = 6;
                 
-                hp.setAttribute('animation__approach', {
-                    property: 'position',
-                    from: '0 1.6 -2.5',
-                    to: '0 1.6 -0.8',
-                    dur: 2500,
-                    easing: 'easeInOutCubic'
-                });
+                document.getElementById('infoText').setAttribute('visible', 'false');
                 
-                hp.setAttribute('animation__grow', {
-                    property: 'scale',
-                    from: '1 1 1',
-                    to: '2.5 2.5 2.5',
-                    dur: 2500,
-                    easing: 'easeInOutCubic'
-                });
+                // Mostrar mensaje educativo completo
+                const infoText = document.getElementById('infoText');
+                infoText.setAttribute('visible', 'true');
                 
-                setTimeout(() => {
-                    hp.setAttribute('visible', 'false');
-                    this.showFinalMessage();
-                }, 3000);
-            },
-
-            showFinalMessage() {
-                const msg = document.getElementById('floatingMessage');
-                const content = document.getElementById('messageContentText');
-                content.innerHTML = CONFIG.finalMessage;
-                msg.classList.add('visible');
+                const plane1 = infoText.children[0];
+                const plane2 = infoText.children[1];
+                const plane3 = infoText.children[2];
+                
+                plane1.setAttribute('width', '4');
+                plane1.setAttribute('height', '2');
+                plane2.setAttribute('width', '3.9');
+                plane2.setAttribute('height', '1.9');
+                plane3.setAttribute('width', '3.8');
+                plane3.setAttribute('height', '1.8');
+                
+                document.getElementById('infoTextContent').setAttribute('value', '🛡️ PROTECCIÓN AUDITIVA 🛡️');
+                document.getElementById('infoTextContent').setAttribute('color', '#00FF00');
+                document.getElementById('infoTextContent').setAttribute('position', '0 0.7 0.05');
+                document.getElementById('infoTextContent').setAttribute('width', '4.5');
+                
+                document.getElementById('infoTextSub').setAttribute('value', 
+                    'Usa protección en ambientes >85dB\n' +
+                    'Incluye fábricas, construcción,\n' +
+                    'conciertos y herramientas eléctricas.\n\n' +
+                    'TU AUDICIÓN NO SE REGENERA');
+                document.getElementById('infoTextSub').setAttribute('position', '0 -0.3 0.05');
+                document.getElementById('infoTextSub').setAttribute('width', '4');
+                
+                document.getElementById('statusText').textContent = 
+                    '✅ Simulación completada - Tu audición es valiosa';
             }
         };
 
+        // TWEEN animation loop
+        function animate(time) {
+            requestAnimationFrame(animate);
+            TWEEN.update(time);
+        }
+        requestAnimationFrame(animate);
+
+        // Init
         window.addEventListener('load', () => {
-            console.log('🚀 LANXESS AR PRO v15.0');
-            Router.init();
+            console.log('🚀 LANXESS AR - Animación Educativa Cargada');
+            AnimationSystem.init();
         });
     </script>
 </body>
