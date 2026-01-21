@@ -2,609 +2,96 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#D71920">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Lanxess Safety AR Pro</title>
+    <title>Lanxess Safety AR Pro - COMPLETO</title>
 
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;700&family=Roboto:wght@400;700&display=swap');
-
-        :root {
-            --primary-red: #D71920;
-            --deep-black: #0a0a0a;
-            --dark-gray: #1a1a1a;
-            --medium-gray: #2a2a2a;
-            --light-gray: #b0b0b0;
-            --pure-white: #ffffff;
-            --danger: #ff3b30;
-            --warning: #ffcc00;
-            --safe: #34c759;
-            --info: #007aff;
-            --font-display: 'Orbitron', monospace;
-            --font-heading: 'Exo 2', sans-serif;
-            --font-body: 'Roboto', sans-serif;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            --safe-top: env(safe-area-inset-top, 20px);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
         
-        html, body {
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            overflow: hidden;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+        html, body { width:100%; height:100%; position:fixed; overflow:hidden; background:#0a0a0a; font-family:'Roboto',sans-serif; color:#fff; }
         
-        body {
-            background: var(--deep-black);
-            font-family: var(--font-body);
-            color: var(--pure-white);
-        }
-
-        /* VIDEO BACKGROUND */
-        #cameraVideo {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            display: none;
-        }
-
-        /* VIEWS */
-        .view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            opacity: 0;
-            transition: opacity var(--transition-slow);
-            z-index: 1;
-        }
-
-        .view.active {
-            display: flex;
-            opacity: 1;
-            z-index: 10;
-        }
-
-        /* BOTÓN BACK */
-        .btn-back {
-            position: fixed;
-            top: calc(var(--safe-top) + 10px);
-            left: 15px;
-            width: 52px;
-            height: 52px;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 99999;
-            transition: all var(--transition-fast);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-            pointer-events: auto;
-        }
-
-        .btn-back::before {
-            content: '←';
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--pure-white);
-        }
-
-        .btn-back:active {
-            transform: scale(0.88);
-            background: var(--primary-red);
-            border-color: var(--primary-red);
-        }
-
-        /* ===================================================================
-           HOME VIEW
-           =================================================================== */
-        #home {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-            padding: 40px 20px;
-        }
-
-        .home-header {
-            text-align: center;
-            margin-bottom: 60px;
-            animation: fadeInDown 1s ease-out;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .logo-container {
-            margin-bottom: 25px;
-        }
-
-        .logo-icon {
-            font-size: 64px;
-            filter: drop-shadow(0 0 25px rgba(215, 25, 32, 0.6));
-            animation: pulse 2.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-
-        .home-header h1 {
-            font-family: var(--font-display);
-            font-size: 38px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--pure-white) 0%, var(--light-gray) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
-        }
-
-        .accent-line {
-            width: 70px;
-            height: 4px;
-            background: var(--primary-red);
-            margin: 12px auto;
-            border-radius: 2px;
-            box-shadow: 0 0 15px rgba(215, 25, 32, 0.7);
-        }
-
-        .home-header p {
-            font-family: var(--font-heading);
-            font-size: 13px;
-            letter-spacing: 2.5px;
-            color: var(--light-gray);
-            text-transform: uppercase;
-        }
-
-        .menu-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            width: 100%;
-            max-width: 380px;
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .menu-item {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-left: 4px solid var(--primary-red);
-            border-radius: 14px;
-            padding: 24px 20px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: all var(--transition-medium);
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 100%;
-            background: linear-gradient(90deg, rgba(215, 25, 32, 0.15) 0%, transparent 100%);
-            transition: width var(--transition-medium);
-        }
-
-        .menu-item:active {
-            transform: scale(0.97);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .menu-item:active::before {
-            width: 100%;
-        }
-
-        .menu-icon {
-            font-size: 36px;
-            min-width: 36px;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-        }
-
-        .menu-content h3 {
-            font-family: var(--font-heading);
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--pure-white);
-        }
-
-        .menu-content p {
-            font-size: 12px;
-            color: var(--light-gray);
-            line-height: 1.4;
-        }
-
-        .menu-arrow {
-            margin-left: auto;
-            font-size: 22px;
-            color: var(--primary-red);
-            font-weight: 900;
-        }
-
-        .home-footer {
-            position: absolute;
-            bottom: calc(var(--safe-bottom) + 20px);
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-family: var(--font-display);
-            font-size: 9px;
-            color: #444;
-            letter-spacing: 2px;
-        }
-
-        /* ===================================================================
-           METER VIEW
-           =================================================================== */
-        #meter {
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
-            padding-top: calc(var(--safe-top) + 90px);
-        }
-
-        .meter-display {
-            width: 280px;
-            height: 280px;
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .meter-circle {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(26, 26, 26, 0.9) 0%, rgba(10, 10, 10, 1) 100%);
-            border: 5px solid #2a2a2a;
-            box-shadow: 
-                0 0 50px rgba(0, 0, 0, 0.9),
-                inset 0 0 50px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: all var(--transition-medium);
-        }
-
-        .meter-circle::before {
-            content: '';
-            position: absolute;
-            top: -8px; left: -8px; right: -8px; bottom: -8px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 0%, var(--primary-red) 50%, transparent 100%);
-            opacity: 0;
-            transition: opacity var(--transition-medium);
-            z-index: -1;
-            animation: rotate 3s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .meter-circle.danger::before {
-            opacity: 0.7;
-        }
-
-        .db-value {
-            font-family: var(--font-display);
-            font-size: 76px;
-            font-weight: 900;
-            color: var(--pure-white);
-            text-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
-            line-height: 1;
-            margin-bottom: 5px;
-        }
-
-        .db-unit {
-            font-family: var(--font-heading);
-            font-size: 16px;
-            color: var(--light-gray);
-            letter-spacing: 2px;
-        }
-
-        .status-indicator {
-            margin-top: 20px;
-            padding: 9px 20px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            font-family: var(--font-heading);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            transition: all var(--transition-fast);
-        }
-
-        .wave-visualizer {
-            width: 90%;
-            max-width: 360px;
-            height: 100px;
-            position: relative;
-            margin-top: 30px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            overflow: hidden;
-        }
-
-        #waveCanvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        .meter-info {
-            max-width: 320px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .meter-info p {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--light-gray);
-        }
-
-        .meter-info .highlight {
-            color: var(--primary-red);
-            font-weight: 700;
-        }
-
-        /* ===================================================================
-           AR VIEW
-           =================================================================== */
-        #ar {
-            background: transparent !important;
-            pointer-events: none;
-        }
-
-        .ar-hud {
-            position: fixed;
-            top: calc(var(--safe-top) + 70px);
-            right: 15px;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        .hud-meter {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            border-right: 4px solid var(--primary-red);
-            border-radius: 8px;
-            padding: 12px 16px;
-            min-width: 120px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.7);
-        }
-
-        .hud-label {
-            font-family: var(--font-heading);
-            font-size: 9px;
-            color: var(--light-gray);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .hud-value {
-            font-family: var(--font-display);
-            font-size: 28px;
-            font-weight: 900;
-            color: var(--primary-red);
-            text-shadow: 0 0 18px rgba(215, 25, 32, 0.7);
-            line-height: 1;
-            text-align: right;
-        }
-
-        .hud-bar {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-
-        .hud-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%);
-            border-radius: 2px;
-            transition: width 0.2s ease-out;
-            box-shadow: 0 0 8px rgba(215, 25, 32, 0.9);
-        }
-
-        .ar-controls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 25px 20px calc(var(--safe-bottom) + 20px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            pointer-events: auto;
-            z-index: 1000;
-        }
-
-        .ar-status-text {
-            font-family: var(--font-heading);
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--pure-white);
-            text-align: center;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
-            min-height: 22px;
-        }
-
-        .btn-ar {
-            width: 100%;
-            max-width: 340px;
-            padding: 18px 28px;
-            background: var(--pure-white);
-            color: var(--deep-black);
-            border: none;
-            border-radius: 50px;
-            font-family: var(--font-heading);
-            font-size: 15px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.25);
-            transition: all var(--transition-fast);
-            display: none;
-        }
-
-        .btn-ar.visible {
-            display: block;
-        }
-
-        .btn-ar:active {
-            transform: scale(0.96);
-        }
-
-        #btnStartAR {
-            background: var(--primary-red);
-            color: var(--pure-white);
-            box-shadow: 0 6px 25px rgba(215, 25, 32, 0.5);
-        }
-
-        .danger-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 800;
-            display: none;
-            animation: dangerPulse 1.5s infinite;
-        }
-
-        .danger-overlay.active {
-            display: block;
-        }
-
-        @keyframes dangerPulse {
-            0%, 100% { box-shadow: inset 0 0 0 rgba(215, 25, 32, 0); }
-            50% { box-shadow: inset 0 0 100px rgba(215, 25, 32, 0.5); }
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: var(--pure-white);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* A-FRAME */
-        #arScene {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 5 !important;
-        }
-
-        .a-enter-vr, .a-orientation-modal {
-            display: none !important;
-        }
-
-        @media (max-width: 360px) {
-            .home-header h1 { font-size: 34px; }
-            .meter-display { width: 250px; height: 250px; }
-            .db-value { font-size: 68px; }
-        }
+        .view { position:absolute; top:0; left:0; width:100%; height:100%; display:none; opacity:0; transition:opacity 0.6s; z-index:1; }
+        .view.active { display:flex; opacity:1; z-index:10; }
+        
+        .btn-back { position:fixed; top:calc(env(safe-area-inset-top,20px) + 10px); left:15px; width:52px; height:52px; background:rgba(10,10,10,0.95); backdrop-filter:blur(15px); border:2px solid rgba(255,255,255,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:99999; transition:all 0.2s; box-shadow:0 4px 20px rgba(0,0,0,0.8); pointer-events:auto; }
+        .btn-back::before { content:'←'; font-size:26px; font-weight:900; color:#fff; }
+        .btn-back:active { transform:scale(0.88); background:#D71920; border-color:#D71920; }
+        
+        #home { flex-direction:column; justify-content:center; align-items:center; background:linear-gradient(135deg,#1a1a1a 0%,#000 100%); padding:40px 20px; }
+        .home-header { text-align:center; margin-bottom:60px; animation:fadeInDown 1s ease-out; }
+        @keyframes fadeInDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
+        .logo-icon { font-size:64px; filter:drop-shadow(0 0 25px rgba(215,25,32,0.6)); animation:pulse 2.5s infinite; margin-bottom:25px; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+        .home-header h1 { font-family:'Orbitron',monospace; font-size:38px; font-weight:900; text-transform:uppercase; letter-spacing:3px; background:linear-gradient(135deg,#fff 0%,#b0b0b0 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+        .accent-line { width:70px; height:4px; background:#D71920; margin:12px auto; border-radius:2px; box-shadow:0 0 15px rgba(215,25,32,0.7); }
+        .home-header p { font-family:'Exo 2',sans-serif; font-size:13px; letter-spacing:2.5px; color:#b0b0b0; text-transform:uppercase; }
+        .menu-grid { display:flex; flex-direction:column; gap:18px; width:100%; max-width:380px; animation:fadeInUp 1s ease-out 0.3s both; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        .menu-item { background:rgba(255,255,255,0.04); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.12); border-left:4px solid #D71920; border-radius:14px; padding:24px 20px; cursor:pointer; position:relative; overflow:hidden; transition:all 0.4s; display:flex; align-items:center; gap:18px; }
+        .menu-item::before { content:''; position:absolute; top:0; left:0; width:0; height:100%; background:linear-gradient(90deg,rgba(215,25,32,0.15) 0%,transparent 100%); transition:width 0.4s; }
+        .menu-item:active { transform:scale(0.97); background:rgba(255,255,255,0.08); }
+        .menu-item:active::before { width:100%; }
+        .menu-icon { font-size:36px; min-width:36px; filter:drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+        .menu-content h3 { font-family:'Exo 2',sans-serif; font-size:20px; font-weight:700; margin-bottom:5px; color:#fff; }
+        .menu-content p { font-size:12px; color:#b0b0b0; line-height:1.4; }
+        .menu-arrow { margin-left:auto; font-size:22px; color:#D71920; font-weight:900; }
+        .home-footer { position:absolute; bottom:calc(env(safe-area-inset-bottom,20px) + 20px); left:0; width:100%; text-align:center; font-family:'Orbitron',monospace; font-size:9px; color:#444; letter-spacing:2px; }
+        
+        #meter { flex-direction:column; align-items:center; justify-content:flex-start; background:linear-gradient(180deg,#000 0%,#1a1a1a 100%); padding-top:calc(env(safe-area-inset-top,20px) + 90px); }
+        .meter-display { width:280px; height:280px; position:relative; margin-bottom:40px; }
+        .meter-circle { width:100%; height:100%; border-radius:50%; background:radial-gradient(circle,rgba(26,26,26,0.9) 0%,rgba(10,10,10,1) 100%); border:5px solid #2a2a2a; box-shadow:0 0 50px rgba(0,0,0,0.9),inset 0 0 50px rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; transition:all 0.4s; }
+        .meter-circle::before { content:''; position:absolute; top:-8px; left:-8px; right:-8px; bottom:-8px; border-radius:50%; background:conic-gradient(from 0deg,transparent 0%,#D71920 50%,transparent 100%); opacity:0; transition:opacity 0.4s; z-index:-1; animation:rotate 3s linear infinite; }
+        @keyframes rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .meter-circle.danger::before { opacity:0.7; }
+        .db-value { font-family:'Orbitron',monospace; font-size:76px; font-weight:900; color:#fff; text-shadow:0 0 25px rgba(255,255,255,0.6); line-height:1; margin-bottom:5px; }
+        .db-unit { font-family:'Exo 2',sans-serif; font-size:16px; color:#b0b0b0; letter-spacing:2px; }
+        .status-indicator { margin-top:20px; padding:9px 20px; background:rgba(255,255,255,0.06); border-radius:25px; border:1px solid rgba(255,255,255,0.12); font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; transition:all 0.2s; }
+        .wave-visualizer { width:90%; max-width:360px; height:100px; position:relative; margin-top:30px; background:rgba(255,255,255,0.02); border-radius:10px; border:1px solid rgba(255,255,255,0.06); overflow:hidden; }
+        #waveCanvas { width:100%; height:100%; }
+        .meter-info { max-width:320px; padding:20px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; margin-top:25px; text-align:center; }
+        .meter-info p { font-size:13px; line-height:1.6; color:#b0b0b0; }
+        .meter-info .highlight { color:#D71920; font-weight:700; }
+        
+        #ar { background:transparent !important; pointer-events:none; }
+        .ar-hud { position:fixed; top:calc(env(safe-area-inset-top,20px) + 70px); right:15px; pointer-events:none; z-index:1000; }
+        .hud-meter { background:rgba(0,0,0,0.85); backdrop-filter:blur(20px); border:2px solid rgba(255,255,255,0.25); border-right:4px solid #D71920; border-radius:8px; padding:12px 16px; min-width:120px; box-shadow:0 6px 25px rgba(0,0,0,0.7); }
+        .hud-label { font-family:'Exo 2',sans-serif; font-size:9px; color:#b0b0b0; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; }
+        .hud-value { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:#D71920; text-shadow:0 0 18px rgba(215,25,32,0.7); line-height:1; text-align:right; }
+        .hud-bar { width:100%; height:4px; background:rgba(255,255,255,0.15); border-radius:2px; margin-top:8px; overflow:hidden; }
+        .hud-fill { height:100%; width:0%; background:linear-gradient(90deg,#D71920 0%,#ff6b6b 100%); border-radius:2px; transition:width 0.2s ease-out; box-shadow:0 0 8px rgba(215,25,32,0.9); }
+        .ar-controls { position:fixed; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); padding:25px 20px calc(env(safe-area-inset-bottom,20px) + 20px); display:flex; flex-direction:column; align-items:center; gap:12px; pointer-events:auto; z-index:1000; }
+        .ar-status-text { font-family:'Exo 2',sans-serif; font-size:15px; font-weight:600; color:#fff; text-align:center; margin-bottom:8px; text-shadow:0 2px 8px rgba(0,0,0,0.9); min-height:22px; }
+        .btn-ar { width:100%; max-width:340px; padding:18px 28px; background:#fff; color:#0a0a0a; border:none; border-radius:50px; font-family:'Exo 2',sans-serif; font-size:15px; font-weight:900; text-transform:uppercase; letter-spacing:1px; cursor:pointer; position:relative; overflow:hidden; box-shadow:0 6px 25px rgba(255,255,255,0.25); transition:all 0.2s; display:none; }
+        .btn-ar.visible { display:block; }
+        .btn-ar:active { transform:scale(0.96); }
+        #btnStartAR { background:#D71920; color:#fff; box-shadow:0 6px 25px rgba(215,25,32,0.5); }
+        .danger-overlay { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:800; display:none; animation:dangerPulse 1.5s infinite; }
+        .danger-overlay.active { display:block; }
+        @keyframes dangerPulse { 0%,100%{box-shadow:inset 0 0 0 rgba(215,25,32,0)} 50%{box-shadow:inset 0 0 100px rgba(215,25,32,0.5)} }
+        .loading-spinner { display:inline-block; width:16px; height:16px; border:3px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; margin-right:8px; vertical-align:middle; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        
+        #arScene { position:fixed !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important; z-index:5 !important; }
+        .a-enter-vr, .a-orientation-modal { display:none !important; }
+        a-scene { background:transparent !important; }
     </style>
 </head>
 <body>
 
-    <video id="cameraVideo" playsinline autoplay muted></video>
     <div id="dangerOverlay" class="danger-overlay"></div>
 
-    <!-- ===================================================================
-         HOME VIEW
-         =================================================================== -->
     <div id="home" class="view active">
         <div class="home-header">
-            <div class="logo-container">
-                <div class="logo-icon">🎧</div>
-            </div>
+            <div class="logo-icon">🎧</div>
             <h1>Safety Suite</h1>
             <div class="accent-line"></div>
             <p>Protección Auditiva</p>
         </div>
-
         <div class="menu-grid">
             <div class="menu-item" data-nav="meter">
                 <div class="menu-icon">🎙️</div>
@@ -614,7 +101,6 @@
                 </div>
                 <div class="menu-arrow">→</div>
             </div>
-
             <div class="menu-item" data-nav="ar">
                 <div class="menu-icon">🥽</div>
                 <div class="menu-content">
@@ -624,15 +110,9 @@
                 <div class="menu-arrow">→</div>
             </div>
         </div>
-
-        <div class="home-footer">
-            LANXESS AR • v16.0 PRO
-        </div>
+        <div class="home-footer">LANXESS AR • v18.0 PRO FINAL</div>
     </div>
 
-    <!-- ===================================================================
-         METER VIEW
-         =================================================================== -->
     <div id="meter" class="view">
         <div class="btn-back" data-nav="home"></div>
         <div class="meter-display">
@@ -642,1514 +122,576 @@
                 <div class="status-indicator" id="statusIndicator">INICIANDO</div>
             </div>
         </div>
-        <div class="wave-visualizer">
-            <canvas id="waveCanvas"></canvas>
-        </div>
+        <div class="wave-visualizer"><canvas id="waveCanvas"></canvas></div>
         <div class="meter-info">
-            <p>El micrófono analiza el ruido ambiente en tiempo real. 
-            Cuando el medidor se torna <span class="highlight">ROJO</span>, 
-            el nivel de decibelios es perjudicial para tu audición.</p>
+            <p>El micrófono analiza el ruido ambiente en tiempo real. Cuando el medidor se torna <span class="highlight">ROJO</span>, el nivel de decibelios es perjudicial para tu audición.</p>
         </div>
     </div>
 
-    <!-- ===================================================================
-         AR VIEW
-         =================================================================== -->
     <div id="ar" class="view">
         <div class="btn-back" data-nav="home"></div>
-
         <div class="ar-hud">
             <div class="hud-meter">
                 <div class="hud-label">NIVEL RUIDO</div>
                 <div class="hud-value" id="hudValue">0 dB</div>
-                <div class="hud-bar">
-                    <div class="hud-fill" id="hudFill"></div>
-                </div>
+                <div class="hud-bar"><div class="hud-fill" id="hudFill"></div></div>
             </div>
         </div>
-
         <div class="ar-controls">
             <div class="ar-status-text" id="arStatusText">Apunta la cámara al suelo para ver la escena</div>
             <button id="btnStartAR" class="btn-ar visible">🎬 INICIAR ANIMACIÓN</button>
         </div>
     </div>
 
-    <!-- ===================================================================
-         A-FRAME SCENE - AR PROFESIONAL
-         =================================================================== -->
-    <a-scene 
-        id="arScene"
-        vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true; colorManagement: true;"
-        loading-screen="enabled: false"
-        embedded
-        background="transparent"
-        style="display: none;">
-
-        <!-- CÁMARA CON GIROSCOPIO -->
-        <a-camera 
-            id="mainCamera" 
-            position="0 1.6 0"
-            look-controls="enabled: true; 
-                          touchEnabled: false;
-                          mouseEnabled: false;
-                          magicWindowTrackingEnabled: true;
-                          pointerLockEnabled: false"
-            wasd-controls="enabled: false">
-        </a-camera>
-
-        <!-- ILUMINACIÓN PROFESIONAL -->
-        <a-entity light="type: ambient; color: #FFF; intensity: 0.7"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.5" position="3 8 2"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1" position="-3 6 -2"></a-entity>
-        <a-entity light="type: point; color: #FFF; intensity: 1.2; distance: 10" position="0 3 0"></a-entity>
-        <a-entity id="dangerLight" light="type: point; color: #D71920; intensity: 0; distance: 12" position="0 2 -2"></a-entity>
-
-        <!-- SUELO -->
-        <a-plane 
-            position="0 0 -2" 
-            rotation="-90 0 0" 
-            width="10" 
-            height="10" 
-            color="#1a1a1a"
-            material="roughness: 0.9; metalness: 0.1">
-        </a-plane>
-
-        <!-- ESCENA PRINCIPAL -->
-        <a-entity id="mainScene" position="0 0 -2">
-
-            <!-- =====================================================
-                 MESA 3D PROCEDURAL - DETALLADA
-                 ===================================================== -->
-            <a-entity id="tableGroup" position="1.2 0 0">
-                <!-- Tablero principal -->
-                <a-box 
-                    id="tableTop"
-                    width="0.8" 
-                    height="0.05" 
-                    depth="0.5" 
-                    position="0 0.7 0"
-                    color="#8B4513"
-                    material="roughness: 0.6; metalness: 0.1">
-                </a-box>
-                
-                <!-- Borde del tablero -->
-                <a-box width="0.82" height="0.03" depth="0.52" position="0 0.735 0" color="#654321"></a-box>
-                
-                <!-- Pata frontal izquierda -->
-                <a-cylinder 
-                    radius="0.025" 
-                    height="0.7" 
-                    color="#654321" 
-                    position="-0.32 0.35 -0.18"
-                    material="roughness: 0.7">
-                </a-cylinder>
-                
-                <!-- Pata frontal derecha -->
-                <a-cylinder 
-                    radius="0.025" 
-                    height="0.7" 
-                    color="#654321" 
-                    position="0.32 0.35 -0.18"
-                    material="roughness: 0.7">
-                </a-cylinder>
-                
-                <!-- Pata trasera izquierda -->
-                <a-cylinder 
-                    radius="0.025" 
-                    height="0.7" 
-                    color="#654321" 
-                    position="-0.32 0.35 0.18"
-                    material="roughness: 0.7">
-                </a-cylinder>
-                
-                <!-- Pata trasera derecha -->
-                <a-cylinder 
-                    radius="0.025" 
-                    height="0.7" 
-                    color="#654321" 
-                    position="0.32 0.35 0.18"
-                    material="roughness: 0.7">
-                </a-cylinder>
-                
-                <!-- Travesaño frontal -->
-                <a-box width="0.7" height="0.02" depth="0.02" color="#654321" position="0 0.15 -0.18"></a-box>
-                
-                <!-- Travesaño trasero -->
-                <a-box width="0.7" height="0.02" depth="0.02" color="#654321" position="0 0.15 0.18"></a-box>
-                
-                <!-- Travesaño izquierdo -->
-                <a-box width="0.02" height="0.02" depth="0.4" color="#654321" position="-0.32 0.15 0"></a-box>
-                
-                <!-- Travesaño derecho -->
-                <a-box width="0.02" height="0.02" depth="0.4" color="#654321" position="0.32 0.15 0"></a-box>
-            </a-entity>
-
-            <!-- =====================================================
-                 AURICULARES 3D PROCEDURALES - ULTRA DETALLADOS
-                 ===================================================== -->
-            <a-entity id="headphonesGroup" position="1.2 0.78 0">
-                
-                <!-- Banda superior curva -->
-                <a-entity id="headband" position="0 0 0">
-                    <!-- Parte externa -->
-                    <a-torus 
-                        radius="0.12" 
-                        radius-tubular="0.012" 
-                        color="#2a2a2a"
-                        rotation="0 0 0"
-                        arc="180"
-                        material="metalness: 0.7; roughness: 0.3">
-                    </a-torus>
-                    
-                    <!-- Almohadilla interna -->
-                    <a-torus 
-                        radius="0.115" 
-                        radius-tubular="0.008" 
-                        color="#1a1a1a"
-                        rotation="0 0 0"
-                        arc="180"
-                        material="metalness: 0.3; roughness: 0.7">
-                    </a-torus>
-                </a-entity>
-                
-                <!-- AURICULAR IZQUIERDO -->
-                <a-entity id="leftEarcup" position="-0.12 -0.05 0">
-                    <!-- Brazo extensor -->
-                    <a-cylinder 
-                        radius="0.006" 
-                        height="0.04" 
-                        color="#2a2a2a"
-                        rotation="0 0 0"
-                        position="0 0.02 0"
-                        material="metalness: 0.8; roughness: 0.2">
-                    </a-cylinder>
-                    
-                    <!-- Copa externa -->
-                    <a-cylinder 
-                        radius="0.05" 
-                        height="0.025" 
-                        color="#1a1a1a" 
-                        rotation="90 0 0"
-                        material="metalness: 0.6; roughness: 0.4">
-                    </a-cylinder>
-                    
-                    <!-- Anillo decorativo -->
-                    <a-torus 
-                        radius="0.05" 
-                        radius-tubular="0.003" 
-                        color="#444444"
-                        rotation="90 0 0"
-                        material="metalness: 0.9; roughness: 0.1">
-                    </a-torus>
-                    
-                    <!-- Almohadilla -->
-                    <a-sphere 
-                        radius="0.048" 
-                        color="#2a2a2a"
-                        scale="1 0.4 1"
-                        material="metalness: 0.2; roughness: 0.8">
-                    </a-sphere>
-                    
-                    <!-- Logo Lanxess -->
-                    <a-circle 
-                        radius="0.022" 
-                        color="#D71920"
-                        position="0 0 0.027"
-                        material="emissive: #D71920; emissiveIntensity: 0.4; metalness: 0.3">
-                    </a-circle>
-                    
-                    <!-- Texto L -->
-                    <a-text 
-                        value="L" 
-                        color="#FFFFFF" 
-                        align="center" 
-                        width="0.15"
-                        position="0 0 0.029"
-                        scale="0.6 0.6 0.6">
-                    </a-text>
-                </a-entity>
-                
-                <!-- AURICULAR DERECHO -->
-                <a-entity id="rightEarcup" position="0.12 -0.05 0">
-                    <!-- Brazo extensor -->
-                    <a-cylinder 
-                        radius="0.006" 
-                        height="0.04" 
-                        color="#2a2a2a"
-                        rotation="0 0 0"
-                        position="0 0.02 0"
-                        material="metalness: 0.8; roughness: 0.2">
-                    </a-cylinder>
-                    
-                    <!-- Copa externa -->
-                    <a-cylinder 
-                        radius="0.05" 
-                        height="0.025" 
-                        color="#1a1a1a" 
-                        rotation="90 0 0"
-                        material="metalness: 0.6; roughness: 0.4">
-                    </a-cylinder>
-                    
-                    <!-- Anillo decorativo -->
-                    <a-torus 
-                        radius="0.05" 
-                        radius-tubular="0.003" 
-                        color="#444444"
-                        rotation="90 0 0"
-                        material="metalness: 0.9; roughness: 0.1">
-                    </a-torus>
-                    
-                    <!-- Almohadilla -->
-                    <a-sphere 
-                        radius="0.048" 
-                        color="#2a2a2a"
-                        scale="1 0.4 1"
-                        material="metalness: 0.2; roughness: 0.8">
-                    </a-sphere>
-                    
-                    <!-- Logo Lanxess -->
-                    <a-circle 
-                        radius="0.022" 
-                        color="#D71920"
-                        position="0 0 0.027"
-                        material="emissive: #D71920; emissiveIntensity: 0.4; metalness: 0.3">
-                    </a-circle>
-                    
-                    <!-- Texto R -->
-                    <a-text 
-                        value="R" 
-                        color="#FFFFFF" 
-                        align="center" 
-                        width="0.15"
-                        position="0 0 0.029"
-                        scale="0.6 0.6 0.6">
-                    </a-text>
-                </a-entity>
-                
-                <!-- Brillo indicador -->
-                <a-entity 
-                    light="type: point; color: #00FF00; intensity: 0.6; distance: 0.5"
-                    position="0 0 0"
-                    animation="property: light.intensity; from: 0.6; to: 0.2; dir: alternate; dur: 1200; loop: true">
-                </a-entity>
-                
-                <!-- Animación flotante inicial -->
-                <a-animation
-                    id="headphonesFloat"
-                    attribute="position"
-                    from="1.2 0.78 0"
-                    to="1.2 0.82 0"
-                    direction="alternate"
-                    dur="2200"
-                    repeat="indefinite"
-                    easing="easeInOutSine">
-                </a-animation>
-            </a-entity>
-
-            <!-- =====================================================
-                 STICKMAN ARTICULADO - PROFESIONAL Y PROPORCIONAL
-                 ===================================================== -->
-            <a-entity id="stickmanRoot" position="0 0 0">
-                
-                <!-- PELVIS (Base del cuerpo) -->
-                <a-entity id="pelvis" position="0 0.12 0">
-                    <a-sphere radius="0.03" color="#FFE0BD" material="roughness: 0.8"></a-sphere>
-                    
-                    <!-- TORSO -->
-                    <a-entity id="spine" position="0 0.25 0">
-                        <!-- Columna vertebral -->
-                        <a-cylinder 
-                            radius="0.02" 
-                            height="0.45" 
-                            color="#4A90E2"
-                            material="roughness: 0.6">
-                        </a-cylinder>
-                        
-                        <!-- CUELLO -->
-                        <a-entity id="neck" position="0 0.26 0">
-                            <a-cylinder 
-                                radius="0.018" 
-                                height="0.06" 
-                                color="#FFE0BD"
-                                material="roughness: 0.8">
-                            </a-cylinder>
-                            
-                            <!-- CABEZA -->
-                            <a-entity id="head" position="0 0.1 0">
-                                <!-- Cráneo -->
-                                <a-sphere 
-                                    radius="0.09" 
-                                    color="#FFE0BD"
-                                    material="roughness: 0.7">
-                                </a-sphere>
-                                
-                                <!-- Ojo izquierdo -->
-                                <a-sphere 
-                                    radius="0.012" 
-                                    color="#000000" 
-                                    position="-0.03 0.02 0.085">
-                                </a-sphere>
-                                
-                                <!-- Ojo derecho -->
-                                <a-sphere 
-                                    radius="0.012" 
-                                    color="#000000" 
-                                    position="0.03 0.02 0.085">
-                                </a-sphere>
-                                
-                                <!-- Pupila izquierda -->
-                                <a-sphere 
-                                    radius="0.006" 
-                                    color="#4A90E2" 
-                                    position="-0.03 0.02 0.092">
-                                </a-sphere>
-                                
-                                <!-- Pupila derecha -->
-                                <a-sphere 
-                                    radius="0.006" 
-                                    color="#4A90E2" 
-                                    position="0.03 0.02 0.092">
-                                </a-sphere>
-                                
-                                <!-- Boca -->
-                                <a-entity id="mouth" position="0 -0.02 0.085">
-                                    <a-torus 
-                                        id="mouthShape"
-                                        radius="0.025" 
-                                        radius-tubular="0.005" 
-                                        color="#000000"
-                                        rotation="0 0 0"
-                                        arc="180">
-                                    </a-torus>
-                                </a-entity>
-                                
-                                <!-- Nariz -->
-                                <a-sphere 
-                                    radius="0.008" 
-                                    color="#FFDBAC" 
-                                    position="0 0.005 0.092">
-                                </a-sphere>
-                            </a-entity>
-                        </a-entity>
-                        
-                        <!-- HOMBROS -->
-                        <a-entity id="shoulders" position="0 0.22 0">
-                            <a-box width="0.2" height="0.03" depth="0.05" color="#4A90E2"></a-box>
-                            
-                            <!-- ==================== BRAZO IZQUIERDO ==================== -->
-                            <a-entity id="leftShoulder" position="-0.1 0 0">
-                                <a-sphere radius="0.02" color="#FFE0BD"></a-sphere>
-                                
-                                <a-entity id="leftUpperArm" rotation="0 0 15">
-                                    <!-- Bíceps -->
-                                    <a-cylinder 
-                                        radius="0.015" 
-                                        height="0.18" 
-                                        color="#4A90E2"
-                                        position="0 -0.09 0"
-                                        material="roughness: 0.6">
-                                    </a-cylinder>
-                                    
-                                    <!-- Codo izquierdo -->
-                                    <a-entity id="leftElbow" position="0 -0.18 0">
-                                        <a-sphere radius="0.018" color="#FFE0BD"></a-sphere>
-                                        
-                                        <a-entity id="leftForearm" rotation="0 0 5">
-                                            <!-- Antebrazo -->
-                                            <a-cylinder 
-                                                radius="0.012" 
-                                                height="0.16" 
-                                                color="#FFE0BD"
-                                                position="0 -0.08 0"
-                                                material="roughness: 0.8">
-                                            </a-cylinder>
-                                            
-                                            <!-- Mano izquierda -->
-                                            <a-entity id="leftHand" position="0 -0.16 0">
-                                                <!-- Palma -->
-                                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
-                                                
-                                                <!-- Dedos -->
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="-0.012 -0.015 0.008" rotation="10 0 -15"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="-0.004 -0.015 0.01" rotation="10 0 0"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="0.004 -0.015 0.01" rotation="10 0 0"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="0.012 -0.015 0.008" rotation="10 0 15"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.018" color="#FFE0BD" 
-                                                           position="-0.018 -0.008 0" rotation="0 0 -45"></a-cylinder>
-                                            </a-entity>
-                                        </a-entity>
-                                    </a-entity>
-                                </a-entity>
-                            </a-entity>
-                            
-                            <!-- ==================== BRAZO DERECHO ==================== -->
-                            <a-entity id="rightShoulder" position="0.1 0 0">
-                                <a-sphere radius="0.02" color="#FFE0BD"></a-sphere>
-                                
-                                <a-entity id="rightUpperArm" rotation="0 0 -15">
-                                    <!-- Bíceps -->
-                                    <a-cylinder 
-                                        radius="0.015" 
-                                        height="0.18" 
-                                        color="#4A90E2"
-                                        position="0 -0.09 0"
-                                        material="roughness: 0.6">
-                                    </a-cylinder>
-                                    
-                                    <!-- Codo derecho -->
-                                    <a-entity id="rightElbow" position="0 -0.18 0">
-                                        <a-sphere radius="0.018" color="#FFE0BD"></a-sphere>
-                                        
-                                        <a-entity id="rightForearm" rotation="0 0 -5">
-                                            <!-- Antebrazo -->
-                                            <a-cylinder 
-                                                radius="0.012" 
-                                                height="0.16" 
-                                                color="#FFE0BD"
-                                                position="0 -0.08 0"
-                                                material="roughness: 0.8">
-                                            </a-cylinder>
-                                            
-                                            <!-- Mano derecha -->
-                                            <a-entity id="rightHand" position="0 -0.16 0">
-                                                <!-- Palma -->
-                                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
-                                                
-                                                <!-- Dedos -->
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="-0.012 -0.015 0.008" rotation="10 0 -15"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="-0.004 -0.015 0.01" rotation="10 0 0"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="0.004 -0.015 0.01" rotation="10 0 0"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.025" color="#FFE0BD" 
-                                                           position="0.012 -0.015 0.008" rotation="10 0 15"></a-cylinder>
-                                                <a-cylinder radius="0.004" height="0.018" color="#FFE0BD" 
-                                                           position="0.018 -0.008 0" rotation="0 0 45"></a-cylinder>
-                                            </a-entity>
-                                        </a-entity>
-                                    </a-entity>
-                                </a-entity>
-                            </a-entity>
-                        </a-entity>
-                    </a-entity>
-                    
-                    <!-- ==================== PIERNA IZQUIERDA ==================== -->
-                    <a-entity id="leftHip" position="-0.04 -0.02 0">
-                        <a-sphere radius="0.025" color="#FFE0BD"></a-sphere>
-                        
-                        <a-entity id="leftThigh" rotation="0 0 3">
-                            <!-- Muslo -->
-                            <a-cylinder 
-                                radius="0.02" 
-                                height="0.24" 
-                                color="#2C3E50"
-                                position="0 -0.12 0"
-                                material="roughness: 0.7">
-                            </a-cylinder>
-                            
-                            <!-- Rodilla izquierda -->
-                            <a-entity id="leftKnee" position="0 -0.24 0">
-                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
-                                
-                                <a-entity id="leftCalf" rotation="0 0 -2">
-                                    <!-- Pantorrilla -->
-                                    <a-cylinder 
-                                        radius="0.016" 
-                                        height="0.24" 
-                                        color="#2C3E50"
-                                        position="0 -0.12 0"
-                                        material="roughness: 0.7">
-                                    </a-cylinder>
-                                    
-                                    <!-- Tobillo izquierdo -->
-                                    <a-entity id="leftAnkle" position="0 -0.24 0">
-                                        <a-sphere radius="0.018" color="#FFE0BD"></a-sphere>
-                                        
-                                        <!-- Pie izquierdo -->
-                                        <a-entity id="leftFoot" position="0 -0.02 0.02">
-                                            <!-- Suela -->
-                                            <a-box 
-                                                width="0.05" 
-                                                height="0.015" 
-                                                depth="0.09" 
-                                                color="#1a1a1a"
-                                                position="0 -0.008 0"
-                                                material="roughness: 0.9">
-                                            </a-box>
-                                            
-                                            <!-- Empeine -->
-                                            <a-box 
-                                                width="0.048" 
-                                                height="0.03" 
-                                                depth="0.06" 
-                                                color="#1a1a1a"
-                                                position="0 0.005 -0.01"
-                                                material="roughness: 0.8">
-                                            </a-box>
-                                        </a-entity>
-                                    </a-entity>
-                                </a-entity>
-                            </a-entity>
-                        </a-entity>
-                    </a-entity>
-                    
-                    <!-- ==================== PIERNA DERECHA ==================== -->
-                    <a-entity id="rightHip" position="0.04 -0.02 0">
-                        <a-sphere radius="0.025" color="#FFE0BD"></a-sphere>
-                        
-                        <a-entity id="rightThigh" rotation="0 0 -3">
-                            <!-- Muslo -->
-                            <a-cylinder 
-                                radius="0.02" 
-                                height="0.24" 
-                                color="#2C3E50"
-                                position="0 -0.12 0"
-                                material="roughness: 0.7">
-                            </a-cylinder>
-                            
-                            <!-- Rodilla derecha -->
-                            <a-entity id="rightKnee" position="0 -0.24 0">
-                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
-                                
-                                <a-entity id="rightCalf" rotation="0 0 2">
-                                    <!-- Pantorrilla -->
-                                    <a-cylinder 
-                                        radius="0.016" 
-                                        height="0.24" 
-                                        color="#2C3E50"
-                                        position="0 -0.12 0"
-                                        material="roughness: 0.7">
-                                    </a-cylinder>
-                                    
-                                    <!-- Tobillo derecho -->
-                                    <a-entity id="rightAnkle" position="0 -0.24 0">
-                                        <a-sphere radius="0.018" color="#FFE0BD"></a-sphere>
-                                        
-                                        <!-- Pie derecho -->
-                                        <a-entity id="rightFoot" position="0 -0.02 0.02">
-                                            <!-- Suela -->
-                                            <a-box 
-                                                width="0.05" 
-                                                height="0.015" 
-                                                depth="0.09" 
-                                                color="#1a1a1a"
-                                                position="0 -0.008 0"
-                                                material="roughness: 0.9">
-                                            </a-box>
-                                            
-                                            <!-- Empeine -->
-                                            <a-box 
-                                                width="0.048" 
-                                                height="0.03" 
-                                                depth="0.06" 
-                                                color="#1a1a1a"
-                                                position="0 0.005 -0.01"
-                                                material="roughness: 0.8">
-                                            </a-box>
-                                        </a-entity>
-                                    </a-entity>
-                                </a-entity>
-                            </a-entity>
-                        </a-entity>
-                    </a-entity>
-                </a-entity>
-            </a-entity>
-
-            <!-- =====================================================
-                 EFECTOS VISUALES
-                 ===================================================== -->
+    <a-scene id="arScene" vr-mode-ui="enabled:false" renderer="antialias:true;alpha:true" loading-screen="enabled:false" embedded style="display:none">
+        <a-camera id="mainCamera" position="0 1.6 0" look-controls="enabled:true;magicWindowTrackingEnabled:true;touchEnabled:false;mouseEnabled:false" wasd-controls="enabled:false"></a-camera>
+        
+        <a-entity light="type:ambient;color:#FFF;intensity:0.6"></a-entity>
+        <a-entity light="type:directional;color:#FFF;intensity:1.2" position="3 6 2"></a-entity>
+        <a-entity light="type:point;color:#FFF;intensity:0.9;distance:8" position="0 3 0"></a-entity>
+        <a-entity id="dangerLight" light="type:point;color:#D71920;intensity:0;distance:10" position="0 1.5 -2.5"></a-entity>
+        
+        <a-plane position="0 0 -2.5" rotation="-90 0 0" width="12" height="12" color="#222" material="roughness:0.95"></a-plane>
+        
+        <a-entity id="mainScene" position="0 0 -2.5">
             
-            <!-- ONDAS DE SONIDO -->
-            <a-entity id="soundWaves" position="0 0.6 0" visible="false">
-                <!-- Onda 1 -->
-                <a-torus radius="0.3" radius-tubular="0.03" color="#FF0000" opacity="0.7" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
-                                dur="1800" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.7" to="0" 
-                                dur="1800" repeat="indefinite"></a-animation>
-                </a-torus>
-                
-                <!-- Onda 2 -->
-                <a-torus radius="0.3" radius-tubular="0.03" color="#FF0000" opacity="0.7" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
-                                dur="1800" delay="600" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.7" to="0" 
-                                dur="1800" delay="600" repeat="indefinite"></a-animation>
-                </a-torus>
-                
-                <!-- Onda 3 -->
-                <a-torus radius="0.3" radius-tubular="0.03" color="#FF0000" opacity="0.7" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="2.5 2.5 2.5" 
-                                dur="1800" delay="1200" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.7" to="0" 
-                                dur="1800" delay="1200" repeat="indefinite"></a-animation>
-                </a-torus>
+            <a-entity id="tableGroup" position="1.3 0 0">
+                <a-box width="0.85" height="0.05" depth="0.55" position="0 0.72 0" color="#8B4513" material="roughness:0.7"></a-box>
+                <a-cylinder radius="0.028" height="0.72" color="#5a3a1a" position="-0.345 0.36 -0.2"></a-cylinder>
+                <a-cylinder radius="0.028" height="0.72" color="#5a3a1a" position="0.345 0.36 -0.2"></a-cylinder>
+                <a-cylinder radius="0.028" height="0.72" color="#5a3a1a" position="-0.345 0.36 0.2"></a-cylinder>
+                <a-cylinder radius="0.028" height="0.72" color="#5a3a1a" position="0.345 0.36 0.2"></a-cylinder>
             </a-entity>
 
-            <!-- PARTÍCULAS DE ESTRÉS -->
-            <a-entity 
-                id="stressParticles"
-                position="0 0.7 0"
-                visible="false"
-                particle-system="preset: dust; color: #FF0000,#FF6B6B; particleCount: 120; 
-                                 size: 0.02; maxAge: 2.5; velocityValue: 0.4 0.4 0.4; 
-                                 velocitySpread: 0.3 0.3 0.3; opacity: 0.8">
+            <a-entity id="headphonesGroup" position="1.3 0.8 0">
+                <a-entity id="headband">
+                    <a-torus radius="0.13" radius-tubular="0.014" color="#1a1a1a" arc="185" material="metalness:0.85;roughness:0.25"></a-torus>
+                </a-entity>
+                <a-entity id="leftEarcup" position="-0.13 -0.055 0">
+                    <a-cylinder radius="0.053" height="0.028" color="#0a0a0a" rotation="90 0 0" material="metalness:0.7;roughness:0.35"></a-cylinder>
+                    <a-circle radius="0.024" color="#D71920" position="0 0 0.03" material="emissive:#D71920;emissiveIntensity:0.5"></a-circle>
+                    <a-text value="L" color="#FFF" align="center" width="0.16" position="0 0 0.032" scale="0.65 0.65 0.65"></a-text>
+                </a-entity>
+                <a-entity id="rightEarcup" position="0.13 -0.055 0">
+                    <a-cylinder radius="0.053" height="0.028" color="#0a0a0a" rotation="90 0 0" material="metalness:0.7;roughness:0.35"></a-cylinder>
+                    <a-circle radius="0.024" color="#D71920" position="0 0 0.03" material="emissive:#D71920;emissiveIntensity:0.5"></a-circle>
+                    <a-text value="R" color="#FFF" align="center" width="0.16" position="0 0 0.032" scale="0.65 0.65 0.65"></a-text>
+                </a-entity>
             </a-entity>
 
-            <!-- TEXTO INFORMATIVO 3D -->
-            <a-entity id="infoPanel" position="0 1.2 0" look-at="#mainCamera" visible="false">
-                <!-- Fondo -->
-                <a-plane width="1.8" height="0.6" color="#000000" opacity="0.95"></a-plane>
-                <a-plane width="1.75" height="0.55" color="#D71920" position="0 0 0.002"></a-plane>
-                <a-plane width="1.7" height="0.5" color="#000000" opacity="0.95" position="0 0 0.004"></a-plane>
-                
-                <!-- Texto principal -->
-                <a-text 
-                    id="infoTitle"
-                    value="⚠️ 105 dB - PELIGRO ⚠️"
-                    color="#FFFF00"
-                    align="center"
-                    width="2"
-                    position="0 0.15 0.01">
-                </a-text>
-                
-                <!-- Texto secundario -->
-                <a-text 
-                    id="infoSubtitle"
-                    value="Exposición prolongada causa daño permanente"
-                    color="#FFFFFF"
-                    align="center"
-                    width="1.9"
-                    position="0 -0.1 0.01">
-                </a-text>
+            <a-entity id="stickmanRoot" position="0 0 0">
+                <a-entity id="pelvis" position="0 0.14 0">
+                    <a-sphere radius="0.032" color="#FFE0BD"></a-sphere>
+                    <a-entity id="spine" position="0 0.26 0">
+                        <a-cylinder radius="0.022" height="0.47" color="#4A90E2"></a-cylinder>
+                        <a-entity id="neck" position="0 0.27 0">
+                            <a-cylinder radius="0.019" height="0.065" color="#FFE0BD"></a-cylinder>
+                            <a-entity id="head" position="0 0.105 0">
+                                <a-sphere radius="0.095" color="#FFE0BD"></a-sphere>
+                                <a-sphere radius="0.013" color="#000" position="-0.032 0.022 0.089"></a-sphere>
+                                <a-sphere radius="0.013" color="#000" position="0.032 0.022 0.089"></a-sphere>
+                                <a-sphere radius="0.007" color="#4A90E2" position="-0.032 0.022 0.097"></a-sphere>
+                                <a-sphere radius="0.007" color="#4A90E2" position="0.032 0.022 0.097"></a-sphere>
+                                <a-entity id="mouth" position="0 -0.022 0.089">
+                                    <a-torus id="mouthShape" radius="0.027" radius-tubular="0.006" color="#000" arc="180"></a-torus>
+                                </a-entity>
+                                <a-sphere radius="0.009" color="#FFDBAC" position="0 0.006 0.096"></a-sphere>
+                            </a-entity>
+                        </a-entity>
+                        <a-entity id="shoulders" position="0 0.23 0">
+                            <a-box width="0.21" height="0.032" depth="0.055" color="#4A90E2"></a-box>
+                            <a-entity id="leftShoulder" position="-0.105 0 0">
+                                <a-sphere radius="0.021" color="#FFE0BD"></a-sphere>
+                                <a-entity id="leftUpperArm" rotation="0 0 12">
+                                    <a-cylinder radius="0.016" height="0.19" color="#4A90E2" position="0 -0.095 0"></a-cylinder>
+                                    <a-entity id="leftElbow" position="0 -0.19 0">
+                                        <a-sphere radius="0.019" color="#FFE0BD"></a-sphere>
+                                        <a-entity id="leftForearm" rotation="0 0 3">
+                                            <a-cylinder radius="0.013" height="0.17" color="#FFE0BD" position="0 -0.085 0"></a-cylinder>
+                                            <a-entity id="leftHand" position="0 -0.17 0">
+                                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
+                                            </a-entity>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                            <a-entity id="rightShoulder" position="0.105 0 0">
+                                <a-sphere radius="0.021" color="#FFE0BD"></a-sphere>
+                                <a-entity id="rightUpperArm" rotation="0 0 -12">
+                                    <a-cylinder radius="0.016" height="0.19" color="#4A90E2" position="0 -0.095 0"></a-cylinder>
+                                    <a-entity id="rightElbow" position="0 -0.19 0">
+                                        <a-sphere radius="0.019" color="#FFE0BD"></a-sphere>
+                                        <a-entity id="rightForearm" rotation="0 0 -3">
+                                            <a-cylinder radius="0.013" height="0.17" color="#FFE0BD" position="0 -0.085 0"></a-cylinder>
+                                            <a-entity id="rightHand" position="0 -0.17 0">
+                                                <a-sphere radius="0.022" color="#FFE0BD"></a-sphere>
+                                            </a-entity>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                    <a-entity id="leftHip" position="-0.042 -0.024 0">
+                        <a-sphere radius="0.027" color="#FFE0BD"></a-sphere>
+                        <a-entity id="leftThigh" rotation="0 0 2">
+                            <a-cylinder radius="0.021" height="0.25" color="#2C3E50" position="0 -0.125 0"></a-cylinder>
+                            <a-entity id="leftKnee" position="0 -0.25 0">
+                                <a-sphere radius="0.023" color="#FFE0BD"></a-sphere>
+                                <a-entity id="leftCalf" rotation="0 0 -1">
+                                    <a-cylinder radius="0.017" height="0.25" color="#2C3E50" position="0 -0.125 0"></a-cylinder>
+                                    <a-entity id="leftAnkle" position="0 -0.25 0">
+                                        <a-sphere radius="0.019" color="#FFE0BD"></a-sphere>
+                                        <a-entity id="leftFoot" position="0 -0.022 0.024">
+                                            <a-box width="0.053" height="0.016" depth="0.095" color="#0a0a0a" position="0 -0.008 0"></a-box>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                    <a-entity id="rightHip" position="0.042 -0.024 0">
+                        <a-sphere radius="0.027" color="#FFE0BD"></a-sphere>
+                        <a-entity id="rightThigh" rotation="0 0 -2">
+                            <a-cylinder radius="0.021" height="0.25" color="#2C3E50" position="0 -0.125 0"></a-cylinder>
+                            <a-entity id="rightKnee" position="0 -0.25 0">
+                                <a-sphere radius="0.023" color="#FFE0BD"></a-sphere>
+                                <a-entity id="rightCalf" rotation="0 0 1">
+                                    <a-cylinder radius="0.017" height="0.25" color="#2C3E50" position="0 -0.125 0"></a-cylinder>
+                                    <a-entity id="rightAnkle" position="0 -0.25 0">
+                                        <a-sphere radius="0.019" color="#FFE0BD"></a-sphere>
+                                        <a-entity id="rightFoot" position="0 -0.022 0.024">
+                                            <a-box width="0.053" height="0.016" depth="0.095" color="#0a0a0a" position="0 -0.008 0"></a-box>
+                                        </a-entity>
+                                    </a-entity>
+                                </a-entity>
+                            </a-entity>
+                        </a-entity>
+                    </a-entity>
+                </a-entity>
+            </a-entity>
+
+            <a-entity id="soundWaves" position="0 0.65 0" visible="false">
+                <a-torus radius="0.35" radius-tubular="0.035" color="#FF0000" opacity="0.75" rotation="90 0 0"></a-torus>
+            </a-entity>
+
+            <a-entity id="infoPanel" position="0 1.3 0" visible="false">
+                <a-plane width="1.8" height="0.6" color="#000" opacity="0.95"></a-plane>
+                <a-plane width="1.75" height="0.55" color="#D71920" position="0 0 0.003"></a-plane>
+                <a-plane width="1.7" height="0.5" color="#000" opacity="0.95" position="0 0 0.006"></a-plane>
+                <a-text id="infoTitle" value="⚠️ 105 dB - PELIGRO ⚠️" color="#FFFF00" align="center" width="2" position="0 0.15 0.01"></a-text>
+                <a-text id="infoSubtitle" value="Exposición prolongada causa daño permanente" color="#FFF" align="center" width="1.9" position="0 -0.1 0.01"></a-text>
             </a-entity>
 
         </a-entity>
-
-        <a-sky color="#0a0a0a"></a-sky>
     </a-scene>
 
     <script>
-        // ============================================================================
-        // CONFIGURACIÓN GLOBAL
-        // ============================================================================
-        const CONFIG = {
-            audioFile: 'Sonidos_De_Fabrica.wav',
-            dbThresholds: { safe: 60, warning: 85, danger: 95 }
-        };
+const CFG = { audioFile: 'Sonidos_De_Fabrica.wav', dbThresholds: { safe: 60, warning: 85, danger: 95 } };
 
-        // ============================================================================
-        // SISTEMA DE NAVEGACIÓN
-        // ============================================================================
-        const Router = {
-            currentView: 'home',
-            
-            init() {
-                document.querySelectorAll('[data-nav]').forEach(el => {
-                    el.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.navigate(e.currentTarget.getAttribute('data-nav'));
-                    });
-                });
-            },
+const Router = {
+    cur: 'home',
+    init() {
+        document.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.nav(e.currentTarget.getAttribute('data-nav'));
+        }));
+    },
+    nav(id) {
+        if (this.cur === id) return;
+        const c = document.getElementById(this.cur);
+        if (c) c.classList.remove('active');
+        setTimeout(() => {
+            const t = document.getElementById(id);
+            if (t) t.classList.add('active');
+            this.logic(id);
+        }, 100);
+        this.cur = id;
+    },
+    logic(id) {
+        if (id === 'home') { Meter.stop(); AR.destroy(); }
+        else if (id === 'meter') { AR.destroy(); setTimeout(() => Meter.start(), 200); }
+        else if (id === 'ar') { Meter.stop(); setTimeout(() => AR.init(), 300); }
+    }
+};
 
-            navigate(viewId) {
-                if (this.currentView === viewId) return;
-
-                const currentEl = document.getElementById(this.currentView);
-                if (currentEl) currentEl.classList.remove('active');
-
-                setTimeout(() => {
-                    const targetEl = document.getElementById(viewId);
-                    if (targetEl) targetEl.classList.add('active');
-                    this.handleViewLogic(viewId);
-                }, 100);
-
-                this.currentView = viewId;
-            },
-
-            handleViewLogic(viewId) {
-                switch(viewId) {
-                    case 'home':
-                        MeterSystem.stop();
-                        ARSystem.destroy();
-                        break;
-                    case 'meter':
-                        ARSystem.destroy();
-                        setTimeout(() => MeterSystem.start(), 200);
-                        break;
-                    case 'ar':
-                        MeterSystem.stop();
-                        setTimeout(() => ARSystem.init(), 300);
-                        break;
-                }
-            }
-        };
-
-        // ============================================================================
-        // SISTEMA DE MEDIDOR DE DECIBELIOS
-        // ============================================================================
-        const MeterSystem = {
-            active: false,
-            stream: null,
-            audioContext: null,
-            analyser: null,
-            dataArray: null,
-            canvas: null,
-            canvasContext: null,
-            animationId: null,
-
-            async start() {
-                if (this.active) return;
-                
-                try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: { 
-                            echoCancellation: false,
-                            noiseSuppression: false,
-                            autoGainControl: false
-                        } 
-                    });
-                    
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.audioContext = new AudioContext();
-                    this.analyser = this.audioContext.createAnalyser();
-                    this.analyser.fftSize = 2048;
-                    this.analyser.smoothingTimeConstant = 0.8;
-                    
-                    const source = this.audioContext.createMediaStreamSource(this.stream);
-                    source.connect(this.analyser);
-                    
-                    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-                    
-                    this.canvas = document.getElementById('waveCanvas');
-                    this.canvasContext = this.canvas.getContext('2d');
-                    this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio;
-                    this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio;
-                    this.canvasContext.scale(window.devicePixelRatio, window.devicePixelRatio);
-                    
-                    this.active = true;
-                    this.draw();
-                    
-                } catch (error) {
-                    console.error('Mic error:', error);
-                    alert('❌ Necesitas permitir acceso al micrófono');
-                    Router.navigate('home');
-                }
-            },
-
-            stop() {
-                if (!this.active) return;
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                    this.animationId = null;
-                }
-                
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                if (this.audioContext) {
-                    this.audioContext.close();
-                    this.audioContext = null;
-                }
-                
-                this.active = false;
-            },
-
-            draw() {
-                if (!this.active) return;
-                
-                this.animationId = requestAnimationFrame(() => this.draw());
-                
-                this.analyser.getByteFrequencyData(this.dataArray);
-                
-                const average = this.dataArray.reduce((a, b) => a + b, 0) / this.dataArray.length;
-                let db = Math.floor(20 + average * 0.9);
-                db = Math.max(30, Math.min(120, db));
-                
-                this.updateUI(db);
-                this.drawWaveform();
-            },
-
-            updateUI(db) {
-                const valueEl = document.getElementById('dbValue');
-                const circleEl = document.getElementById('meterCircle');
-                const badgeEl = document.getElementById('statusIndicator');
-                
-                valueEl.textContent = db;
-                circleEl.classList.remove('danger');
-                
-                if (db < CONFIG.dbThresholds.safe) {
-                    circleEl.style.borderColor = '#34c759';
-                    badgeEl.style.background = '#34c759'; 
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = '✓ SEGURO';
-                } else if (db < CONFIG.dbThresholds.danger) {
-                    circleEl.style.borderColor = '#ffcc00';
-                    badgeEl.style.background = '#ffcc00'; 
-                    badgeEl.style.color = '#000';
-                    badgeEl.textContent = '⚠ ALERTA';
-                } else {
-                    circleEl.style.borderColor = '#ff3b30';
-                    circleEl.classList.add('danger');
-                    badgeEl.style.background = '#ff3b30'; 
-                    badgeEl.style.color = '#fff';
-                    badgeEl.textContent = '✖ PELIGRO';
-                }
-            },
-
-            drawWaveform() {
-                if (!this.canvasContext) return;
-                
-                const ctx = this.canvasContext;
-                const w = this.canvas.width / window.devicePixelRatio;
-                const h = this.canvas.height / window.devicePixelRatio;
-                
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-                ctx.fillRect(0, 0, w, h);
-                
-                const barWidth = (w / this.dataArray.length) * 2.5;
-                let x = 0;
-                
-                for (let i = 0; i < this.dataArray.length; i++) {
-                    const normalizedValue = this.dataArray[i] / 255;
-                    const barHeight = normalizedValue * h;
-                    
-                    const lightness = 40 + (normalizedValue * 20);
-                    ctx.fillStyle = `hsla(0, 100%, ${lightness}%, ${normalizedValue})`;
-                    ctx.fillRect(x, h - barHeight, barWidth, barHeight);
-                    
-                    x += barWidth + 1;
-                }
-            }
-        };
-
-        // ============================================================================
-        // SISTEMA AR PROFESIONAL CON ANIMACIÓN DETALLADA
-        // ============================================================================
-        const ARSystem = {
-            initialized: false,
-            audioContext: null,
-            source: null,
-            filterNode: null,
-            gainNode: null,
-            isPlaying: false,
-            videoStream: null,
-            phase: 0,
-            hudInterval: null,
-
-            async init() {
-                console.log('🎬 Iniciando AR System');
-                
-                const scene = document.getElementById('arScene');
-                scene.style.display = 'block';
-                
-                await this.startCamera();
-                
-                if (!this.initialized) {
-                    this.setupEventListeners();
-                    this.initialized = true;
-                }
-                
-                this.resetState();
-            },
-
-            async startCamera() {
-                try {
-                    this.videoStream = await navigator.mediaDevices.getUserMedia({
-                        video: { 
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    });
-                    
-                    const video = document.getElementById('cameraVideo');
-                    video.srcObject = this.videoStream;
-                    video.style.display = 'block';
-                    await video.play();
-                    
-                    console.log('✅ Cámara OK');
-                } catch (error) {
-                    console.log('⚠️ Sin cámara');
-                }
-            },
-
-            destroy() {
-                if (this.source) {
-                    try { this.source.stop(); } catch(e) {}
-                    this.source = null;
-                }
-                
-                if (this.audioContext) {
-                    this.audioContext.close();
-                    this.audioContext = null;
-                }
-                
-                if (this.videoStream) {
-                    this.videoStream.getTracks().forEach(track => track.stop());
-                    this.videoStream = null;
-                }
-                
-                if (this.hudInterval) {
-                    clearInterval(this.hudInterval);
-                    this.hudInterval = null;
-                }
-                
-                const video = document.getElementById('cameraVideo');
-                video.style.display = 'none';
-                video.srcObject = null;
-                
-                const scene = document.getElementById('arScene');
-                scene.style.display = 'none';
-                
-                this.isPlaying = false;
-                this.phase = 0;
-            },
-
-            resetState() {
-                document.getElementById('btnStartAR').classList.add('visible');
-                document.getElementById('btnStartAR').innerHTML = '🎬 INICIAR ANIMACIÓN';
-                document.getElementById('btnStartAR').disabled = false;
-                document.getElementById('arStatusText').textContent = 'Apunta la cámara al suelo para ver la escena';
-                
-                document.getElementById('hudValue').textContent = '0 dB';
-                document.getElementById('hudFill').style.width = '0%';
-                
-                this.isPlaying = false;
-                this.phase = 0;
-            },
-
-            setupEventListeners() {
-                document.getElementById('btnStartAR').addEventListener('click', () => {
-                    this.startAnimation();
-                });
-            },
-
-            updateHUD(db, color = '#D71920') {
-                document.getElementById('hudValue').textContent = `${db} dB`;
-                document.getElementById('hudValue').style.color = color;
-                const percentage = Math.min(100, (db / 120) * 100);
-                document.getElementById('hudFill').style.width = `${percentage}%`;
-                
-                if (color === '#34c759') {
-                    document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759, #30d158)';
-                } else {
-                    document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #D71920, #ff6b6b)';
-                }
-            },
-
-            async loadAudio() {
-                try {
-                    const AC = window.AudioContext || window.webkitAudioContext;
-                    this.audioContext = new AC();
-                    
-                    const response = await fetch(CONFIG.audioFile);
-                    if (!response.ok) throw new Error('No audio');
-                    
-                    const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                    
-                    this.source = this.audioContext.createBufferSource();
-                    this.source.buffer = audioBuffer;
-                    this.source.loop = true;
-                    
-                    this.filterNode = this.audioContext.createBiquadFilter();
-                    this.filterNode.type = 'lowpass';
-                    this.filterNode.frequency.value = 22000;
-                    
-                    this.gainNode = this.audioContext.createGain();
-                    this.gainNode.gain.value = 1.0;
-                    
-                    this.source.connect(this.filterNode);
-                    this.filterNode.connect(this.gainNode);
-                    this.gainNode.connect(this.audioContext.destination);
-                    
-                    this.source.start(0);
-                    return true;
-                } catch (error) {
-                    console.log('🔇 Modo silencioso');
-                    return false;
-                }
-            },
-
-            async startAnimation() {
-                if (this.isPlaying) return;
-                this.isPlaying = true;
-                
-                const btn = document.getElementById('btnStartAR');
-                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
-                btn.disabled = true;
-                
-                await this.loadAudio();
-                
-                btn.classList.remove('visible');
-                
-                // Iniciar secuencia
-                this.phase1_Suffering();
-            },
-
-            // ========== FASE 1: SUFRIMIENTO ==========
-            phase1_Suffering() {
-                console.log('📍 FASE 1: Sufrimiento por ruido');
-                this.phase = 1;
-                
-                document.getElementById('arStatusText').textContent = '⚠️ Exposición a ruido peligroso - 105 dB';
-                document.getElementById('dangerOverlay').classList.add('active');
-                
-                // Activar efectos visuales
-                document.getElementById('soundWaves').setAttribute('visible', 'true');
-                document.getElementById('stressParticles').setAttribute('visible', 'true');
-                document.getElementById('infoPanel').setAttribute('visible', 'true');
-                
-                // Luz roja pulsante
-                const light = document.getElementById('dangerLight');
-                light.setAttribute('animation', {
-                    property: 'light.intensity',
-                    from: 0,
-                    to: 3,
-                    dir: 'alternate',
-                    dur: 700,
-                    loop: true
-                });
-                
-                // Vibración del stickman
-                const root = document.getElementById('stickmanRoot');
-                root.setAttribute('animation__shake', {
-                    property: 'rotation',
-                    from: '0 0 -4',
-                    to: '0 0 4',
-                    dir: 'alternate',
-                    dur: 80,
-                    loop: true
-                });
-                
-                // Cambiar boca a triste
-                const mouth = document.getElementById('mouthShape');
-                mouth.setAttribute('rotation', '180 0 0');
-                
-                // HUD
-                this.startHUDAnimation(105);
-                
-                setTimeout(() => this.phase2_CoveringEars(), 3500);
-            },
-
-            // ========== FASE 2: CUBRIRSE OÍDOS ==========
-            phase2_CoveringEars() {
-                console.log('📍 FASE 2: Cubriéndose los oídos');
-                this.phase = 2;
-                
-                document.getElementById('arStatusText').textContent = 'Protección insuficiente con las manos';
-                
-                // Animar brazo izquierdo hacia cabeza
-                const leftShoulder = document.getElementById('leftShoulder');
-                const leftUpperArm = document.getElementById('leftUpperArm');
-                const leftElbow = document.getElementById('leftElbow');
-                const leftForearm = document.getElementById('leftForearm');
-                
-                // Brazo izquierdo sube
-                leftShoulder.setAttribute('animation__phase2_1', {
-                    property: 'rotation',
-                    to: '0 0 85',
-                    dur: 1000,
-                    easing: 'easeInOutQuad'
-                });
-                
-                leftUpperArm.setAttribute('animation__phase2_2', {
-                    property: 'rotation',
-                    to: '0 0 -95',
-                    dur: 1000,
-                    easing: 'easeInOutQuad'
-                });
-                
-                // Animar brazo derecho hacia cabeza
-                const rightShoulder = document.getElementById('rightShoulder');
-                const rightUpperArm = document.getElementById('rightUpperArm');
-                
-                rightShoulder.setAttribute('animation__phase2_3', {
-                    property: 'rotation',
-                    to: '0 0 -85',
-                    dur: 1000,
-                    easing: 'easeInOutQuad'
-                });
-                
-                rightUpperArm.setAttribute('animation__phase2_4', {
-                    property: 'rotation',
-                    to: '0 0 95',
-                    dur: 1000,
-                    easing: 'easeInOutQuad'
-                });
-                
-                this.updateHUD(95);
-                
-                setTimeout(() => this.phase3_Walking(), 4000);
-            },
-
-            // ========== FASE 3: CAMINAR A LA MESA ==========
-            phase3_Walking() {
-                console.log('📍 FASE 3: Caminando hacia la mesa');
-                this.phase = 3;
-                
-                document.getElementById('arStatusText').textContent = 'Buscando protección auditiva adecuada...';
-                
-                const root = document.getElementById('stickmanRoot');
-                root.removeAttribute('animation__shake');
-                
-                // Bajar brazos
-                const leftShoulder = document.getElementById('leftShoulder');
-                const leftUpperArm = document.getElementById('leftUpperArm');
-                const rightShoulder = document.getElementById('rightShoulder');
-                const rightUpperArm = document.getElementById('rightUpperArm');
-                
-                leftShoulder.setAttribute('animation__phase3_1', {
-                    property: 'rotation',
-                    to: '0 0 15',
-                    dur: 600,
-                    easing: 'easeInOutQuad'
-                });
-                
-                leftUpperArm.setAttribute('animation__phase3_2', {
-                    property: 'rotation',
-                    to: '0 0 15',
-                    dur: 600,
-                    easing: 'easeInOutQuad'
-                });
-                
-                rightShoulder.setAttribute('animation__phase3_3', {
-                    property: 'rotation',
-                    to: '0 0 -15',
-                    dur: 600,
-                    easing: 'easeInOutQuad'
-                });
-                
-                rightUpperArm.setAttribute('animation__phase3_4', {
-                    property: 'rotation',
-                    to: '0 0 -15',
-                    dur: 600,
-                    easing: 'easeInOutQuad'
-                });
-                
-                // Rotar hacia mesa
-                setTimeout(() => {
-                    root.setAttribute('animation__turn', {
-                        property: 'rotation',
-                        to: '0 -50 0',
-                        dur: 1200,
-                        easing: 'easeInOutQuad'
-                    });
-                    
-                    // Animación de caminar
-                    setTimeout(() => {
-                        const leftHip = document.getElementById('leftHip');
-                        const rightHip = document.getElementById('rightHip');
-                        const leftThigh = document.getElementById('leftThigh');
-                        const rightThigh = document.getElementById('rightThigh');
-                        
-                        // Piernas alternadas
-                        leftThigh.setAttribute('animation__walk1', {
-                            property: 'rotation',
-                            from: '0 0 3',
-                            to: '35 0 3',
-                            dir: 'alternate',
-                            dur: 450,
-                            loop: 5,
-                            easing: 'easeInOutSine'
-                        });
-                        
-                        rightThigh.setAttribute('animation__walk2', {
-                            property: 'rotation',
-                            from: '0 0 -3',
-                            to: '-35 0 -3',
-                            dir: 'alternate',
-                            dur: 450,
-                            loop: 5,
-                            easing: 'easeInOutSine'
-                        });
-                        
-                        // Braceo
-                        leftShoulder.setAttribute('animation__swing1', {
-                            property: 'rotation',
-                            from: '0 0 15',
-                            to: '35 0 15',
-                            dir: 'alternate',
-                            dur: 450,
-                            loop: 5,
-                            easing: 'easeInOutSine'
-                        });
-                        
-                        rightShoulder.setAttribute('animation__swing2', {
-                            property: 'rotation',
-                            from: '0 0 -15',
-                            to: '-35 0 -15',
-                            dir: 'alternate',
-                            dur: 450,
-                            loop: 5,
-                            easing: 'easeInOutSine'
-                        });
-                        
-                        // Mover hacia mesa
-                        root.setAttribute('animation__walk', {
-                            property: 'position',
-                            to: '0.7 0 0',
-                            dur: 2250,
-                            easing: 'linear'
-                        });
-                    }, 1300);
-                }, 700);
-                
-                setTimeout(() => this.phase4_TakingHeadphones(), 4700);
-            },
-
-            // ========== FASE 4: TOMAR AURICULARES ==========
-            phase4_TakingHeadphones() {
-                console.log('📍 FASE 4: Tomando auriculares');
-                this.phase = 4;
-                
-                document.getElementById('arStatusText').textContent = 'Colocando protección auditiva certificada...';
-                
-                // Detener animaciones de caminar
-                const leftThigh = document.getElementById('leftThigh');
-                const rightThigh = document.getElementById('rightThigh');
-                const leftShoulder = document.getElementById('leftShoulder');
-                const rightShoulder = document.getElementById('rightShoulder');
-                
-                leftThigh.removeAttribute('animation__walk1');
-                rightThigh.removeAttribute('animation__walk2');
-                leftShoulder.removeAttribute('animation__swing1');
-                rightShoulder.removeAttribute('animation__swing2');
-                
-                leftThigh.setAttribute('rotation', '0 0 3');
-                rightThigh.setAttribute('rotation', '0 0 -3');
-                
-                // Brazo derecho hacia auriculares
-                const rightUpperArm = document.getElementById('rightUpperArm');
-                const rightForearm = document.getElementById('rightForearm');
-                
-                rightShoulder.setAttribute('animation__reach1', {
-                    property: 'rotation',
-                    to: '0 0 -75',
-                    dur: 1200,
-                    easing: 'easeInOutQuad'
-                });
-                
-                rightUpperArm.setAttribute('animation__reach2', {
-                    property: 'rotation',
-                    to: '0 0 50',
-                    dur: 1200,
-                    easing: 'easeInOutQuad'
-                });
-                
-                rightForearm.setAttribute('animation__reach3', {
-                    property: 'rotation',
-                    to: '0 0 -40',
-                    dur: 1200,
-                    delay: 400,
-                    easing: 'easeInOutQuad'
-                });
-                
-                // Auriculares hacia stickman
-                setTimeout(() => {
-                    const headphones = document.getElementById('headphonesGroup');
-                    headphones.removeAttribute('animation');
-                    
-                    headphones.setAttribute('animation__approach', {
-                        property: 'position',
-                        to: '0.7 0.62 0',
-                        dur: 1800,
-                        easing: 'easeInOutCubic'
-                    });
-                    
-                    headphones.setAttribute('animation__scale', {
-                        property: 'scale',
-                        to: '0.65 0.65 0.65',
-                        dur: 1800,
-                        easing: 'easeInOutCubic'
-                    });
-                }, 1400);
-                
-                setTimeout(() => this.phase5_WearingProtection(), 3500);
-            },
-
-            // ========== FASE 5: PROTECCIÓN PUESTA ==========
-            phase5_WearingProtection() {
-                console.log('📍 FASE 5: Protección aplicada');
-                this.phase = 5;
-                
-                document.getElementById('arStatusText').textContent = '✅ Protección auditiva efectiva';
-                
-                // LOS AURICULARES SE QUEDAN EN LA CABEZA (NO DESAPARECEN)
-                const headphones = document.getElementById('headphonesGroup');
-                const head = document.getElementById('head');
-                
-                // Posicionar auriculares en la cabeza
-                headphones.setAttribute('position', '0.7 0.62 0');
-                headphones.setAttribute('scale', '0.6 0.6 0.6');
-                
-                // Bajar brazos
-                const leftShoulder = document.getElementById('leftShoulder');
-                const rightShoulder = document.getElementById('rightShoulder');
-                const rightUpperArm = document.getElementById('rightUpperArm');
-                const rightForearm = document.getElementById('rightForearm');
-                
-                leftShoulder.setAttribute('animation__down1', {
-                    property: 'rotation',
-                    to: '0 0 15',
-                    dur: 900
-                });
-                
-                rightShoulder.setAttribute('animation__down2', {
-                    property: 'rotation',
-                    to: '0 0 -15',
-                    dur: 900
-                });
-                
-                rightUpperArm.setAttribute('animation__down3', {
-                    property: 'rotation',
-                    to: '0 0 -15',
-                    dur: 900
-                });
-                
-                rightForearm.setAttribute('animation__down4', {
-                    property: 'rotation',
-                    to: '0 0 -5',
-                    dur: 900
-                });
-                
-                // Atenuar audio
-                if (this.audioContext && this.filterNode && this.gainNode) {
-                    const t = this.audioContext.currentTime;
-                    this.filterNode.frequency.exponentialRampToValueAtTime(250, t + 2.5);
-                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
-                }
-                
-                // Detener efectos de peligro
-                document.getElementById('soundWaves').setAttribute('visible', 'false');
-                document.getElementById('stressParticles').setAttribute('visible', 'false');
-                document.getElementById('dangerOverlay').classList.remove('active');
-                
-                const light = document.getElementById('dangerLight');
-                light.removeAttribute('animation');
-                light.setAttribute('light', 'intensity', 0);
-                
-                // Cambiar boca a sonrisa
-                const mouth = document.getElementById('mouthShape');
-                mouth.setAttribute('rotation', '0 0 0');
-                
-                // Actualizar panel informativo
-                document.getElementById('infoTitle').setAttribute('value', '✅ 60 dB - SEGURO ✅');
-                document.getElementById('infoTitle').setAttribute('color', '#00FF00');
-                document.getElementById('infoSubtitle').setAttribute('value', 'Protección auditiva efectiva aplicada');
-                
-                this.updateHUD(60, '#34c759');
-                
-                setTimeout(() => this.phase6_FinalMessage(), 3000);
-            },
-
-            // ========== FASE 6: MENSAJE FINAL ==========
-            phase6_FinalMessage() {
-                console.log('📍 FASE 6: Mensaje educativo final');
-                this.phase = 6;
-                
-                document.getElementById('arStatusText').textContent = '✅ Simulación completada - Cuida tu audición';
-                
-                // Ampliar panel de información
-                const panel = document.getElementById('infoPanel');
-                const bg1 = panel.children[0];
-                const bg2 = panel.children[1];
-                const bg3 = panel.children[2];
-                
-                bg1.setAttribute('animation', {
-                    property: 'width',
-                    to: 2.4,
-                    dur: 800
-                });
-                bg1.setAttribute('animation__height', {
-                    property: 'height',
-                    to: 1.2,
-                    dur: 800
-                });
-                
-                bg2.setAttribute('animation', {
-                    property: 'width',
-                    to: 2.35,
-                    dur: 800
-                });
-                bg2.setAttribute('animation__height', {
-                    property: 'height',
-                    to: 1.15,
-                    dur: 800
-                });
-                
-                bg3.setAttribute('animation', {
-                    property: 'width',
-                    to: 2.3,
-                    dur: 800
-                });
-                bg3.setAttribute('animation__height', {
-                    property: 'height',
-                    to: 1.1,
-                    dur: 800
-                });
-                
-                setTimeout(() => {
-                    document.getElementById('infoTitle').setAttribute('position', '0 0.45 0.01');
-                    document.getElementById('infoTitle').setAttribute('width', '2.5');
-                    
-                    document.getElementById('infoSubtitle').setAttribute('value', 
-                        'Usa protección en ambientes con >85dB\n\n' +
-                        'Esto incluye:\n' +
-                        '🏭 Fábricas e industrias\n' +
-                        '🔨 Construcción y herramientas\n' +
-                        '🎸 Conciertos y eventos\n' +
-                        '🏠 Electrodomésticos ruidosos\n\n' +
-                        'TU AUDICIÓN NO SE REGENERA\n' +
-                        'Protégela HOY para disfrutar mañana');
-                    document.getElementById('infoSubtitle').setAttribute('position', '0 -0.15 0.01');
-                    document.getElementById('infoSubtitle').setAttribute('width', '2.4');
-                }, 900);
-            },
-
-            startHUDAnimation(initialDb) {
-                if (this.hudInterval) clearInterval(this.hudInterval);
-                
-                this.hudInterval = setInterval(() => {
-                    if (this.phase <= 2) {
-                        const db = 95 + Math.floor(Math.random() * 15);
-                        this.updateHUD(db);
-                    } else if (this.phase >= 5) {
-                        const db = 55 + Math.floor(Math.random() * 10);
-                        this.updateHUD(db, '#34c759');
-                    }
-                }, 200);
-            }
-        };
-
-        // ============================================================================
-        // TWEEN ANIMATION LOOP
-        // ============================================================================
-        function animate(time) {
-            requestAnimationFrame(animate);
-            TWEEN.update(time);
+const Meter = {
+    active: false,
+    stream: null,
+    ctx: null,
+    analyser: null,
+    data: null,
+    canvas: null,
+    cctx: null,
+    aid: null,
+    async start() {
+        if (this.active) return;
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+            const AC = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AC();
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 2048;
+            this.analyser.smoothingTimeConstant = 0.8;
+            const src = this.ctx.createMediaStreamSource(this.stream);
+            src.connect(this.analyser);
+            this.data = new Uint8Array(this.analyser.frequencyBinCount);
+            this.canvas = document.getElementById('waveCanvas');
+            this.cctx = this.canvas.getContext('2d');
+            this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio;
+            this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio;
+            this.cctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            this.active = true;
+            this.draw();
+        } catch (e) {
+            console.error('Mic:', e);
+            alert('❌ Permite acceso al micrófono');
+            Router.nav('home');
         }
-        requestAnimationFrame(animate);
+    },
+    stop() {
+        if (!this.active) return;
+        if (this.aid) { cancelAnimationFrame(this.aid); this.aid = null; }
+        if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+        if (this.ctx) { this.ctx.close(); this.ctx = null; }
+        this.active = false;
+    },
+    draw() {
+        if (!this.active) return;
+        this.aid = requestAnimationFrame(() => this.draw());
+        this.analyser.getByteFrequencyData(this.data);
+        const avg = this.data.reduce((a, b) => a + b, 0) / this.data.length;
+        let db = Math.floor(20 + avg * 0.9);
+        db = Math.max(30, Math.min(120, db));
+        this.updateUI(db);
+        this.drawWave();
+    },
+    updateUI(db) {
+        const v = document.getElementById('dbValue');
+        const c = document.getElementById('meterCircle');
+        const b = document.getElementById('statusIndicator');
+        v.textContent = db;
+        c.classList.remove('danger');
+        if (db < CFG.dbThresholds.safe) {
+            c.style.borderColor = '#34c759';
+            b.style.background = '#34c759';
+            b.style.color = '#000';
+            b.textContent = '✓ SEGURO';
+        } else if (db < CFG.dbThresholds.danger) {
+            c.style.borderColor = '#ffcc00';
+            b.style.background = '#ffcc00';
+            b.style.color = '#000';
+            b.textContent = '⚠ ALERTA';
+        } else {
+            c.style.borderColor = '#ff3b30';
+            c.classList.add('danger');
+            b.style.background = '#ff3b30';
+            b.style.color = '#fff';
+            b.textContent = '✖ PELIGRO';
+        }
+    },
+    drawWave() {
+        if (!this.cctx) return;
+        const ctx = this.cctx;
+        const w = this.canvas.width / window.devicePixelRatio;
+        const h = this.canvas.height / window.devicePixelRatio;
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.fillRect(0, 0, w, h);
+        const bw = (w / this.data.length) * 2.5;
+        let x = 0;
+        for (let i = 0; i < this.data.length; i++) {
+            const nv = this.data[i] / 255;
+            const bh = nv * h;
+            const l = 40 + (nv * 20);
+            ctx.fillStyle = `hsla(0,100%,${l}%,${nv})`;
+            ctx.fillRect(x, h - bh, bw, bh);
+            x += bw + 1;
+        }
+    }
+};
 
-        // ============================================================================
-        // INICIALIZACIÓN
-        // ============================================================================
-        window.addEventListener('load', () => {
-            console.log('🚀 LANXESS AR PRO v16.0 CARGADO');
-            Router.init();
-        });
+const AR = {
+    init: false,
+    actx: null,
+    src: null,
+    filt: null,
+    gain: null,
+    play: false,
+    phase: 0,
+    hint: null,
+    scene: null,
+    async init() {
+        console.log('🎬 AR INIT');
+        this.scene = document.getElementById('arScene');
+        this.scene.style.display = 'block';
+        
+        if (this.scene.hasLoaded) this.setup();
+        else this.scene.addEventListener('loaded', () => this.setup());
+        
+        if (!this.init) { this.events(); this.init = true; }
+        this.reset();
+    },
+    setup() {
+        console.log('✅ Escena lista');
+    },
+    events() {
+        document.getElementById('btnStartAR').addEventListener('click', () => this.start());
+    },
+    reset() {
+        const btn = document.getElementById('btnStartAR');
+        btn.classList.add('visible');
+        btn.innerHTML = '🎬 INICIAR ANIMACIÓN';
+        btn.disabled = false;
+        document.getElementById('arStatusText').textContent = 'Apunta la cámara al suelo para ver la escena';
+        document.getElementById('hudValue').textContent = '0 dB';
+        document.getElementById('hudFill').style.width = '0%';
+        this.play = false;
+        this.phase = 0;
+    },
+    destroy() {
+        if (this.src) { try { this.src.stop(); } catch (e) {} this.src = null; }
+        if (this.actx) { this.actx.close(); this.actx = null; }
+        if (this.hint) { clearInterval(this.hint); this.hint = null; }
+        if (this.scene) this.scene.style.display = 'none';
+        this.play = false;
+        this.phase = 0;
+    },
+    hud(db, col = '#D71920') {
+        document.getElementById('hudValue').textContent = `${db} dB`;
+        document.getElementById('hudValue').style.color = col;
+        const p = Math.min(100, (db / 120) * 100);
+        document.getElementById('hudFill').style.width = `${p}%`;
+        if (col === '#34c759') document.getElementById('hudFill').style.background = 'linear-gradient(90deg,#34c759,#30d158)';
+        else document.getElementById('hudFill').style.background = 'linear-gradient(90deg,#D71920,#ff6b6b)';
+    },
+    async loadAud() {
+        try {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            this.actx = new AC();
+            const res = await fetch(CFG.audioFile);
+            if (!res.ok) throw new Error('No audio');
+            const ab = await res.arrayBuffer();
+            const buf = await this.actx.decodeAudioData(ab);
+            this.src = this.actx.createBufferSource();
+            this.src.buffer = buf;
+            this.src.loop = true;
+            this.filt = this.actx.createBiquadFilter();
+            this.filt.type = 'lowpass';
+            this.filt.frequency.value = 22000;
+            this.gain = this.actx.createGain();
+            this.gain.gain.value = 0.7;
+            this.src.connect(this.filt);
+            this.filt.connect(this.gain);
+            this.gain.connect(this.actx.destination);
+            this.src.start(0);
+            console.log('✅ Audio OK');
+            return true;
+        } catch (e) {
+            console.log('🔇 Silencio');
+            return false;
+        }
+    },
+    async start() {
+        if (this.play) return;
+        this.play = true;
+        const btn = document.getElementById('btnStartAR');
+        btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
+        btn.disabled = true;
+        await this.loadAud();
+        btn.classList.remove('visible');
+        setTimeout(() => this.p1(), 500);
+    },
+    p1() {
+        console.log('📍 FASE 1');
+        this.phase = 1;
+        document.getElementById('arStatusText').textContent = '⚠️ Exposición a ruido peligroso - 105 dB';
+        document.getElementById('dangerOverlay').classList.add('active');
+        
+        const sw = document.getElementById('soundWaves');
+        const ip = document.getElementById('infoPanel');
+        const dl = document.getElementById('dangerLight');
+        const ms = document.getElementById('mouthShape');
+        const sr = document.getElementById('stickmanRoot');
+        
+        if (sw) sw.setAttribute('visible', 'true');
+        if (ip) ip.setAttribute('visible', 'true');
+        if (dl) this.pulseLt(dl);
+        if (ms) ms.setAttribute('rotation', '180 0 0');
+        if (sr) this.shake(sr);
+        
+        this.hudAnim(105);
+        setTimeout(() => this.p2(), 4000);
+    },
+    pulseLt(el) {
+        let on = true;
+        const p = () => {
+            if (this.phase >= 5) return;
+            el.setAttribute('light', 'intensity', on ? 3 : 0.5);
+            on = !on;
+            setTimeout(p, 350);
+        };
+        p();
+    },
+    shake(el) {
+        let a = -3;
+        const s = () => {
+            if (this.phase !== 1) { el.setAttribute('rotation', '0 0 0'); return; }
+            el.setAttribute('rotation', `0 0 ${a}`);
+            a = a === -3 ? 3 : -3;
+            setTimeout(s, 60);
+        };
+        s();
+    },
+    p2() {
+        console.log('📍 FASE 2');
+        this.phase = 2;
+        document.getElementById('arStatusText').textContent = 'Protección insuficiente con las manos';
+        
+        const ls = document.getElementById('leftShoulder');
+        const lua = document.getElementById('leftUpperArm');
+        const rs = document.getElementById('rightShoulder');
+        const rua = document.getElementById('rightUpperArm');
+        
+        if (ls) this.anim(ls, 'rotation', '0 0 85', 1000);
+        if (lua) this.anim(lua, 'rotation', '0 0 -95', 1000);
+        if (rs) this.anim(rs, 'rotation', '0 0 -85', 1000);
+        if (rua) this.anim(rua, 'rotation', '0 0 95', 1000);
+        
+        this.hud(95);
+        setTimeout(() => this.p3(), 4000);
+    },
+    p3() {
+        console.log('📍 FASE 3');
+        this.phase = 3;
+        document.getElementById('arStatusText').textContent = 'Buscando protección auditiva...';
+        
+        const sr = document.getElementById('stickmanRoot');
+        const ls = document.getElementById('leftShoulder');
+        const lua = document.getElementById('leftUpperArm');
+        const rs = document.getElementById('rightShoulder');
+        const rua = document.getElementById('rightUpperArm');
+        const lt = document.getElementById('leftThigh');
+        const rt = document.getElementById('rightThigh');
+        
+        if (ls) this.anim(ls, 'rotation', '0 0 15', 600);
+        if (lua) this.anim(lua, 'rotation', '0 0 15', 600);
+        if (rs) this.anim(rs, 'rotation', '0 0 -15', 600);
+        if (rua) this.anim(rua, 'rotation', '0 0 -15', 600);
+        
+        setTimeout(() => {
+            if (sr) this.anim(sr, 'rotation', '0 -50 0', 1200);
+            setTimeout(() => {
+                if (lt) this.walk(lt, '0 0 3', '35 0 3', 450, 5);
+                if (rt) this.walk(rt, '0 0 -3', '-35 0 -3', 450, 5);
+                if (ls) this.walk(ls, '0 0 15', '35 0 15', 450, 5);
+                if (rs) this.walk(rs, '0 0 -15', '-35 0 -15', 450, 5);
+                if (sr) this.anim(sr, 'position', '0.7 0 0', 2250);
+            }, 1300);
+        }, 700);
+        
+        setTimeout(() => this.p4(), 4700);
+    },
+    p4() {
+        console.log('📍 FASE 4');
+        this.phase = 4;
+        document.getElementById('arStatusText').textContent = 'Colocando protección auditiva...';
+        
+        const lt = document.getElementById('leftThigh');
+        const rt = document.getElementById('rightThigh');
+        const ls = document.getElementById('leftShoulder');
+        const rs = document.getElementById('rightShoulder');
+        const rua = document.getElementById('rightUpperArm');
+        const rfa = document.getElementById('rightForearm');
+        const hp = document.getElementById('headphonesGroup');
+        
+        if (lt) lt.setAttribute('rotation', '0 0 3');
+        if (rt) rt.setAttribute('rotation', '0 0 -3');
+        
+        if (rs) this.anim(rs, 'rotation', '0 0 -75', 1200);
+        if (rua) this.anim(rua, 'rotation', '0 0 50', 1200);
+        if (rfa) setTimeout(() => this.anim(rfa, 'rotation', '0 0 -40', 1200), 400);
+        
+        setTimeout(() => {
+            if (hp) {
+                this.anim(hp, 'position', '0.7 0.62 0', 1800);
+                this.anim(hp, 'scale', '0.65 0.65 0.65', 1800);
+            }
+        }, 1400);
+        
+        setTimeout(() => this.p5(), 3500);
+    },
+    p5() {
+        console.log('📍 FASE 5');
+        this.phase = 5;
+        document.getElementById('arStatusText').textContent = '✅ Protección auditiva efectiva';
+        
+        const hp = document.getElementById('headphonesGroup');
+        const ls = document.getElementById('leftShoulder');
+        const rs = document.getElementById('rightShoulder');
+        const rua = document.getElementById('rightUpperArm');
+        const rfa = document.getElementById('rightForearm');
+        const sw = document.getElementById('soundWaves');
+        const dl = document.getElementById('dangerLight');
+        const ms = document.getElementById('mouthShape');
+        const it = document.getElementById('infoTitle');
+        const is = document.getElementById('infoSubtitle');
+        
+        if (hp) {
+            hp.setAttribute('position', '0.7 0.62 0');
+            hp.setAttribute('scale', '0.6 0.6 0.6');
+        }
+        
+        if (ls) this.anim(ls, 'rotation', '0 0 15', 900);
+        if (rs) this.anim(rs, 'rotation', '0 0 -15', 900);
+        if (rua) this.anim(rua, 'rotation', '0 0 -15', 900);
+        if (rfa) this.anim(rfa, 'rotation', '0 0 -5', 900);
+        
+        if (this.actx && this.filt && this.gain) {
+            const t = this.actx.currentTime;
+            this.filt.frequency.exponentialRampToValueAtTime(250, t + 2.5);
+            this.gain.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
+        }
+        
+        if (sw) sw.setAttribute('visible', 'false');
+        document.getElementById('dangerOverlay').classList.remove('active');
+        if (dl) dl.setAttribute('light', 'intensity', 0);
+        if (ms) ms.setAttribute('rotation', '0 0 0');
+        if (it) {
+            it.setAttribute('value', '✅ 60 dB - SEGURO ✅');
+            it.setAttribute('color', '#00FF00');
+        }
+        if (is) is.setAttribute('value', 'Protección auditiva efectiva aplicada');
+        
+        this.hud(60, '#34c759');
+        setTimeout(() => this.p6(), 3000);
+    },
+    p6() {
+        console.log('📍 FASE 6');
+        this.phase = 6;
+        document.getElementById('arStatusText').textContent = '✅ Simulación completada';
+    },
+    hudAnim(idb) {
+        if (this.hint) clearInterval(this.hint);
+        this.hint = setInterval(() => {
+            if (this.phase <= 2) this.hud(95 + Math.floor(Math.random() * 15));
+            else if (this.phase >= 5) this.hud(55 + Math.floor(Math.random() * 10), '#34c759');
+        }, 200);
+    },
+    anim(el, prop, to, dur) {
+        if (!el) return;
+        el.setAttribute('animation', `property:${prop};to:${to};dur:${dur};easing:easeInOutQuad`);
+    },
+    walk(el, from, to, dur, loop) {
+        if (!el) return;
+        el.setAttribute('animation', `property:rotation;from:${from};to:${to};dir:alternate;dur:${dur};loop:${loop};easing:easeInOutSine`);
+    }
+};
+
+window.addEventListener('load', () => {
+    console.log('🚀 LANXESS AR v18.0 FINAL');
+    Router.init();
+});
     </script>
 </body>
 </html>
