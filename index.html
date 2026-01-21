@@ -2,282 +2,2185 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#D71920">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Lanxess Safety AR Pro v18.0</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Lanxess Safety AR Pro v19.0</title>
+
+    <!-- A-Frame Library -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;700&family=Roboto:wght@400;700&display=swap');
+        /* ============================================================================
+           IMPORTACIÓN DE FUENTES PROFESIONALES
+           ============================================================================ */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;800&family=Roboto:wght@300;400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+        /* ============================================================================
+           VARIABLES CSS GLOBALES
+           ============================================================================ */
         :root {
+            /* Colores principales */
             --primary-red: #D71920;
-            --deep-black: #0a0a0a;
+            --primary-red-dark: #A01318;
+            --primary-red-light: #FF2A35;
+            
+            /* Escala de grises */
+            --deep-black: #000000;
+            --dark-black: #0a0a0a;
             --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
             --light-gray: #b0b0b0;
+            --very-light-gray: #e0e0e0;
             --pure-white: #ffffff;
+            
+            /* Colores de estado */
             --danger: #ff3b30;
+            --danger-glow: rgba(255, 59, 48, 0.6);
+            --warning: #ffcc00;
+            --warning-glow: rgba(255, 204, 0, 0.6);
             --safe: #34c759;
+            --safe-glow: rgba(52, 199, 89, 0.6);
+            --info: #007aff;
+            --info-glow: rgba(0, 122, 255, 0.6);
+            
+            /* Fuentes */
             --font-display: 'Orbitron', monospace;
             --font-heading: 'Exo 2', sans-serif;
             --font-body: 'Roboto', sans-serif;
+            --font-tech: 'Rajdhani', sans-serif;
+            
+            /* Transiciones */
+            --transition-instant: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-medium: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-very-slow: 1s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Safe areas para móviles */
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-right: env(safe-area-inset-right, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            
+            /* Sombras */
+            --shadow-small: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-huge: 0 16px 64px rgba(0, 0, 0, 0.6);
+            
+            /* Blur */
+            --blur-light: blur(8px);
+            --blur-medium: blur(12px);
+            --blur-heavy: blur(20px);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-        html, body { width: 100%; height: 100%; position: fixed; overflow: hidden; }
-        body { background: var(--deep-black); font-family: var(--font-body); color: var(--pure-white); }
+
+        /* ============================================================================
+           RESET Y CONFIGURACIÓN BASE
+           ============================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
         
-        #cameraVideo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; display: none; }
+        html {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
         
-        .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; opacity: 0; transition: opacity 0.6s; z-index: 1; }
-        .view.active { display: flex; opacity: 1; z-index: 10; }
-        
-        .btn-back { position: fixed; top: 30px; left: 15px; width: 50px; height: 50px; background: rgba(10,10,10,0.95); backdrop-filter: blur(15px); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 99999; transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.8); pointer-events: auto; }
-        .btn-back::before { content: '←'; font-size: 26px; font-weight: 900; color: var(--pure-white); }
-        .btn-back:active { transform: scale(0.88); background: var(--primary-red); border-color: var(--primary-red); }
-        
-        #home { flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); padding: 40px 20px; }
-        .home-header { text-align: center; margin-bottom: 60px; animation: fadeInDown 1s ease-out; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-        .logo-icon { font-size: 64px; filter: drop-shadow(0 0 25px rgba(215,25,32,0.6)); animation: pulse 2.5s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-        .home-header h1 { font-family: var(--font-display); font-size: 38px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; background: linear-gradient(135deg, var(--pure-white) 0%, var(--light-gray) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
-        .accent-line { width: 70px; height: 4px; background: var(--primary-red); margin: 12px auto; border-radius: 2px; box-shadow: 0 0 15px rgba(215,25,32,0.7); }
-        .home-header p { font-family: var(--font-heading); font-size: 13px; letter-spacing: 2.5px; color: var(--light-gray); text-transform: uppercase; }
-        .menu-grid { display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 380px; animation: fadeInUp 1s ease-out 0.3s both; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .menu-item { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.12); border-left: 4px solid var(--primary-red); border-radius: 14px; padding: 24px 20px; cursor: pointer; position: relative; overflow: hidden; transition: all 0.4s; display: flex; align-items: center; gap: 18px; }
-        .menu-item:active { transform: scale(0.97); background: rgba(255,255,255,0.08); }
-        .menu-icon { font-size: 36px; min-width: 36px; }
-        .menu-content h3 { font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 5px; }
-        .menu-content p { font-size: 12px; color: var(--light-gray); line-height: 1.4; }
-        .menu-arrow { margin-left: auto; font-size: 22px; color: var(--primary-red); font-weight: 900; }
-        .home-footer { position: absolute; bottom: 30px; text-align: center; font-family: var(--font-display); font-size: 9px; color: #444; letter-spacing: 2px; width: 100%; }
-        
-        #meter { flex-direction: column; align-items: center; justify-content: flex-start; background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%); padding-top: 120px; }
-        .meter-display { width: 280px; height: 280px; position: relative; margin-bottom: 40px; }
-        .meter-circle { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, rgba(26,26,26,0.9) 0%, rgba(10,10,10,1) 100%); border: 5px solid #2a2a2a; box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 50px rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; transition: all 0.4s; }
-        .meter-circle::before { content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0%, var(--primary-red) 50%, transparent 100%); opacity: 0; transition: opacity 0.4s; z-index: -1; animation: rotate 3s linear infinite; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .meter-circle.danger::before { opacity: 0.7; }
-        .db-value { font-family: var(--font-display); font-size: 76px; font-weight: 900; color: var(--pure-white); text-shadow: 0 0 25px rgba(255,255,255,0.6); line-height: 1; margin-bottom: 5px; }
-        .db-unit { font-family: var(--font-heading); font-size: 16px; color: var(--light-gray); letter-spacing: 2px; }
-        .status-indicator { margin-top: 20px; padding: 9px 20px; background: rgba(255,255,255,0.06); border-radius: 25px; border: 1px solid rgba(255,255,255,0.12); font-family: var(--font-heading); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; transition: all 0.2s; }
-        .wave-visualizer { width: 90%; max-width: 360px; height: 100px; position: relative; margin-top: 30px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); overflow: hidden; }
-        #waveCanvas { width: 100%; height: 100%; }
-        .meter-info { max-width: 320px; padding: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-top: 25px; text-align: center; }
-        .meter-info p { font-size: 13px; line-height: 1.6; color: var(--light-gray); }
-        .meter-info .highlight { color: var(--primary-red); font-weight: 700; }
-        
-        #ar { background: transparent !important; pointer-events: none; }
-        .ar-hud { position: fixed; top: 90px; right: 15px; pointer-events: none; z-index: 1000; }
-        .hud-meter { background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); border: 2px solid rgba(255,255,255,0.25); border-right: 4px solid var(--primary-red); border-radius: 8px; padding: 12px 16px; min-width: 120px; box-shadow: 0 6px 25px rgba(0,0,0,0.7); }
-        .hud-label { font-family: var(--font-heading); font-size: 9px; color: var(--light-gray); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
-        .hud-value { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--primary-red); text-shadow: 0 0 18px rgba(215,25,32,0.7); line-height: 1; text-align: right; }
-        .hud-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-        .hud-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-red) 0%, #ff6b6b 100%); border-radius: 2px; transition: width 0.2s; box-shadow: 0 0 8px rgba(215,25,32,0.9); }
-        .ar-controls { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); padding: 25px 20px 40px; display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: auto; z-index: 1000; }
-        .ar-status-text { font-family: var(--font-heading); font-size: 16px; font-weight: 600; color: var(--pure-white); text-align: center; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.9); min-height: 24px; }
-        .btn-ar { width: 100%; max-width: 340px; padding: 18px 28px; background: var(--primary-red); color: var(--pure-white); border: none; border-radius: 50px; font-family: var(--font-heading); font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; box-shadow: 0 6px 25px rgba(215,25,32,0.5); transition: all 0.2s; display: none; }
-        .btn-ar.visible { display: block; }
-        .btn-ar:active { transform: scale(0.96); }
-        .danger-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 800; display: none; animation: dangerPulse 1.5s infinite; }
-        .danger-overlay.active { display: block; }
-        @keyframes dangerPulse { 0%, 100% { box-shadow: inset 0 0 0 rgba(215,25,32,0); } 50% { box-shadow: inset 0 0 100px rgba(215,25,32,0.5); } }
-        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--pure-white); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #arScene { position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; z-index: 5 !important; }
-        .a-enter-vr, .a-orientation-modal { display: none !important; }
+        body {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            overflow: hidden;
+            background: var(--deep-black);
+            font-family: var(--font-body);
+            color: var(--pure-white);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* ============================================================================
+           VIDEO DE CÁMARA - FONDO AR
+           ============================================================================ */
+        #cameraVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            display: none;
+            transform: scaleX(-1);
+        }
+
+        #cameraVideo.active {
+            display: block;
+        }
+
+        /* ============================================================================
+           SISTEMA DE VISTAS (NAVEGACIÓN)
+           ============================================================================ */
+        .view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            opacity: 0;
+            transition: opacity var(--transition-slow);
+            z-index: 1;
+        }
+
+        .view.active {
+            display: flex;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* ============================================================================
+           BOTÓN DE RETROCESO
+           ============================================================================ */
+        .btn-back {
+            position: fixed;
+            top: calc(var(--safe-top) + 15px);
+            left: calc(var(--safe-left) + 15px);
+            width: 56px;
+            height: 56px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: var(--blur-medium);
+            -webkit-backdrop-filter: var(--blur-medium);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 99999;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-large);
+            pointer-events: auto;
+        }
+
+        .btn-back::before {
+            content: '←';
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--pure-white);
+            line-height: 1;
+        }
+
+        .btn-back:hover {
+            background: rgba(20, 20, 20, 0.98);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .btn-back:active {
+            transform: scale(0.9);
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+
+        /* ============================================================================
+           HOME VIEW - PANTALLA PRINCIPAL
+           ============================================================================ */
+        #home {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, 
+                var(--dark-gray) 0%, 
+                var(--dark-black) 50%, 
+                var(--deep-black) 100%);
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efecto de fondo animado */
+        #home::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(215, 25, 32, 0.1) 0%, 
+                transparent 70%);
+            animation: rotateBackground 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotateBackground {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Header del home */
+        .home-header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeInDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-40px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Contenedor del logo */
+        .logo-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .logo-icon {
+            font-size: 72px;
+            filter: drop-shadow(0 0 30px rgba(215, 25, 32, 0.7));
+            animation: pulse 3s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                filter: drop-shadow(0 0 30px rgba(215, 25, 32, 0.7));
+            }
+            50% { 
+                transform: scale(1.1); 
+                filter: drop-shadow(0 0 50px rgba(215, 25, 32, 1));
+            }
+        }
+
+        /* Título principal */
+        .home-header h1 {
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, 
+                var(--pure-white) 0%, 
+                var(--light-gray) 50%,
+                var(--pure-white) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Línea decorativa */
+        .accent-line {
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--primary-red) 50%, 
+                transparent 100%);
+            margin: 15px auto;
+            border-radius: 3px;
+            box-shadow: 0 0 20px var(--danger-glow);
+            animation: expandLine 2s ease-in-out infinite;
+        }
+
+        @keyframes expandLine {
+            0%, 100% { width: 80px; }
+            50% { width: 120px; }
+        }
+
+        /* Subtítulo */
+        .home-header p {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: var(--light-gray);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Grid de menú */
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 1s ease-out 0.4s both;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        /* Items del menú */
+        .menu-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: var(--blur-light);
+            -webkit-backdrop-filter: var(--blur-light);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 5px solid var(--primary-red);
+            border-radius: 16px;
+            padding: 28px 24px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-medium);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(215, 25, 32, 0.2) 0%, 
+                transparent 100%);
+            transition: width var(--transition-medium);
+            pointer-events: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-left-width: 8px;
+            transform: translateX(5px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .menu-item:hover::before {
+            width: 100%;
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Ícono del menú */
+        .menu-icon {
+            font-size: 40px;
+            min-width: 40px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+            transition: transform var(--transition-fast);
+        }
+
+        .menu-item:hover .menu-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        /* Contenido del menú */
+        .menu-content {
+            flex: 1;
+        }
+
+        .menu-content h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--pure-white);
+            transition: color var(--transition-fast);
+        }
+
+        .menu-item:hover .menu-content h3 {
+            color: var(--primary-red-light);
+        }
+
+        .menu-content p {
+            font-size: 13px;
+            color: var(--light-gray);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        /* Flecha del menú */
+        .menu-arrow {
+            margin-left: auto;
+            font-size: 24px;
+            color: var(--primary-red);
+            font-weight: 900;
+            transition: transform var(--transition-fast);
+        }
+
+        .menu-item:hover .menu-arrow {
+            transform: translateX(8px);
+        }
+
+        /* Footer del home */
+        .home-footer {
+            position: absolute;
+            bottom: calc(var(--safe-bottom) + 25px);
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: #555;
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+
+        /* ============================================================================
+           METER VIEW - MEDIDOR DE DECIBELIOS
+           ============================================================================ */
+        #meter {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: linear-gradient(180deg, 
+                var(--deep-black) 0%, 
+                var(--dark-black) 50%,
+                var(--dark-gray) 100%);
+            padding-top: calc(var(--safe-top) + 100px);
+            padding-bottom: calc(var(--safe-bottom) + 20px);
+            overflow-y: auto;
+        }
+
+        /* Display del medidor */
+        .meter-display {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            margin-bottom: 45px;
+        }
+
+        /* Círculo del medidor */
+        .meter-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(30, 30, 30, 0.95) 0%, 
+                rgba(10, 10, 10, 1) 100%);
+            border: 6px solid var(--medium-gray);
+            box-shadow: 
+                var(--shadow-huge),
+                inset 0 0 60px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all var(--transition-medium);
+        }
+
+        /* Anillo giratorio de peligro */
+        .meter-circle::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, 
+                transparent 0%, 
+                var(--primary-red) 25%,
+                var(--danger) 50%, 
+                var(--primary-red) 75%,
+                transparent 100%);
+            opacity: 0;
+            transition: opacity var(--transition-medium);
+            z-index: -1;
+            animation: rotateDanger 3s linear infinite;
+        }
+
+        @keyframes rotateDanger {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .meter-circle.danger::before {
+            opacity: 0.8;
+        }
+
+        .meter-circle.danger {
+            box-shadow: 
+                0 0 80px var(--danger-glow),
+                inset 0 0 60px rgba(255, 0, 0, 0.2);
+        }
+
+        /* Valor de decibelios */
+        .db-value {
+            font-family: var(--font-display);
+            font-size: 82px;
+            font-weight: 900;
+            color: var(--pure-white);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+            line-height: 1;
+            margin-bottom: 8px;
+            transition: all var(--transition-fast);
+        }
+
+        .meter-circle.danger .db-value {
+            color: var(--danger);
+            text-shadow: 0 0 40px var(--danger-glow);
+            animation: pulseValue 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseValue {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Unidad de medida */
+        .db-unit {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            color: var(--light-gray);
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+
+        /* Indicador de estado */
+        .status-indicator {
+            margin-top: 22px;
+            padding: 10px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-small);
+        }
+
+        /* Visualizador de onda */
+        .wave-visualizer {
+            width: 92%;
+            max-width: 380px;
+            height: 120px;
+            position: relative;
+            margin-top: 35px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+        }
+
+        #waveCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Información del medidor */
+        .meter-info {
+            max-width: 340px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .meter-info p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--light-gray);
+            font-weight: 400;
+        }
+
+        .meter-info .highlight {
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+
+        /* ============================================================================
+           AR VIEW - VISTA DE REALIDAD AUMENTADA
+           ============================================================================ */
+        #ar {
+            background: transparent !important;
+            pointer-events: none;
+        }
+
+        /* HUD del AR */
+        .ar-hud {
+            position: fixed;
+            top: calc(var(--safe-top) + 80px);
+            right: calc(var(--safe-right) + 18px);
+            pointer-events: none;
+            z-index: 1000;
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Medidor en el HUD */
+        .hud-meter {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: var(--blur-heavy);
+            -webkit-backdrop-filter: var(--blur-heavy);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-right: 5px solid var(--primary-red);
+            border-radius: 10px;
+            padding: 14px 18px;
+            min-width: 130px;
+            box-shadow: var(--shadow-large);
+        }
+
+        /* Etiqueta del HUD */
+        .hud-label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            color: var(--light-gray);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* Valor en el HUD */
+        .hud-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-red);
+            text-shadow: 0 0 20px rgba(215, 25, 32, 0.8);
+            line-height: 1;
+            text-align: right;
+            transition: color var(--transition-fast);
+        }
+
+        /* Barra del HUD */
+        .hud-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        /* Relleno de la barra */
+        .hud-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, 
+                var(--primary-red) 0%, 
+                var(--danger) 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 10px var(--danger-glow);
+        }
+
+        /* Controles del AR */
+        .ar-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: var(--blur-medium);
+            -webkit-backdrop-filter: var(--blur-medium);
+            padding: 28px 20px calc(var(--safe-bottom) + 25px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            pointer-events: auto;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Texto de estado del AR */
+        .ar-status-text {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--pure-white);
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+            min-height: 24px;
+            line-height: 1.4;
+        }
+
+        /* Botones del AR */
+        .btn-ar {
+            width: 100%;
+            max-width: 360px;
+            padding: 20px 32px;
+            background: var(--primary-red);
+            color: var(--pure-white);
+            border: none;
+            border-radius: 60px;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(215, 25, 32, 0.6);
+            transition: all var(--transition-fast);
+            display: none;
+        }
+
+        .btn-ar.visible {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn-ar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-ar:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-ar:hover {
+            background: var(--primary-red-dark);
+            box-shadow: 0 10px 40px rgba(215, 25, 32, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .btn-ar:active {
+            transform: scale(0.97);
+        }
+
+        #btnStartAR {
+            background: var(--primary-red);
+        }
+
+        #btnNextPhase {
+            background: var(--info);
+            box-shadow: 0 8px 30px rgba(0, 122, 255, 0.6);
+        }
+
+        #btnNextPhase:hover {
+            background: #0056CC;
+            box-shadow: 0 10px 40px rgba(0, 122, 255, 0.8);
+        }
+
+        /* Overlay de peligro */
+        .danger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 800;
+            display: none;
+            animation: dangerPulse 1.8s ease-in-out infinite;
+        }
+
+        .danger-overlay.active {
+            display: block;
+        }
+
+        @keyframes dangerPulse {
+            0%, 100% { 
+                box-shadow: inset 0 0 0 rgba(215, 25, 32, 0); 
+            }
+            50% { 
+                box-shadow: inset 0 0 120px rgba(215, 25, 32, 0.6); 
+            }
+        }
+
+        /* Spinner de carga */
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-top-color: var(--pure-white);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================================================
+           A-FRAME SCENE
+           ============================================================================ */
+        #arScene {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 5 !important;
+        }
+
+        .a-enter-vr, 
+        .a-orientation-modal {
+            display: none !important;
+        }
+
+        /* ============================================================================
+           RESPONSIVE DESIGN
+           ============================================================================ */
+        @media (max-width: 400px) {
+            .home-header h1 { font-size: 36px; }
+            .meter-display { width: 260px; height: 260px; }
+            .db-value { font-size: 72px; }
+            .menu-item { padding: 22px 18px; }
+        }
+
+        @media (max-width: 360px) {
+            .home-header h1 { font-size: 32px; }
+            .meter-display { width: 240px; height: 240px; }
+            .db-value { font-size: 64px; }
+        }
+
+        @media (min-height: 800px) {
+            .menu-grid { gap: 24px; }
+            .home-header { margin-bottom: 80px; }
+        }
+
+        /* ============================================================================
+           ANIMACIONES ADICIONALES
+           ============================================================================ */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-red); }
+            50% { box-shadow: 0 0 40px var(--danger); }
+        }
+
+        /* ============================================================================
+           UTILIDADES
+           ============================================================================ */
+        .hidden {
+            display: none !important;
+        }
+
+        .invisible {
+            opacity: 0 !important;
+        }
+
+        .no-pointer {
+            pointer-events: none !important;
+        }
     </style>
 </head>
 <body>
+
+    <!-- ============================================================================
+         VIDEO DE CÁMARA
+         ============================================================================ -->
     <video id="cameraVideo" playsinline autoplay muted></video>
+
+    <!-- ============================================================================
+         OVERLAY DE PELIGRO
+         ============================================================================ -->
     <div id="dangerOverlay" class="danger-overlay"></div>
 
+    <!-- ============================================================================
+         HOME VIEW - PANTALLA PRINCIPAL
+         ============================================================================ -->
     <div id="home" class="view active">
         <div class="home-header">
-            <div class="logo-icon">🎧</div>
+            <div class="logo-container">
+                <div class="logo-icon">🎧</div>
+            </div>
             <h1>Safety Suite</h1>
             <div class="accent-line"></div>
-            <p>Protección Auditiva</p>
+            <p>Protección Auditiva Industrial</p>
         </div>
+
         <div class="menu-grid">
             <div class="menu-item" data-nav="meter">
                 <div class="menu-icon">🎙️</div>
-                <div class="menu-content"><h3>Medidor Ambiental</h3><p>Análisis de decibelios en tiempo real</p></div>
+                <div class="menu-content">
+                    <h3>Medidor Ambiental</h3>
+                    <p>Análisis de decibelios en tiempo real con visualización de onda</p>
+                </div>
                 <div class="menu-arrow">→</div>
             </div>
+
             <div class="menu-item" data-nav="ar">
                 <div class="menu-icon">🥽</div>
-                <div class="menu-content"><h3>Simulación AR</h3><p>Experiencia inmersiva de protección</p></div>
+                <div class="menu-content">
+                    <h3>Simulación AR</h3>
+                    <p>Experiencia inmersiva 3D de protección auditiva</p>
+                </div>
                 <div class="menu-arrow">→</div>
             </div>
         </div>
-        <div class="home-footer">LANXESS AR • v18.0 PRO</div>
+
+        <div class="home-footer">
+            LANXESS SAFETY AR • VERSION 19.0 PROFESSIONAL
+        </div>
     </div>
 
+    <!-- ============================================================================
+         METER VIEW - MEDIDOR DE DECIBELIOS
+         ============================================================================ -->
     <div id="meter" class="view">
         <div class="btn-back" data-nav="home"></div>
+        
         <div class="meter-display">
             <div class="meter-circle" id="meterCircle">
                 <div class="db-value" id="dbValue">--</div>
                 <div class="db-unit">dB SPL</div>
-                <div class="status-indicator" id="statusIndicator">INICIANDO</div>
+                <div class="status-indicator" id="statusIndicator">INICIANDO SISTEMA</div>
             </div>
         </div>
-        <div class="wave-visualizer"><canvas id="waveCanvas"></canvas></div>
-        <div class="meter-info"><p>El micrófono analiza el ruido ambiente en tiempo real. Cuando el medidor se torna <span class="highlight">ROJO</span>, el nivel de decibelios es perjudicial para tu audición.</p></div>
+
+        <div class="wave-visualizer">
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <div class="meter-info">
+            <p>
+                El micrófono analiza el nivel de ruido ambiente en tiempo real. 
+                Cuando el medidor se torna <span class="highlight">ROJO</span>, 
+                el nivel de decibelios es perjudicial para tu audición y requiere 
+                protección inmediata.
+            </p>
+        </div>
     </div>
 
+    <!-- ============================================================================
+         AR VIEW - REALIDAD AUMENTADA
+         ============================================================================ -->
     <div id="ar" class="view">
         <div class="btn-back" data-nav="home"></div>
+
         <div class="ar-hud">
             <div class="hud-meter">
                 <div class="hud-label">NIVEL RUIDO</div>
                 <div class="hud-value" id="hudValue">0 dB</div>
-                <div class="hud-bar"><div class="hud-fill" id="hudFill"></div></div>
+                <div class="hud-bar">
+                    <div class="hud-fill" id="hudFill"></div>
+                </div>
             </div>
         </div>
+
         <div class="ar-controls">
-            <div class="ar-status-text" id="arStatusText">Apunta la cámara al suelo para ver la escena 3D</div>
-            <button id="btnStartAR" class="btn-ar visible">🎬 INICIAR ANIMACIÓN</button>
-            <button id="btnNextPhase" class="btn-ar">▶ CONTINUAR</button>
+            <div class="ar-status-text" id="arStatusText">
+                Mueve tu teléfono para ver la escena 3D desde todos los ángulos
+            </div>
+            <button id="btnStartAR" class="btn-ar visible">
+                🎬 INICIAR ANIMACIÓN PROFESIONAL
+            </button>
+            <button id="btnNextPhase" class="btn-ar">
+                ▶ SIGUIENTE FASE
+            </button>
         </div>
     </div>
 
-    <a-scene id="arScene" vr-mode-ui="enabled: false" renderer="antialias: true; alpha: true; colorManagement: true; physicallyCorrectLights: true" loading-screen="enabled: false" embedded background="transparent" device-orientation-permission-ui="enabled: false" style="display: none;">
+    <!-- ============================================================================
+         A-FRAME SCENE - ESCENA 3D CON GIROSCOPIO
+         ============================================================================ -->
+    <a-scene 
+        id="arScene"
+        vr-mode-ui="enabled: false"
+        renderer="antialias: true; 
+                  alpha: true; 
+                  colorManagement: true; 
+                  physicallyCorrectLights: true;
+                  gammaOutput: true;
+                  shadowMapEnabled: true;
+                  shadowMapType: PCFSoft"
+        loading-screen="enabled: false"
+        embedded
+        background="transparent"
+        device-orientation-permission-ui="enabled: false"
+        fog="type: linear; color: #000; near: 5; far: 20"
+        style="display: none;">
+
+        <!-- ========================================================================
+             CÁMARA CON GIROSCOPIO ACTIVADO
+             ======================================================================== -->
+        <a-camera 
+            id="mainCamera" 
+            position="0 1.6 0"
+            look-controls="enabled: true; 
+                          touchEnabled: true;
+                          mouseEnabled: true;
+                          magicWindowTrackingEnabled: true;
+                          pointerLockEnabled: false;
+                          reverseMouseDrag: false"
+            wasd-controls="enabled: false"
+            camera="fov: 80; near: 0.01; far: 100">
+        </a-camera>
+
+        <!-- ========================================================================
+             SISTEMA DE ILUMINACIÓN PROFESIONAL
+             ======================================================================== -->
         
-        <a-camera id="mainCamera" position="0 1.6 0" look-controls="enabled: true; touchEnabled: true; mouseEnabled: false; magicWindowTrackingEnabled: true; pointerLockEnabled: false" wasd-controls="enabled: false"></a-camera>
+        <!-- Luz ambiental base -->
+        <a-entity 
+            light="type: ambient; 
+                   color: #FFFFFF; 
+                   intensity: 1.2">
+        </a-entity>
 
-        <a-entity light="type: ambient; color: #FFF; intensity: 0.9"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 2; castShadow: true" position="5 12 4"></a-entity>
-        <a-entity light="type: directional; color: #FFF; intensity: 1.5; castShadow: true" position="-5 10 -4"></a-entity>
-        <a-entity light="type: point; color: #FFF; intensity: 2; distance: 20; castShadow: true" position="0 5 0"></a-entity>
-        <a-entity id="dangerLight" light="type: point; color: #D71920; intensity: 0; distance: 25; castShadow: true" position="0 4 -3"></a-entity>
+        <!-- Luz direccional principal (sol) -->
+        <a-entity 
+            light="type: directional; 
+                   color: #FFFFFF; 
+                   intensity: 2.5; 
+                   castShadow: true;
+                   shadowCameraVisible: false;
+                   shadowMapHeight: 2048;
+                   shadowMapWidth: 2048" 
+            position="6 15 5">
+        </a-entity>
 
-        <a-plane id="ground" position="0 0 -3" rotation="-90 0 0" width="20" height="20" color="#1a1a1a" shadow="receive: true" material="roughness: 0.9; metalness: 0.1"></a-plane>
+        <!-- Luz direccional secundaria (relleno) -->
+        <a-entity 
+            light="type: directional; 
+                   color: #E8F4FF; 
+                   intensity: 1.8; 
+                   castShadow: true" 
+            position="-6 12 -5">
+        </a-entity>
 
-        <a-entity id="mainScene" position="0 0 -3">
+        <!-- Luz puntual central superior -->
+        <a-entity 
+            light="type: point; 
+                   color: #FFFFFF; 
+                   intensity: 2.5; 
+                   distance: 25; 
+                   decay: 2;
+                   castShadow: true" 
+            position="0 6 0">
+        </a-entity>
 
-            <!-- MESA PROFESIONAL -->
-            <a-entity id="tableGroup" position="2.2 0 0.4" shadow="cast: true; receive: true">
-                <a-box id="tableTop" width="1.4" height="0.07" depth="0.85" position="0 0.8 0" color="#8B4513" shadow="cast: true" material="roughness: 0.6; metalness: 0.1"></a-box>
-                <a-box width="1.43" height="0.05" depth="0.88" position="0 0.835 0" color="#654321" shadow="cast: true"></a-box>
+        <!-- Luz de peligro (roja, inicialmente apagada) -->
+        <a-entity 
+            id="dangerLight" 
+            light="type: point; 
+                   color: #D71920; 
+                   intensity: 0; 
+                   distance: 30; 
+                   decay: 2;
+                   castShadow: true" 
+            position="0 5 -3">
+        </a-entity>
+
+        <!-- Luz de acento frontal -->
+        <a-entity 
+            light="type: spot; 
+                   color: #FFFFFF; 
+                   intensity: 1.5; 
+                   distance: 15; 
+                   angle: 45;
+                   penumbra: 0.5;
+                   castShadow: true" 
+            position="0 4 2"
+            rotation="-30 0 0">
+        </a-entity>
+
+        <!-- ========================================================================
+             SUELO CON GRID DE REFERENCIA
+             ======================================================================== -->
+        <a-plane 
+            id="ground" 
+            position="0 0 -3.5" 
+            rotation="-90 0 0" 
+            width="25" 
+            height="25" 
+            color="#1a1a1a"
+            shadow="receive: true"
+            material="roughness: 0.95; 
+                      metalness: 0.05;
+                      shader: flat">
+        </a-plane>
+
+        <!-- Grid de referencia visual -->
+        <a-entity id="gridSystem" position="0 0.02 -3.5">
+            <!-- Líneas horizontales del grid -->
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 -10" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 -8" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 -6" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 -4" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 -2" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 0" opacity="0.5"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 2" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 4" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 6" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 8" opacity="0.4"></a-box>
+            <a-box width="25" height="0.01" depth="0.03" color="#2a2a2a" position="0 0 10" opacity="0.4"></a-box>
+            
+            <!-- Líneas verticales del grid -->
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="-10 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="-8 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="-6 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="-4 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="-2 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="0 0 0" opacity="0.5"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="2 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="4 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="6 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="8 0 0" opacity="0.4"></a-box>
+            <a-box width="0.03" height="0.01" depth="25" color="#2a2a2a" position="10 0 0" opacity="0.4"></a-box>
+            
+            <!-- Líneas centrales destacadas -->
+            <a-box width="25" height="0.01" depth="0.04" color="#D71920" position="0 0 0" opacity="0.3"></a-box>
+            <a-box width="0.04" height="0.01" depth="25" color="#D71920" position="0 0 0" opacity="0.3"></a-box>
+        </a-entity>
+
+        <!-- ========================================================================
+             ESCENA PRINCIPAL
+             ======================================================================== -->
+        <a-entity id="mainScene" position="0 0 -3.5">
+
+            <!-- ====================================================================
+                 MESA 3D ULTRA DETALLADA
+                 ==================================================================== -->
+            <a-entity 
+                id="tableGroup" 
+                position="2.5 0 0.5" 
+                shadow="cast: true; receive: true">
                 
-                <a-entity position="-0.6 0.4 -0.35"><a-cylinder radius="0.035" height="0.8" color="#654321" shadow="cast: true"></a-cylinder><a-cylinder radius="0.04" height="0.05" color="#4a2f1a" position="0 0.425 0"></a-cylinder></a-entity>
-                <a-entity position="0.6 0.4 -0.35"><a-cylinder radius="0.035" height="0.8" color="#654321" shadow="cast: true"></a-cylinder><a-cylinder radius="0.04" height="0.05" color="#4a2f1a" position="0 0.425 0"></a-cylinder></a-entity>
-                <a-entity position="-0.6 0.4 0.35"><a-cylinder radius="0.035" height="0.8" color="#654321" shadow="cast: true"></a-cylinder><a-cylinder radius="0.04" height="0.05" color="#4a2f1a" position="0 0.425 0"></a-cylinder></a-entity>
-                <a-entity position="0.6 0.4 0.35"><a-cylinder radius="0.035" height="0.8" color="#654321" shadow="cast: true"></a-cylinder><a-cylinder radius="0.04" height="0.05" color="#4a2f1a" position="0 0.425 0"></a-cylinder></a-entity>
+                <!-- Tablero principal de la mesa -->
+                <a-box 
+                    id="tableTop"
+                    width="1.6" 
+                    height="0.08" 
+                    depth="0.95" 
+                    position="0 0.85 0"
+                    color="#8B4513"
+                    shadow="cast: true; receive: true"
+                    material="roughness: 0.65; 
+                              metalness: 0.1;
+                              shader: standard">
+                </a-box>
                 
-                <a-box width="1.25" height="0.025" depth="0.025" color="#654321" position="0 0.2 -0.35" shadow="cast: true"></a-box>
-                <a-box width="1.25" height="0.025" depth="0.025" color="#654321" position="0 0.2 0.35" shadow="cast: true"></a-box>
-                <a-box width="0.025" height="0.025" depth="0.75" color="#654321" position="-0.6 0.2 0" shadow="cast: true"></a-box>
-                <a-box width="0.025" height="0.025" depth="0.75" color="#654321" position="0.6 0.2 0" shadow="cast: true"></a-box>
+                <!-- Borde superior decorativo -->
+                <a-box 
+                    width="1.64" 
+                    height="0.05" 
+                    depth="0.99" 
+                    position="0 0.895 0" 
+                    color="#654321" 
+                    shadow="cast: true"
+                    material="roughness: 0.7; metalness: 0.05">
+                </a-box>
+                
+                <!-- Borde inferior decorativo -->
+                <a-box 
+                    width="1.64" 
+                    height="0.03" 
+                    depth="0.99" 
+                    position="0 0.805 0" 
+                    color="#5a3a1a" 
+                    shadow="cast: true"
+                    material="roughness: 0.75; metalness: 0.05">
+                </a-box>
+                
+                <!-- ================================================================
+                     PATAS DE LA MESA CON DETALLES
+                     ================================================================ -->
+                
+                <!-- Pata frontal izquierda -->
+                <a-entity id="leg_FL" position="-0.68 0.425 -0.4">
+                    <!-- Cilindro principal de la pata -->
+                    <a-cylinder 
+                        radius="0.04" 
+                        height="0.85" 
+                        color="#654321" 
+                        shadow="cast: true; receive: true"
+                        material="roughness: 0.75; metalness: 0.1">
+                    </a-cylinder>
+                    
+                    <!-- Tope superior -->
+                    <a-cylinder 
+                        radius="0.048" 
+                        height="0.05" 
+                        color="#4a2f1a" 
+                        position="0 0.45 0"
+                        shadow="cast: true"
+                        material="roughness: 0.8; metalness: 0.15">
+                    </a-cylinder>
+                    
+                    <!-- Anillo decorativo superior -->
+                    <a-torus 
+                        radius="0.045" 
+                        radius-tubular="0.006" 
+                        color="#3a1f0a" 
+                        position="0 0.42 0"
+                        rotation="90 0 0"
+                        shadow="cast: true">
+                    </a-torus>
+                    
+                    <!-- Base inferior -->
+                    <a-cylinder 
+                        radius="0.048" 
+                        height="0.05" 
+                        color="#4a2f1a" 
+                        position="0 -0.45 0"
+                        shadow="cast: true"
+                        material="roughness: 0.9; metalness: 0.1">
+                    </a-cylinder>
+                    
+                    <!-- Regatón de goma -->
+                    <a-cylinder 
+                        radius="0.05" 
+                        height="0.02" 
+                        color="#1a1a1a" 
+                        position="0 -0.485 0"
+                        shadow="cast: true"
+                        material="roughness: 0.95; metalness: 0">
+                    </a-cylinder>
+                </a-entity>
+                
+                <!-- Pata frontal derecha -->
+                <a-entity id="leg_FR" position="0.68 0.425 -0.4">
+                    <a-cylinder radius="0.04" height="0.85" color="#654321" shadow="cast: true; receive: true" material="roughness: 0.75; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 0.45 0" shadow="cast: true" material="roughness: 0.8; metalness: 0.15"></a-cylinder>
+                    <a-torus radius="0.045" radius-tubular="0.006" color="#3a1f0a" position="0 0.42 0" rotation="90 0 0" shadow="cast: true"></a-torus>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 -0.45 0" shadow="cast: true" material="roughness: 0.9; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.05" height="0.02" color="#1a1a1a" position="0 -0.485 0" shadow="cast: true" material="roughness: 0.95; metalness: 0"></a-cylinder>
+                </a-entity>
+                
+                <!-- Pata trasera izquierda -->
+                <a-entity id="leg_BL" position="-0.68 0.425 0.4">
+                    <a-cylinder radius="0.04" height="0.85" color="#654321" shadow="cast: true; receive: true" material="roughness: 0.75; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 0.45 0" shadow="cast: true" material="roughness: 0.8; metalness: 0.15"></a-cylinder>
+                    <a-torus radius="0.045" radius-tubular="0.006" color="#3a1f0a" position="0 0.42 0" rotation="90 0 0" shadow="cast: true"></a-torus>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 -0.45 0" shadow="cast: true" material="roughness: 0.9; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.05" height="0.02" color="#1a1a1a" position="0 -0.485 0" shadow="cast: true" material="roughness: 0.95; metalness: 0"></a-cylinder>
+                </a-entity>
+                
+                <!-- Pata trasera derecha -->
+                <a-entity id="leg_BR" position="0.68 0.425 0.4">
+                    <a-cylinder radius="0.04" height="0.85" color="#654321" shadow="cast: true; receive: true" material="roughness: 0.75; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 0.45 0" shadow="cast: true" material="roughness: 0.8; metalness: 0.15"></a-cylinder>
+                    <a-torus radius="0.045" radius-tubular="0.006" color="#3a1f0a" position="0 0.42 0" rotation="90 0 0" shadow="cast: true"></a-torus>
+                    <a-cylinder radius="0.048" height="0.05" color="#4a2f1a" position="0 -0.45 0" shadow="cast: true" material="roughness: 0.9; metalness: 0.1"></a-cylinder>
+                    <a-cylinder radius="0.05" height="0.02" color="#1a1a1a" position="0 -0.485 0" shadow="cast: true" material="roughness: 0.95; metalness: 0"></a-cylinder>
+                </a-entity>
+                
+                <!-- ================================================================
+                     TRAVESAÑOS DE SOPORTE
+                     ================================================================ -->
+                
+                <!-- Travesaño frontal -->
+                <a-box 
+                    width="1.45" 
+                    height="0.025" 
+                    depth="0.025" 
+                    color="#654321" 
+                    position="0 0.22 -0.4" 
+                    shadow="cast: true"
+                    material="roughness: 0.8; metalness: 0.1">
+                </a-box>
+                
+                <!-- Travesaño trasero -->
+                <a-box 
+                    width="1.45" 
+                    height="0.025" 
+                    depth="0.025" 
+                    color="#654321" 
+                    position="0 0.22 0.4" 
+                    shadow="cast: true"
+                    material="roughness: 0.8; metalness: 0.1">
+                </a-box>
+                
+                <!-- Travesaño izquierdo -->
+                <a-box 
+                    width="0.025" 
+                    height="0.025" 
+                    depth="0.85" 
+                    color="#654321" 
+                    position="-0.68 0.22 0" 
+                    shadow="cast: true"
+                    material="roughness: 0.8; metalness: 0.1">
+                </a-box>
+                
+                <!-- Travesaño derecho -->
+                <a-box 
+                    width="0.025" 
+                    height="0.025" 
+                    depth="0.85" 
+                    color="#654321" 
+                    position="0.68 0.22 0" 
+                    shadow="cast: true"
+                    material="roughness: 0.8; metalness: 0.1">
+                </a-box>
+                
+                <!-- Travesaño central (refuerzo) -->
+                <a-box 
+                    width="0.025" 
+                    height="0.025" 
+                    depth="0.85" 
+                    color="#654321" 
+                    position="0 0.22 0" 
+                    shadow="cast: true"
+                    material="roughness: 0.8; metalness: 0.1">
+                </a-box>
             </a-entity>
 
-            <!-- AURICULARES ULTRA DETALLADOS -->
-            <a-entity id="headphonesGroup" position="2.2 0.92 0.4" scale="1 1 1" shadow="cast: true; receive: true">
+            <!-- ====================================================================
+                 AURICULARES 3D PROFESIONALES ULTRA DETALLADOS
+                 ==================================================================== -->
+            <a-entity 
+                id="headphonesGroup" 
+                position="2.5 0.98 0.5" 
+                scale="1 1 1" 
+                shadow="cast: true; receive: true">
+                
+                <!-- ================================================================
+                     BANDA SUPERIOR (HEADBAND)
+                     ================================================================ -->
                 <a-entity id="headband" position="0 0 0">
-                    <a-torus radius="0.15" radius-tubular="0.015" color="#2a2a2a" rotation="0 0 0" arc="180" material="metalness: 0.8; roughness: 0.3" shadow="cast: true"></a-torus>
-                    <a-torus radius="0.145" radius-tubular="0.01" color="#1a1a1a" rotation="0 0 0" arc="180" material="metalness: 0.4; roughness: 0.7" shadow="cast: true"></a-torus>
-                    <a-box width="0.008" height="0.01" depth="0.05" color="#3a3a3a" position="-0.15 0 0" material="metalness: 0.7" shadow="cast: true"></a-box>
-                    <a-box width="0.008" height="0.01" depth="0.05" color="#3a3a3a" position="0.15 0 0" material="metalness: 0.7" shadow="cast: true"></a-box>
+                    <!-- Arco externo principal -->
+                    <a-torus 
+                        radius="0.18" 
+                        radius-tubular="0.018" 
+                        color="#2a2a2a" 
+                        rotation="0 0 0" 
+                        arc="180"
+                        material="metalness: 0.85; 
+                                  roughness: 0.25;
+                                  shader: standard"
+                        shadow="cast: true">
+                    </a-torus>
+                    
+                    <!-- Almohadilla interior acolchada -->
+                    <a-torus 
+                        radius="0.175" 
+                        radius-tubular="0.012" 
+                        color="#1a1a1a" 
+                        rotation="0 0 0" 
+                        arc="180"
+                        material="metalness: 0.3; 
+                                  roughness: 0.8;
+                                  shader: standard"
+                        shadow="cast: true">
+                    </a-torus>
+                    
+                    <!-- Refuerzos metálicos decorativos -->
+                    <a-box 
+                        width="0.01" 
+                        height="0.012" 
+                        depth="0.06" 
+                        color="#3a3a3a" 
+                        position="-0.18 0 0" 
+                        material="metalness: 0.8; roughness: 0.3"
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <a-box 
+                        width="0.01" 
+                        height="0.012" 
+                        depth="0.06" 
+                        color="#3a3a3a" 
+                        position="0.18 0 0" 
+                        material="metalness: 0.8; roughness: 0.3"
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <!-- Pivotes de ajuste -->
+                    <a-cylinder 
+                        radius="0.008" 
+                        height="0.02" 
+                        color="#4a4a4a" 
+                        position="-0.18 0 0" 
+                        rotation="0 0 90"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.008" 
+                        height="0.02" 
+                        color="#4a4a4a" 
+                        position="0.18 0 0" 
+                        rotation="0 0 90"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
                 </a-entity>
                 
-                <a-entity id="leftEarcup" position="-0.15 -0.06 0">
-                    <a-cylinder radius="0.008" height="0.05" color="#2a2a2a" position="0 0.025 0" material="metalness: 0.8; roughness: 0.2" shadow="cast: true"></a-cylinder>
-                    <a-cylinder radius="0.06" height="0.03" color="#1a1a1a" rotation="90 0 0" material="metalness: 0.7; roughness: 0.4" shadow="cast: true"></a-cylinder>
-                    <a-torus radius="0.06" radius-tubular="0.004" color="#444444" rotation="90 0 0" material="metalness: 0.9; roughness: 0.1" shadow="cast: true"></a-torus>
-                    <a-sphere radius="0.058" color="#2a2a2a" scale="1 0.4 1" material="metalness: 0.2; roughness: 0.8" shadow="cast: true"></a-sphere>
-                    <a-circle radius="0.028" color="#D71920" position="0 0 0.033" material="emissive: #D71920; emissiveIntensity: 0.5; metalness: 0.3" shadow="cast: true"></a-circle>
-                    <a-text value="L" color="#FFFFFF" align="center" width="0.18" position="0 0 0.035" scale="0.7 0.7 0.7"></a-text>
-                    <a-box width="0.015" height="0.002" depth="0.002" color="#555" position="0 0.025 0.032" shadow="cast: true"></a-box>
-                    <a-cylinder radius="0.003" height="0.01" color="#666" position="0.03 -0.025 0.025" rotation="0 0 90" shadow="cast: true"></a-cylinder>
+                <!-- ================================================================
+                     AURICULAR IZQUIERDO (LEFT EARCUP)
+                     ================================================================ -->
+                <a-entity id="leftEarcup" position="-0.18 -0.075 0">
+                    <!-- Brazo extensor metálico -->
+                    <a-cylinder 
+                        radius="0.01" 
+                        height="0.06" 
+                        color="#2a2a2a" 
+                        position="0 0.03 0" 
+                        material="metalness: 0.9; 
+                                  roughness: 0.2;
+                                  shader: standard"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <!-- Articulación superior -->
+                    <a-sphere 
+                        radius="0.012" 
+                        color="#1a1a1a" 
+                        position="0 0.06 0"
+                        material="metalness: 0.85; roughness: 0.25"
+                        shadow="cast: true">
+                    </a-sphere>
+                    
+                    <!-- Copa externa del auricular -->
+                    <a-cylinder 
+                        radius="0.07" 
+                        height="0.035" 
+                        color="#1a1a1a" 
+                        rotation="90 0 0"
+                        material="metalness: 0.75; 
+                                  roughness: 0.35;
+                                  shader: standard"
+                        shadow="cast: true; receive: true">
+                    </a-cylinder>
+                    
+                    <!-- Anillo decorativo exterior -->
+                    <a-torus 
+                        radius="0.07" 
+                        radius-tubular="0.005" 
+                        color="#444444" 
+                        rotation="90 0 0"
+                        material="metalness: 0.95; 
+                                  roughness: 0.1;
+                                  emissive: #222222;
+                                  emissiveIntensity: 0.3"
+                        shadow="cast: true">
+                    </a-torus>
+                    
+                    <!-- Almohadilla acolchada -->
+                    <a-sphere 
+                        radius="0.068" 
+                        color="#2a2a2a" 
+                        scale="1 0.45 1"
+                        material="metalness: 0.2; 
+                                  roughness: 0.85;
+                                  shader: standard"
+                        shadow="cast: true; receive: true">
+                    </a-sphere>
+                    
+                    <!-- Logo Lanxess -->
+                    <a-circle 
+                        radius="0.032" 
+                        color="#D71920" 
+                        position="0 0 0.038"
+                        material="emissive: #D71920; 
+                                  emissiveIntensity: 0.6; 
+                                  metalness: 0.4;
+                                  roughness: 0.3"
+                        shadow="cast: true">
+                    </a-circle>
+                    
+                    <!-- Texto "L" -->
+                    <a-text 
+                        value="L" 
+                        color="#FFFFFF" 
+                        align="center" 
+                        width="0.2" 
+                        position="0 0 0.041" 
+                        scale="0.8 0.8 0.8"
+                        shader="msdf"
+                        font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/roboto/Roboto-Bold.json">
+                    </a-text>
+                    
+                    <!-- Detalles de ventilación -->
+                    <a-box 
+                        width="0.018" 
+                        height="0.003" 
+                        depth="0.003" 
+                        color="#555555" 
+                        position="0 0.03 0.037" 
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <a-box 
+                        width="0.018" 
+                        height="0.003" 
+                        depth="0.003" 
+                        color="#555555" 
+                        position="0 0.035 0.037" 
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <!-- Conector de cable decorativo -->
+                    <a-cylinder 
+                        radius="0.004" 
+                        height="0.012" 
+                        color="#666666" 
+                        position="0.04 -0.03 0.03" 
+                        rotation="0 0 90"
+                        material="metalness: 0.8; roughness: 0.3"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <!-- Tornillos decorativos -->
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="0.045 0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="-0.045 0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="0.045 -0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="-0.045 -0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
                 </a-entity>
                 
-                <a-entity id="rightEarcup" position="0.15 -0.06 0">
-                    <a-cylinder radius="0.008" height="0.05" color="#2a2a2a" position="0 0.025 0" material="metalness: 0.8; roughness: 0.2" shadow="cast: true"></a-cylinder>
-                    <a-cylinder radius="0.06" height="0.03" color="#1a1a1a" rotation="90 0 0" material="metalness: 0.7; roughness: 0.4" shadow="cast: true"></a-cylinder>
-                    <a-torus radius="0.06" radius-tubular="0.004" color="#444444" rotation="90 0 0" material="metalness: 0.9; roughness: 0.1" shadow="cast: true"></a-torus>
-                    <a-sphere radius="0.058" color="#2a2a2a" scale="1 0.4 1" material="metalness: 0.2; roughness: 0.8" shadow="cast: true"></a-sphere>
-                    <a-circle radius="0.028" color="#D71920" position="0 0 0.033" material="emissive: #D71920; emissiveIntensity: 0.5; metalness: 0.3" shadow="cast: true"></a-circle>
-                    <a-text value="R" color="#FFFFFF" align="center" width="0.18" position="0 0 0.035" scale="0.7 0.7 0.7"></a-text>
-                    <a-box width="0.015" height="0.002" depth="0.002" color="#555" position="0 0.025 0.032" shadow="cast: true"></a-box>
-                    <a-cylinder radius="0.003" height="0.01" color="#666" position="-0.03 -0.025 0.025" rotation="0 0 90" shadow="cast: true"></a-cylinder>
+                <!-- ================================================================
+                     AURICULAR DERECHO (RIGHT EARCUP)
+                     ================================================================ -->
+                <a-entity id="rightEarcup" position="0.18 -0.075 0">
+                    <!-- Brazo extensor metálico -->
+                    <a-cylinder 
+                        radius="0.01" 
+                        height="0.06" 
+                        color="#2a2a2a" 
+                        position="0 0.03 0" 
+                        material="metalness: 0.9; 
+                                  roughness: 0.2;
+                                  shader: standard"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <!-- Articulación superior -->
+                    <a-sphere 
+                        radius="0.012" 
+                        color="#1a1a1a" 
+                        position="0 0.06 0"
+                        material="metalness: 0.85; roughness: 0.25"
+                        shadow="cast: true">
+                    </a-sphere>
+                    
+                    <!-- Copa externa del auricular -->
+                    <a-cylinder 
+                        radius="0.07" 
+                        height="0.035" 
+                        color="#1a1a1a" 
+                        rotation="90 0 0"
+                        material="metalness: 0.75; 
+                                  roughness: 0.35;
+                                  shader: standard"
+                        shadow="cast: true; receive: true">
+                    </a-cylinder>
+                    
+                    <!-- Anillo decorativo exterior -->
+                    <a-torus 
+                        radius="0.07" 
+                        radius-tubular="0.005" 
+                        color="#444444" 
+                        rotation="90 0 0"
+                        material="metalness: 0.95; 
+                                  roughness: 0.1;
+                                  emissive: #222222;
+                                  emissiveIntensity: 0.3"
+                        shadow="cast: true">
+                    </a-torus>
+                    
+                    <!-- Almohadilla acolchada -->
+                    <a-sphere 
+                        radius="0.068" 
+                        color="#2a2a2a" 
+                        scale="1 0.45 1"
+                        material="metalness: 0.2; 
+                                  roughness: 0.85;
+                                  shader: standard"
+                        shadow="cast: true; receive: true">
+                    </a-sphere>
+                    
+                    <!-- Logo Lanxess -->
+                    <a-circle 
+                        radius="0.032" 
+                        color="#D71920" 
+                        position="0 0 0.038"
+                        material="emissive: #D71920; 
+                                  emissiveIntensity: 0.6; 
+                                  metalness: 0.4;
+                                  roughness: 0.3"
+                        shadow="cast: true">
+                    </a-circle>
+                    
+                    <!-- Texto "R" -->
+                    <a-text 
+                        value="R" 
+                        color="#FFFFFF" 
+                        align="center" 
+                        width="0.2" 
+                        position="0 0 0.041" 
+                        scale="0.8 0.8 0.8"
+                        shader="msdf"
+                        font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/roboto/Roboto-Bold.json">
+                    </a-text>
+                    
+                    <!-- Detalles de ventilación -->
+                    <a-box 
+                        width="0.018" 
+                        height="0.003" 
+                        depth="0.003" 
+                        color="#555555" 
+                        position="0 0.03 0.037" 
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <a-box 
+                        width="0.018" 
+                        height="0.003" 
+                        depth="0.003" 
+                        color="#555555" 
+                        position="0 0.035 0.037" 
+                        shadow="cast: true">
+                    </a-box>
+                    
+                    <!-- Conector de cable decorativo -->
+                    <a-cylinder 
+                        radius="0.004" 
+                        height="0.012" 
+                        color="#666666" 
+                        position="-0.04 -0.03 0.03" 
+                        rotation="0 0 90"
+                        material="metalness: 0.8; roughness: 0.3"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <!-- Tornillos decorativos -->
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="0.045 0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="-0.045 0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="0.045 -0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
+                    
+                    <a-cylinder 
+                        radius="0.003" 
+                        height="0.002" 
+                        color="#3a3a3a" 
+                        position="-0.045 -0.045 0.032" 
+                        rotation="0 0 0"
+                        material="metalness: 0.9; roughness: 0.2"
+                        shadow="cast: true">
+                    </a-cylinder>
                 </a-entity>
                 
-                <a-entity light="type: point; color: #00FF00; intensity: 0.8; distance: 0.6" position="0 0 0" animation="property: light.intensity; from: 0.8; to: 0.3; dir: alternate; dur: 1400; loop: true"></a-entity>
-                <a-animation id="headphonesFloat" attribute="position" from="2.2 0.92 0.4" to="2.2 0.97 0.4" direction="alternate" dur="2500" repeat="indefinite" easing="easeInOutSine"></a-animation>
+                <!-- ================================================================
+                     LUZ INDICADORA DE FUNCIONAMIENTO
+                     ================================================================ -->
+                <a-entity 
+                    light="type: point; 
+                           color: #00FF00; 
+                           intensity: 1; 
+                           distance: 0.8" 
+                    position="0 0 0"
+                    animation="property: light.intensity; 
+                              from: 1; 
+                              to: 0.3; 
+                              dir: alternate; 
+                              dur: 1600; 
+                              loop: true">
+                </a-entity>
+                
+                <!-- ================================================================
+                     ANIMACIÓN DE FLOTACIÓN
+                     ================================================================ -->
+                <a-animation
+                    id="headphonesFloat"
+                    attribute="position"
+                    from="2.5 0.98 0.5"
+                    to="2.5 1.04 0.5"
+                    direction="alternate"
+                    dur="2800"
+                    repeat="indefinite"
+                    easing="easeInOutSine">
+                </a-animation>
+                
+                <!-- Rotación sutil -->
+                <a-animation
+                    attribute="rotation"
+                    from="0 0 -2"
+                    to="0 0 2"
+                    direction="alternate"
+                    dur="3200"
+                    repeat="indefinite"
+                    easing="easeInOutQuad">
+                </a-animation>
             </a-entity>
 
-            <!-- STICKMAN ARTICULADO PROFESIONAL -->
+            <!-- ====================================================================
+                 STICKMAN ARTICULADO PROFESIONAL
+                 ================================================================= Por favor continúa el código desde donde lo dejaste, específicamente desde la sección del STICKMAN.
+
+    <!-- CONTINUACIÓN DEL STICKMAN -->
+            
             <a-entity id="stickmanRoot" position="0 0 0" shadow="cast: true; receive: true">
-                <a-entity id="pelvis" position="0 0.15 0">
-                    <a-sphere radius="0.04" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
+                
+                <a-entity id="pelvis" position="0 0.18 0">
+                    <a-sphere 
+                        radius="0.045" 
+                        color="#FFE0BD" 
+                        material="roughness: 0.85; 
+                                  metalness: 0;
+                                  shader: standard" 
+                        shadow="cast: true; receive: true">
+                    </a-sphere>
                     
-                    <a-entity id="spine" position="0 0.3 0">
-                        <a-cylinder radius="0.025" height="0.55" color="#4A90E2" material="roughness: 0.6" shadow="cast: true"></a-cylinder>
-                        <a-box width="0.02" height="0.02" depth="0.02" color="#3A80D2" position="0 0.15 0" shadow="cast: true"></a-box>
-                        <a-box width="0.02" height="0.02" depth="0.02" color="#3A80D2" position="0 -0.15 0" shadow="cast: true"></a-box>
+                    <a-entity id="spine" position="0 0.35 0">
+                        <a-cylinder 
+                            radius="0.03" 
+                            height="0.65" 
+                            color="#4A90E2" 
+                            material="roughness: 0.65; 
+                                      metalness: 0.15;
+                                      shader: standard" 
+                            shadow="cast: true; receive: true">
+                        </a-cylinder>
                         
-                        <a-entity id="neck" position="0 0.31 0">
-                            <a-cylinder radius="0.022" height="0.08" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-cylinder>
+                        <a-box 
+                            width="0.025" 
+                            height="0.025" 
+                            depth="0.025" 
+                            color="#3A80D2" 
+                            position="0 0.18 0" 
+                            shadow="cast: true">
+                        </a-box>
+                        
+                        <a-box 
+                            width="0.025" 
+                            height="0.025" 
+                            depth="0.025" 
+                            color="#3A80D2" 
+                            position="0 -0.18 0" 
+                            shadow="cast: true">
+                        </a-box>
+                        
+                        <a-entity id="neck" position="0 0.37 0">
+                            <a-cylinder 
+                                radius="0.026" 
+                                height="0.095" 
+                                color="#FFE0BD" 
+                                material="roughness: 0.85; metalness: 0" 
+                                shadow="cast: true; receive: true">
+                            </a-cylinder>
                             
-                            <a-entity id="head" position="0 0.12 0">
-                                <a-sphere radius="0.11" color="#FFE0BD" material="roughness: 0.7" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.015" color="#000000" position="-0.04 0.03 0.1" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.015" color="#000000" position="0.04 0.03 0.1" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.008" color="#4A90E2" position="-0.04 0.03 0.108" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.008" color="#4A90E2" position="0.04 0.03 0.108" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.003" color="#FFFFFF" position="-0.037 0.035 0.112" shadow="cast: true"></a-sphere>
-                                <a-sphere radius="0.003" color="#FFFFFF" position="0.043 0.035 0.112" shadow="cast: true"></a-sphere>
-                                <a-entity id="mouth" position="0 -0.025 0.1"><a-torus id="mouthShape" radius="0.03" radius-tubular="0.006" color="#000000" rotation="0 0 0" arc="180" shadow="cast: true"></a-torus></a-entity>
-                                <a-sphere radius="0.01" color="#FFDBAC" position="0 0.008 0.11" shadow="cast: true"></a-sphere>
-                                <a-box width="0.015" height="0.003" depth="0.001" color="#8B4513" position="-0.04 0.055 0.095" rotation="-10 0 -5" shadow="cast: true"></a-box>
-                                <a-box width="0.015" height="0.003" depth="0.001" color="#8B4513" position="0.04 0.055 0.095" rotation="-10 0 5" shadow="cast: true"></a-box>
+                            <a-entity id="head" position="0 0.14 0">
+                                <a-sphere 
+                                    radius="0.13" 
+                                    color="#FFE0BD" 
+                                    material="roughness: 0.75; metalness: 0" 
+                                    shadow="cast: true; receive: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.018" 
+                                    color="#000000" 
+                                    position="-0.048 0.035 0.118" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.018" 
+                                    color="#000000" 
+                                    position="0.048 0.035 0.118" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.009" 
+                                    color="#4A90E2" 
+                                    position="-0.048 0.035 0.128" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.009" 
+                                    color="#4A90E2" 
+                                    position="0.048 0.035 0.128" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.004" 
+                                    color="#FFFFFF" 
+                                    position="-0.044 0.04 0.133" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-sphere 
+                                    radius="0.004" 
+                                    color="#FFFFFF" 
+                                    position="0.052 0.04 0.133" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-entity id="mouth" position="0 -0.03 0.12">
+                                    <a-torus 
+                                        id="mouthShape" 
+                                        radius="0.035" 
+                                        radius-tubular="0.007" 
+                                        color="#000000" 
+                                        rotation="0 0 0" 
+                                        arc="180" 
+                                        shadow="cast: true">
+                                    </a-torus>
+                                </a-entity>
+                                
+                                <a-sphere 
+                                    radius="0.012" 
+                                    color="#FFDBAC" 
+                                    position="0 0.01 0.13" 
+                                    shadow="cast: true">
+                                </a-sphere>
+                                
+                                <a-box 
+                                    width="0.018" 
+                                    height="0.004" 
+                                    depth="0.001" 
+                                    color="#8B4513" 
+                                    position="-0.048 0.065 0.112" 
+                                    rotation="-12 0 -6" 
+                                    shadow="cast: true">
+                                </a-box>
+                                
+                                <a-box 
+                                    width="0.018" 
+                                    height="0.004" 
+                                    depth="0.001" 
+                                    color="#8B4513" 
+                                    position="0.048 0.065 0.112" 
+                                    rotation="-12 0 6" 
+                                    shadow="cast: true">
+                                </a-box>
                             </a-entity>
                         </a-entity>
                         
-                        <a-entity id="shoulders" position="0 0.265 0">
-                            <a-box width="0.24" height="0.04" depth="0.06" color="#4A90E2" material="roughness: 0.6" shadow="cast: true"></a-box>
+                        <a-entity id="shoulders" position="0 0.32 0">
+                            <a-box 
+                                width="0.28" 
+                                height="0.048" 
+                                depth="0.07" 
+                                color="#4A90E2" 
+                                material="roughness: 0.65; metalness: 0.15" 
+                                shadow="cast: true; receive: true">
+                            </a-box>
                             
-                            <a-entity id="leftShoulder" position="-0.12 0 0">
-                                <a-sphere radius="0.025" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                <a-entity id="leftUpperArm" rotation="0 0 18">
-                                    <a-cylinder radius="0.018" height="0.22" color="#4A90E2" position="0 -0.11 0" material="roughness: 0.6" shadow="cast: true"></a-cylinder>
-                                    <a-sphere radius="0.02" color="#3A80D2" position="0 -0.05 0" shadow="cast: true"></a-sphere>
-                                    <a-entity id="leftElbow" position="0 -0.22 0">
-                                        <a-sphere radius="0.022" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                        <a-entity id="leftForearm" rotation="0 0 6">
-                                            <a-cylinder radius="0.015" height="0.2" color="#FFE0BD" position="0 -0.1 0" material="roughness: 0.8" shadow="cast: true"></a-cylinder>
-                                            <a-entity id="leftHand" position="0 -0.2 0">
-                                                <a-sphere radius="0.028" color="#FFE0BD" material="roughness: 0.8" scale="1 0.8 1.2" shadow="cast: true"></a-sphere>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="-0.015 -0.02 0.01" rotation="12 0 -18" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="-0.005 -0.02 0.013" rotation="12 0 0" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="0.005 -0.02 0.013" rotation="12 0 0" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="0.015 -0.02 0.01" rotation="12 0 18" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.022" color="#FFE0BD" position="-0.022 -0.01 0" rotation="0 0 -50" shadow="cast: true"></a-cylinder>
+                            <a-entity id="leftShoulder" position="-0.14 0 0">
+                                <a-sphere 
+                                    radius="0.03" 
+                                    color="#FFE0BD" 
+                                    material="roughness: 0.85; metalness: 0" 
+                                    shadow="cast: true; receive: true">
+                                </a-sphere>
+                                
+                                <a-entity id="leftUpperArm" rotation="0 0 20">
+                                    <a-cylinder 
+                                        radius="0.022" 
+                                        height="0.26" 
+                                        color="#4A90E2" 
+                                        position="0 -0.13 0" 
+                                        material="roughness: 0.65; metalness: 0.15" 
+                                        shadow="cast: true; receive: true">
+                                    </a-cylinder>
+                                    
+                                    <a-sphere 
+                                        radius="0.024" 
+                                        color="#3A80D2" 
+                                        position="0 -0.06 0" 
+                                        shadow="cast: true">
+                                    </a-sphere>
+                                    
+                                    <a-entity id="leftElbow" position="0 -0.26 0">
+                                        <a-sphere 
+                                            radius="0.026" 
+                                            color="#FFE0BD" 
+                                            material="roughness: 0.85; metalness: 0" 
+                                            shadow="cast: true; receive: true">
+                                        </a-sphere>
+                                        
+                                        <a-entity id="leftForearm" rotation="0 0 7">
+                                            <a-cylinder 
+                                                radius="0.018" 
+                                                height="0.24" 
+                                                color="#FFE0BD" 
+                                                position="0 -0.12 0" 
+                                                material="roughness: 0.85; metalness: 0" 
+                                                shadow="cast: true; receive: true">
+                                            </a-cylinder>
+                                            
+                                            <a-entity id="leftHand" position="0 -0.24 0">
+                                                <a-sphere 
+                                                    radius="0.033" 
+                                                    color="#FFE0BD" 
+                                                    material="roughness: 0.85; metalness: 0" 
+                                                    scale="1 0.85 1.25" 
+                                                    shadow="cast: true; receive: true">
+                                                </a-sphere>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="-0.018 -0.024 0.012" 
+                                                    rotation="14 0 -20" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="-0.006 -0.024 0.016" 
+                                                    rotation="14 0 0" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="0.006 -0.024 0.016" 
+                                                    rotation="14 0 0" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="0.018 -0.024 0.012" 
+                                                    rotation="14 0 20" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.026" 
+                                                    color="#FFE0BD" 
+                                                    position="-0.026 -0.012 0" 
+                                                    rotation="0 0 -55" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
                                             </a-entity>
                                         </a-entity>
                                     </a-entity>
                                 </a-entity>
                             </a-entity>
                             
-                            <a-entity id="rightShoulder" position="0.12 0 0">
-                                <a-sphere radius="0.025" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                <a-entity id="rightUpperArm" rotation="0 0 -18">
-                                    <a-cylinder radius="0.018" height="0.22" color="#4A90E2" position="0 -0.11 0" material="roughness: 0.6" shadow="cast: true"></a-cylinder>
-                                    <a-sphere radius="0.02" color="#3A80D2" position="0 -0.05 0" shadow="cast: true"></a-sphere>
-                                    <a-entity id="rightElbow" position="0 -0.22 0">
-                                        <a-sphere radius="0.022" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                        <a-entity id="rightForearm" rotation="0 0 -6">
-                                            <a-cylinder radius="0.015" height="0.2" color="#FFE0BD" position="0 -0.1 0" material="roughness: 0.8" shadow="cast: true"></a-cylinder>
-                                            <a-entity id="rightHand" position="0 -0.2 0">
-                                                <a-sphere radius="0.028" color="#FFE0BD" material="roughness: 0.8" scale="1 0.8 1.2" shadow="cast: true"></a-sphere>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="-0.015 -0.02 0.01" rotation="12 0 -18" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="-0.005 -0.02 0.013" rotation="12 0 0" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="0.005 -0.02 0.013" rotation="12 0 0" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.032" color="#FFE0BD" position="0.015 -0.02 0.01" rotation="12 0 18" shadow="cast: true"></a-cylinder>
-                                                <a-cylinder radius="0.005" height="0.022" color="#FFE0BD" position="0.022 -0.01 0" rotation="0 0 50" shadow="cast: true"></a-cylinder>
+                            <a-entity id="rightShoulder" position="0.14 0 0">
+                                <a-sphere 
+                                    radius="0.03" 
+                                    color="#FFE0BD" 
+                                    material="roughness: 0.85; metalness: 0" 
+                                    shadow="cast: true; receive: true">
+                                </a-sphere>
+                                
+                                <a-entity id="rightUpperArm" rotation="0 0 -20">
+                                    <a-cylinder 
+                                        radius="0.022" 
+                                        height="0.26" 
+                                        color="#4A90E2" 
+                                        position="0 -0.13 0" 
+                                        material="roughness: 0.65; metalness: 0.15" 
+                                        shadow="cast: true; receive: true">
+                                    </a-cylinder>
+                                    
+                                    <a-sphere 
+                                        radius="0.024" 
+                                        color="#3A80D2" 
+                                        position="0 -0.06 0" 
+                                        shadow="cast: true">
+                                    </a-sphere>
+                                    
+                                    <a-entity id="rightElbow" position="0 -0.26 0">
+                                        <a-sphere 
+                                            radius="0.026" 
+                                            color="#FFE0BD" 
+                                            material="roughness: 0.85; metalness: 0" 
+                                            shadow="cast: true; receive: true">
+                                        </a-sphere>
+                                        
+                                        <a-entity id="rightForearm" rotation="0 0 -7">
+                                            <a-cylinder 
+                                                radius="0.018" 
+                                                height="0.24" 
+                                                color="#FFE0BD" 
+                                                position="0 -0.12 0" 
+                                                material="roughness: 0.85; metalness: 0" 
+                                                shadow="cast: true; receive: true">
+                                            </a-cylinder>
+                                            
+                                            <a-entity id="rightHand" position="0 -0.24 0">
+                                                <a-sphere 
+                                                    radius="0.033" 
+                                                    color="#FFE0BD" 
+                                                    material="roughness: 0.85; metalness: 0" 
+                                                    scale="1 0.85 1.25" 
+                                                    shadow="cast: true; receive: true">
+                                                </a-sphere>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="-0.018 -0.024 0.012" 
+                                                    rotation="14 0 -20" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="-0.006 -0.024 0.016" 
+                                                    rotation="14 0 0" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="0.006 -0.024 0.016" 
+                                                    rotation="14 0 0" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.038" 
+                                                    color="#FFE0BD" 
+                                                    position="0.018 -0.024 0.012" 
+                                                    rotation="14 0 20" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
+                                                
+                                                <a-cylinder 
+                                                    radius="0.006" 
+                                                    height="0.026" 
+                                                    color="#FFE0BD" 
+                                                    position="0.026 -0.012 0" 
+                                                    rotation="0 0 55" 
+                                                    shadow="cast: true">
+                                                </a-cylinder>
                                             </a-entity>
                                         </a-entity>
                                     </a-entity>
@@ -286,23 +2189,110 @@
                         </a-entity>
                     </a-entity>
                     
-                    <a-entity id="leftHip" position="-0.05 -0.025 0">
-                        <a-sphere radius="0.03" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                        <a-entity id="leftThigh" rotation="0 0 4">
-                            <a-cylinder radius="0.025" height="0.3" color="#2C3E50" position="0 -0.15 0" material="roughness: 0.7" shadow="cast: true"></a-cylinder>
-                            <a-sphere radius="0.022" color="#1C2E40" position="0 -0.08 0" shadow="cast: true"></a-sphere>
-                            <a-entity id="leftKnee" position="0 -0.3 0">
-                                <a-sphere radius="0.028" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                <a-entity id="leftCalf" rotation="0 0 -3">
-                                    <a-cylinder radius="0.02" height="0.3" color="#2C3E50" position="0 -0.15 0" material="roughness: 0.7" shadow="cast: true"></a-cylinder>
-                                    <a-sphere radius="0.018" color="#1C2E40" position="0 -0.08 0" shadow="cast: true"></a-sphere>
-                                    <a-entity id="leftAnkle" position="0 -0.3 0">
-                                        <a-sphere radius="0.022" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                        <a-entity id="leftFoot" position="0 -0.025 0.025">
-                                            <a-box width="0.06" height="0.02" depth="0.11" color="#1a1a1a" position="0 -0.01 0" material="roughness: 0.9" shadow="cast: true"></a-box>
-                                            <a-box width="0.058" height="0.038" depth="0.075" color="#1a1a1a" position="0 0.008 -0.012" material="roughness: 0.8" shadow="cast: true"></a-box>
-                                            <a-box width="0.06" height="0.003" depth="0.11" color="#0a0a0a" position="0 -0.021 0" shadow="cast: true"></a-box>
-                                            <a-cylinder radius="0.003" height="0.015" color="#3a3a3a" position="0 -0.012 0.04" shadow="cast: true"></a-cylinder>
+                    <a-entity id="leftHip" position="-0.06 -0.03 0">
+                        <a-sphere 
+                            radius="0.036" 
+                            color="#FFE0BD" 
+                            material="roughness: 0.85; metalness: 0" 
+                            shadow="cast: true; receive: true">
+                        </a-sphere>
+                        
+                        <a-entity id="leftThigh" rotation="0 0 5">
+                            <a-cylinder 
+                                radius="0.03" 
+                                height="0.36" 
+                                color="#2C3E50" 
+                                position="0 -0.18 0" 
+                                material="roughness: 0.75; metalness: 0.1" 
+                                shadow="cast: true; receive: true">
+                            </a-cylinder>
+                            
+                            <a-sphere 
+                                radius="0.026" 
+                                color="#1C2E40" 
+                                position="0 -0.095 0" 
+                                shadow="cast: true">
+                            </a-sphere>
+                            
+                            <a-entity id="leftKnee" position="0 -0.36 0">
+                                <a-sphere 
+                                    radius="0.033" 
+                                    color="#FFE0BD" 
+                                    material="roughness: 0.85; metalness: 0" 
+                                    shadow="cast: true; receive: true">
+                                </a-sphere>
+                                
+                                <a-entity id="leftCalf" rotation="0 0 -3.5">
+                                    <a-cylinder 
+                                        radius="0.024" 
+                                        height="0.36" 
+                                        color="#2C3E50" 
+                                        position="0 -0.18 0" 
+                                        material="roughness: 0.75; metalness: 0.1" 
+                                        shadow="cast: true; receive: true">
+                                    </a-cylinder>
+                                    
+                                    <a-sphere 
+                                        radius="0.022" 
+                                        color="#1C2E40" 
+                                        position="0 -0.095 0" 
+                                        shadow="cast: true">
+                                    </a-sphere>
+                                    
+                                    <a-entity id="leftAnkle" position="0 -0.36 0">
+                                        <a-sphere 
+                                            radius="0.026" 
+                                            color="#FFE0BD" 
+                                            material="roughness: 0.85; metalness: 0" 
+                                            shadow="cast: true; receive: true">
+                                        </a-sphere>
+                                        
+                                        <a-entity id="leftFoot" position="0 -0.03 0.03">
+                                            <a-box 
+                                                width="0.07" 
+                                                height="0.024" 
+                                                depth="0.13" 
+                                                color="#1a1a1a" 
+                                                position="0 -0.012 0" 
+                                                material="roughness: 0.92; metalness: 0" 
+                                                shadow="cast: true; receive: true">
+                                            </a-box>
+                                            
+                                            <a-box 
+                                                width="0.068" 
+                                                height="0.045" 
+                                                depth="0.09" 
+                                                color="#1a1a1a" 
+                                                position="0 0.01 -0.014" 
+                                                material="roughness: 0.88; metalness: 0.05" 
+                                                shadow="cast: true">
+                                            </a-box>
+                                            
+                                            <a-box 
+                                                width="0.07" 
+                                                height="0.004" 
+                                                depth="0.13" 
+                                                color="#0a0a0a" 
+                                                position="0 -0.025 0" 
+                                                shadow="cast: true">
+                                            </a-box>
+                                            
+                                            <a-cylinder 
+                                                radius="0.004" 
+                                                height="0.018" 
+                                                color="#3a3a3a" 
+                                                position="0 -0.014 0.048" 
+                                                shadow="cast: true">
+                                            </a-cylinder>
+                                            
+                                            <a-box 
+                                                width="0.065" 
+                                                height="0.002" 
+                                                depth="0.01" 
+                                                color="#2a2a2a" 
+                                                position="0 0.03 -0.01" 
+                                                shadow="cast: true">
+                                            </a-box>
                                         </a-entity>
                                     </a-entity>
                                 </a-entity>
@@ -310,23 +2300,110 @@
                         </a-entity>
                     </a-entity>
                     
-                    <a-entity id="rightHip" position="0.05 -0.025 0">
-                        <a-sphere radius="0.03" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                        <a-entity id="rightThigh" rotation="0 0 -4">
-                            <a-cylinder radius="0.025" height="0.3" color="#2C3E50" position="0 -0.15 0" material="roughness: 0.7" shadow="cast: true"></a-cylinder>
-                            <a-sphere radius="0.022" color="#1C2E40" position="0 -0.08 0" shadow="cast: true"></a-sphere>
-                            <a-entity id="rightKnee" position="0 -0.3 0">
-                                <a-sphere radius="0.028" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                <a-entity id="rightCalf" rotation="0 0 3">
-                                    <a-cylinder radius="0.02" height="0.3" color="#2C3E50" position="0 -0.15 0" material="roughness: 0.7" shadow="cast: true"></a-cylinder>
-                                    <a-sphere radius="0.018" color="#1C2E40" position="0 -0.08 0" shadow="cast: true"></a-sphere>
-                                    <a-entity id="rightAnkle" position="0 -0.3 0">
-                                        <a-sphere radius="0.022" color="#FFE0BD" material="roughness: 0.8" shadow="cast: true"></a-sphere>
-                                        <a-entity id="rightFoot" position="0 -0.025 0.025">
-                                            <a-box width="0.06" height="0.02" depth="0.11" color="#1a1a1a" position="0 -0.01 0" material="roughness: 0.9" shadow="cast: true"></a-box>
-                                            <a-box width="0.058" height="0.038" depth="0.075" color="#1a1a1a" position="0 0.008 -0.012" material="roughness: 0.8" shadow="cast: true"></a-box>
-                                            <a-box width="0.06" height="0.003" depth="0.11" color="#0a0a0a" position="0 -0.021 0" shadow="cast: true"></a-box>
-                                            <a-cylinder radius="0.003" height="0.015" color="#3a3a3a" position="0 -0.012 0.04" shadow="cast: true"></a-cylinder>
+                    <a-entity id="rightHip" position="0.06 -0.03 0">
+                        <a-sphere 
+                            radius="0.036" 
+                            color="#FFE0BD" 
+                            material="roughness: 0.85; metalness: 0" 
+                            shadow="cast: true; receive: true">
+                        </a-sphere>
+                        
+                        <a-entity id="rightThigh" rotation="0 0 -5">
+                            <a-cylinder 
+                                radius="0.03" 
+                                height="0.36" 
+                                color="#2C3E50" 
+                                position="0 -0.18 0" 
+                                material="roughness: 0.75; metalness: 0.1" 
+                                shadow="cast: true; receive: true">
+                            </a-cylinder>
+                            
+                            <a-sphere 
+                                radius="0.026" 
+                                color="#1C2E40" 
+                                position="0 -0.095 0" 
+                                shadow="cast: true">
+                            </a-sphere>
+                            
+                            <a-entity id="rightKnee" position="0 -0.36 0">
+                                <a-sphere 
+                                    radius="0.033" 
+                                    color="#FFE0BD" 
+                                    material="roughness: 0.85; metalness: 0" 
+                                    shadow="cast: true; receive: true">
+                                </a-sphere>
+                                
+                                <a-entity id="rightCalf" rotation="0 0 3.5">
+                                    <a-cylinder 
+                                        radius="0.024" 
+                                        height="0.36" 
+                                        color="#2C3E50" 
+                                        position="0 -0.18 0" 
+                                        material="roughness: 0.75; metalness: 0.1" 
+                                        shadow="cast: true; receive: true">
+                                    </a-cylinder>
+                                    
+                                    <a-sphere 
+                                        radius="0.022" 
+                                        color="#1C2E40" 
+                                        position="0 -0.095 0" 
+                                        shadow="cast: true">
+                                    </a-sphere>
+                                    
+                                    <a-entity id="rightAnkle" position="0 -0.36 0">
+                                        <a-sphere 
+                                            radius="0.026" 
+                                            color="#FFE0BD" 
+                                            material="roughness: 0.85; metalness: 0" 
+                                            shadow="cast: true; receive: true">
+                                        </a-sphere>
+                                        
+                                        <a-entity id="rightFoot" position="0 -0.03 0.03">
+                                            <a-box 
+                                                width="0.07" 
+                                                height="0.024" 
+                                                depth="0.13" 
+                                                color="#1a1a1a" 
+                                                position="0 -0.012 0" 
+                                                material="roughness: 0.92; metalness: 0" 
+                                                shadow="cast: true; receive: true">
+                                            </a-box>
+                                            
+                                            <a-box 
+                                                width="0.068" 
+                                                height="0.045" 
+                                                depth="0.09" 
+                                                color="#1a1a1a" 
+                                                position="0 0.01 -0.014" 
+                                                material="roughness: 0.88; metalness: 0.05" 
+                                                shadow="cast: true">
+                                            </a-box>
+                                            
+                                            <a-box 
+                                                width="0.07" 
+                                                height="0.004" 
+                                                depth="0.13" 
+                                                color="#0a0a0a" 
+                                                position="0 -0.025 0" 
+                                                shadow="cast: true">
+                                            </a-box>
+                                            
+                                            <a-cylinder 
+                                                radius="0.004" 
+                                                height="0.018" 
+                                                color="#3a3a3a" 
+                                                position="0 -0.014 0.048" 
+                                                shadow="cast: true">
+                                            </a-cylinder>
+                                            
+                                            <a-box 
+                                                width="0.065" 
+                                                height="0.002" 
+                                                depth="0.01" 
+                                                color="#2a2a2a" 
+                                                position="0 0.03 -0.01" 
+                                                shadow="cast: true">
+                                            </a-box>
                                         </a-entity>
                                     </a-entity>
                                 </a-entity>
@@ -337,29 +2414,150 @@
             </a-entity>
 
             <!-- EFECTOS VISUALES -->
-            <a-entity id="soundWaves" position="0 0.8 0" visible="false">
-                <a-torus radius="0.4" radius-tubular="0.04" color="#FF0000" opacity="0.8" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="3 3 3" dur="2000" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.8" to="0" dur="2000" repeat="indefinite"></a-animation>
+            <a-entity id="soundWaves" position="0 0.95 0" visible="false">
+                <a-torus 
+                    radius="0.5" 
+                    radius-tubular="0.05" 
+                    color="#FF0000" 
+                    opacity="0.85" 
+                    rotation="90 0 0"
+                    material="shader: flat; transparent: true">
+                    <a-animation 
+                        attribute="scale" 
+                        from="0.5 0.5 0.5" 
+                        to="3.5 3.5 3.5" 
+                        dur="2200" 
+                        repeat="indefinite">
+                    </a-animation>
+                    <a-animation 
+                        attribute="opacity" 
+                        from="0.85" 
+                        to="0" 
+                        dur="2200" 
+                        repeat="indefinite">
+                    </a-animation>
                 </a-torus>
-                <a-torus radius="0.4" radius-tubular="0.04" color="#FF0000" opacity="0.8" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="3 3 3" dur="2000" delay="700" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.8" to="0" dur="2000" delay="700" repeat="indefinite"></a-animation>
+                
+                <a-torus 
+                    radius="0.5" 
+                    radius-tubular="0.05" 
+                    color="#FF0000" 
+                    opacity="0.85" 
+                    rotation="90 0 0"
+                    material="shader: flat; transparent: true">
+                    <a-animation 
+                        attribute="scale" 
+                        from="0.5 0.5 0.5" 
+                        to="3.5 3.5 3.5" 
+                        dur="2200" 
+                        delay="750" 
+                        repeat="indefinite">
+                    </a-animation>
+                    <a-animation 
+                        attribute="opacity" 
+                        from="0.85" 
+                        to="0" 
+                        dur="2200" 
+                        delay="750" 
+                        repeat="indefinite">
+                    </a-animation>
                 </a-torus>
-                <a-torus radius="0.4" radius-tubular="0.04" color="#FF0000" opacity="0.8" rotation="90 0 0">
-                    <a-animation attribute="scale" from="0.5 0.5 0.5" to="3 3 3" dur="2000" delay="1400" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" from="0.8" to="0" dur="2000" delay="1400" repeat="indefinite"></a-animation>
+                
+                <a-torus 
+                    radius="0.5" 
+                    radius-tubular="0.05" 
+                    color="#FF0000" 
+                    opacity="0.85" 
+                    rotation="90 0 0"
+                    material="shader: flat; transparent: true">
+                    <a-animation 
+                        attribute="scale" 
+                        from="0.5 0.5 0.5" 
+                        to="3.5 3.5 3.5" 
+                        dur="2200" 
+                        delay="1500" 
+                        repeat="indefinite">
+                    </a-animation>
+                    <a-animation 
+                        attribute="opacity" 
+                        from="0.85" 
+                        to="0" 
+                        dur="2200" 
+                        delay="1500" 
+                        repeat="indefinite">
+                    </a-animation>
                 </a-torus>
             </a-entity>
 
-            <a-entity id="stressParticles" position="0 0.9 0" visible="false" particle-system="preset: dust; color: #FF0000,#FF6B6B; particleCount: 150; size: 0.025; maxAge: 3; velocityValue: 0.5 0.5 0.5; velocitySpread: 0.4 0.4 0.4; opacity: 0.9"></a-entity>
+            <a-entity 
+                id="stressParticles" 
+                position="0 1.05 0" 
+                visible="false" 
+                particle-system="preset: dust; 
+                                 color: #FF0000,#FF6B6B,#FF4444; 
+                                 particleCount: 180; 
+                                 size: 0.03; 
+                                 maxAge: 3.5; 
+                                 velocityValue: 0.6 0.6 0.6; 
+                                 velocitySpread: 0.5 0.5 0.5; 
+                                 opacity: 0.95;
+                                 accelerationValue: 0 -0.3 0">
+            </a-entity>
 
-            <a-entity id="infoPanel" position="0 1.5 0" look-at="#mainCamera" visible="false">
-                <a-plane width="2.2" height="0.75" color="#000000" opacity="0.98" shadow="cast: true"></a-plane>
-                <a-plane width="2.15" height="0.7" color="#D71920" position="0 0 0.002" shadow="cast: true"></a-plane>
-                <a-plane width="2.1" height="0.65" color="#000000" opacity="0.98" position="0 0 0.004"></a-plane>
-                <a-text id="infoTitle" value="⚠️ 105 dB - PELIGRO ⚠️" color="#FFFF00" align="center" width="2.5" position="0 0.2 0.01"></a-text>
-                <a-text id="infoSubtitle" value="Exposición prolongada causa daño permanente" color="#FFFFFF" align="center" width="2.3" position="0 -0.15 0.01"></a-text>
+            <a-entity 
+                id="infoPanel" 
+                position="0 1.8 0" 
+                look-at="#mainCamera" 
+                visible="false">
+                
+                <a-plane 
+                    width="2.6" 
+                    height="0.9" 
+                    color="#000000" 
+                    opacity="0.98" 
+                    shadow="cast: true"
+                    material="shader: flat">
+                </a-plane>
+                
+                <a-plane 
+                    width="2.55" 
+                    height="0.85" 
+                    color="#D71920" 
+                    position="0 0 0.002" 
+                    shadow="cast: true"
+                    material="shader: flat">
+                </a-plane>
+                
+                <a-plane 
+                    width="2.5" 
+                    height="0.8" 
+                    color="#000000" 
+                    opacity="0.98" 
+                    position="0 0 0.004"
+                    material="shader: flat">
+                </a-plane>
+                
+                <a-text 
+                    id="infoTitle" 
+                    value="⚠️ 105 dB - PELIGRO EXTREMO ⚠️" 
+                    color="#FFFF00" 
+                    align="center" 
+                    width="2.8" 
+                    position="0 0.25 0.01"
+                    shader="msdf"
+                    font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/roboto/Roboto-Bold.json">
+                </a-text>
+                
+                <a-text 
+                    id="infoSubtitle" 
+                    value="Exposición prolongada causa daño permanente e irreversible" 
+                    color="#FFFFFF" 
+                    align="center" 
+                    width="2.6" 
+                    position="0 -0.18 0.01"
+                    shader="msdf"
+                    font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/roboto/Roboto-Regular.json">
+                </a-text>
             </a-entity>
 
         </a-entity>
@@ -368,30 +2566,48 @@
     </a-scene>
 
     <script>
-        const CONFIG = { audioFile: 'Sonidos_De_Fabrica.wav', dbThresholds: { safe: 60, warning: 85, danger: 95 } };
+        const CONFIG = {
+            audioFile: 'Sonidos_De_Fabrica.wav',
+            dbThresholds: {
+                safe: 60,
+                warning: 85,
+                danger: 95
+            }
+        };
 
         const Router = {
             currentView: 'home',
+            
             init() {
                 document.querySelectorAll('[data-nav]').forEach(el => {
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        this.navigate(e.currentTarget.getAttribute('data-nav'));
+                        const target = e.currentTarget.getAttribute('data-nav');
+                        this.navigate(target);
                     });
                 });
             },
+
             navigate(viewId) {
                 if (this.currentView === viewId) return;
+
                 const currentEl = document.getElementById(this.currentView);
-                if (currentEl) currentEl.classList.remove('active');
+                if (currentEl) {
+                    currentEl.classList.remove('active');
+                }
+
                 setTimeout(() => {
                     const targetEl = document.getElementById(viewId);
-                    if (targetEl) targetEl.classList.add('active');
+                    if (targetEl) {
+                        targetEl.classList.add('active');
+                    }
                     this.handleViewLogic(viewId);
                 }, 100);
+
                 this.currentView = viewId;
             },
+
             handleViewLogic(viewId) {
                 switch(viewId) {
                     case 'home':
@@ -400,11 +2616,11 @@
                         break;
                     case 'meter':
                         ARSystem.destroy();
-                        setTimeout(() => MeterSystem.start(), 200);
+                        setTimeout(() => MeterSystem.start(), 300);
                         break;
                     case 'ar':
                         MeterSystem.stop();
-                        setTimeout(() => ARSystem.init(), 300);
+                        setTimeout(() => ARSystem.init(), 400);
                         break;
                 }
             }
@@ -419,96 +2635,130 @@
             canvas: null,
             canvasContext: null,
             animationId: null,
+
             async start() {
                 if (this.active) return;
+                
                 try {
-                    this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+                    this.stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: { 
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            autoGainControl: false
+                        } 
+                    });
+                    
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AudioContext();
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 2048;
-                    this.analyser.smoothingTimeConstant = 0.8;
+                    this.analyser.smoothingTimeConstant = 0.85;
+                    
                     const source = this.audioContext.createMediaStreamSource(this.stream);
                     source.connect(this.analyser);
+                    
                     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                    
                     this.canvas = document.getElementById('waveCanvas');
                     this.canvasContext = this.canvas.getContext('2d');
                     this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio;
                     this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio;
                     this.canvasContext.scale(window.devicePixelRatio, window.devicePixelRatio);
+                    
                     this.active = true;
                     this.draw();
+                    
                 } catch (error) {
-                    console.error('Mic error:', error);
-                    alert('❌ Necesitas permitir acceso al micrófono');
+                    console.error('Error de micrófono:', error);
+                    alert('❌ Necesitas permitir acceso al micrófono para usar esta función');
                     Router.navigate('home');
                 }
             },
+
             stop() {
                 if (!this.active) return;
+                
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
                     this.animationId = null;
                 }
+                
                 if (this.stream) {
                     this.stream.getTracks().forEach(track => track.stop());
                     this.stream = null;
                 }
+                
                 if (this.audioContext) {
                     this.audioContext.close();
                     this.audioContext = null;
                 }
+                
                 this.active = false;
             },
+
             draw() {
                 if (!this.active) return;
+                
                 this.animationId = requestAnimationFrame(() => this.draw());
+                
                 this.analyser.getByteFrequencyData(this.dataArray);
+                
                 const average = this.dataArray.reduce((a, b) => a + b, 0) / this.dataArray.length;
-                let db = Math.floor(20 + average * 0.9);
-                db = Math.max(30, Math.min(120, db));
+                let db = Math.floor(20 + average * 0.95);
+                db = Math.max(30, Math.min(125, db));
+                
                 this.updateUI(db);
                 this.drawWaveform();
             },
+
             updateUI(db) {
                 const valueEl = document.getElementById('dbValue');
                 const circleEl = document.getElementById('meterCircle');
                 const badgeEl = document.getElementById('statusIndicator');
+                
                 valueEl.textContent = db;
                 circleEl.classList.remove('danger');
+                
                 if (db < CONFIG.dbThresholds.safe) {
                     circleEl.style.borderColor = '#34c759';
                     badgeEl.style.background = '#34c759'; 
                     badgeEl.style.color = '#000';
-                    badgeEl.textContent = '✓ SEGURO';
+                    badgeEl.textContent = '✓ NIVEL SEGURO';
                 } else if (db < CONFIG.dbThresholds.danger) {
                     circleEl.style.borderColor = '#ffcc00';
                     badgeEl.style.background = '#ffcc00'; 
                     badgeEl.style.color = '#000';
-                    badgeEl.textContent = '⚠ ALERTA';
+                    badgeEl.textContent = '⚠ ALERTA MODERADA';
                 } else {
                     circleEl.style.borderColor = '#ff3b30';
                     circleEl.classList.add('danger');
                     badgeEl.style.background = '#ff3b30'; 
                     badgeEl.style.color = '#fff';
-                    badgeEl.textContent = '✖ PELIGRO';
+                    badgeEl.textContent = '✖ PELIGRO CRÍTICO';
                 }
             },
+
             drawWaveform() {
                 if (!this.canvasContext) return;
+                
                 const ctx = this.canvasContext;
                 const w = this.canvas.width / window.devicePixelRatio;
                 const h = this.canvas.height / window.devicePixelRatio;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
                 ctx.fillRect(0, 0, w, h);
-                const barWidth = (w / this.dataArray.length) * 2.5;
+                
+                const barWidth = (w / this.dataArray.length) * 2.8;
                 let x = 0;
+                
                 for (let i = 0; i < this.dataArray.length; i++) {
                     const normalizedValue = this.dataArray[i] / 255;
                     const barHeight = normalizedValue * h;
-                    const lightness = 40 + (normalizedValue * 20);
-                    ctx.fillStyle = `hsla(0, 100%, ${lightness}%, ${normalizedValue})`;
+                    
+                    const lightness = 35 + (normalizedValue * 25);
+                    ctx.fillStyle = `hsla(0, 100%, ${lightness}%, ${normalizedValue * 0.9})`;
                     ctx.fillRect(x, h - barHeight, barWidth, barHeight);
+                    
                     x += barWidth + 1;
                 }
             }
@@ -524,276 +2774,556 @@
             videoStream: null,
             phase: 0,
             hudInterval: null,
+
             async init() {
-                console.log('🎬 Iniciando AR System');
+                console.log('🎬 Iniciando Sistema AR Profesional v19.0');
+                
                 const scene = document.getElementById('arScene');
                 scene.style.display = 'block';
+                
                 await this.startCamera();
+                
                 if (!this.initialized) {
                     this.setupEventListeners();
                     this.initialized = true;
                 }
+                
                 this.resetState();
             },
+
             async startCamera() {
                 try {
-                    this.videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
+                    this.videoStream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: 'environment',
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        }
+                    });
+                    
                     const video = document.getElementById('cameraVideo');
                     video.srcObject = this.videoStream;
-                    video.style.display = 'block';
+                    video.classList.add('active');
                     await video.play();
-                    console.log('✅ Cámara OK');
+                    
+                    console.log('✅ Cámara iniciada correctamente');
                 } catch (error) {
-                    console.log('⚠️ Sin cámara, continuando en modo demo');
+                    console.log('⚠️ Cámara no disponible, continuando en modo demo');
                 }
             },
+
             destroy() {
                 if (this.source) {
-                    try { this.source.stop(); } catch(e) {}
+                    try { 
+                        this.source.stop(); 
+                    } catch(e) {
+                        console.log('Audio ya detenido');
+                    }
                     this.source = null;
                 }
+                
                 if (this.audioContext) {
                     this.audioContext.close();
                     this.audioContext = null;
                 }
+                
                 if (this.videoStream) {
                     this.videoStream.getTracks().forEach(track => track.stop());
                     this.videoStream = null;
                 }
+                
                 if (this.hudInterval) {
                     clearInterval(this.hudInterval);
                     this.hudInterval = null;
                 }
+                
                 const video = document.getElementById('cameraVideo');
-                video.style.display = 'none';
+                video.classList.remove('active');
                 video.srcObject = null;
+                
                 const scene = document.getElementById('arScene');
                 scene.style.display = 'none';
+                
                 this.isPlaying = false;
                 this.phase = 0;
             },
+
             resetState() {
                 document.getElementById('btnStartAR').classList.add('visible');
                 document.getElementById('btnNextPhase').classList.remove('visible');
-                document.getElementById('btnStartAR').innerHTML = '🎬 INICIAR ANIMACIÓN';
+                document.getElementById('btnStartAR').innerHTML = '🎬 INICIAR ANIMACIÓN PROFESIONAL';
                 document.getElementById('btnStartAR').disabled = false;
-                document.getElementById('arStatusText').textContent = 'Apunta la cámara al suelo para ver la escena 3D';
+                document.getElementById('arStatusText').textContent = 'Mueve tu teléfono para ver la escena 3D desde todos los ángulos';
+                
                 document.getElementById('hudValue').textContent = '0 dB';
                 document.getElementById('hudFill').style.width = '0%';
+                
                 this.isPlaying = false;
                 this.phase = 0;
             },
+
             setupEventListeners() {
-                document.getElementById('btnStartAR').addEventListener('click', () => this.startAnimation());
-                document.getElementById('btnNextPhase').addEventListener('click', () => this.nextPhase());
+                document.getElementById('btnStartAR').addEventListener('click', () => {
+                    this.startAnimation();
+                });
+                
+                document.getElementById('btnNextPhase').addEventListener('click', () => {
+                    this.nextPhase();
+                });
             },
+
             updateHUD(db, color = '#D71920') {
                 document.getElementById('hudValue').textContent = `${db} dB`;
                 document.getElementById('hudValue').style.color = color;
-                const percentage = Math.min(100, (db / 120) * 100);
+                const percentage = Math.min(100, (db / 125) * 100);
                 document.getElementById('hudFill').style.width = `${percentage}%`;
+                
                 if (color === '#34c759') {
                     document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #34c759, #30d158)';
                 } else {
                     document.getElementById('hudFill').style.background = 'linear-gradient(90deg, #D71920, #ff6b6b)';
                 }
             },
+
             async loadAudio() {
                 try {
                     const AC = window.AudioContext || window.webkitAudioContext;
                     this.audioContext = new AC();
+                    
                     const response = await fetch(CONFIG.audioFile);
-                    if (!response.ok) throw new Error('No audio');
+                    if (!response.ok) throw new Error('Archivo de audio no encontrado');
+                    
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
                     this.source = this.audioContext.createBufferSource();
                     this.source.buffer = audioBuffer;
                     this.source.loop = true;
+                    
                     this.filterNode = this.audioContext.createBiquadFilter();
                     this.filterNode.type = 'lowpass';
                     this.filterNode.frequency.value = 22000;
+                    
                     this.gainNode = this.audioContext.createGain();
                     this.gainNode.gain.value = 1.0;
+                    
                     this.source.connect(this.filterNode);
                     this.filterNode.connect(this.gainNode);
                     this.gainNode.connect(this.audioContext.destination);
+                    
                     this.source.start(0);
+                    console.log('🔊 Audio cargado y reproduciendo');
                     return true;
                 } catch (error) {
-                    console.log('🔇 Modo silencioso');
+                    console.log('🔇 Modo silencioso activado');
                     return false;
                 }
             },
+
             async startAnimation() {
                 if (this.isPlaying) return;
                 this.isPlaying = true;
+                
                 const btn = document.getElementById('btnStartAR');
-                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO...';
+                btn.innerHTML = '<span class="loading-spinner"></span> CARGANDO ESCENA...';
                 btn.disabled = true;
+                
                 await this.loadAudio();
+                
                 btn.classList.remove('visible');
+                document.getElementById('btnNextPhase').classList.add('visible');
+                
                 this.phase1_Suffering();
             },
+
             nextPhase() {
-                if (this.phase === 1) this.phase2_CoveringEars();
-                else if (this.phase === 2) this.phase3_Walking();
-                else if (this.phase === 3) this.phase4_TakingHeadphones();
-                else if (this.phase === 4) this.phase5_WearingProtection();
-                else if (this.phase === 5) this.phase6_FinalMessage();
+                if (this.phase === 1) {
+                    this.phase2_CoveringEars();
+                } else if (this.phase === 2) {
+                    this.phase3_Walking();
+                } else if (this.phase === 3) {
+                    this.phase4_TakingHeadphones();
+                } else if (this.phase === 4) {
+                    this.phase5_WearingProtection();
+                } else if (this.phase === 5) {
+                    this.phase6_FinalMessage();
+                }
             },
+
             phase1_Suffering() {
-                console.log('📍 FASE 1: Sufrimiento por ruido');
+                console.log('📍 FASE 1: Exposición a ruido peligroso');
                 this.phase = 1;
-                document.getElementById('arStatusText').textContent = '⚠️ Exposición a ruido peligroso - 105 dB';
+                
+                document.getElementById('arStatusText').textContent = '⚠️ Fase 1: Exposición a 105 dB - Toca SIGUIENTE FASE para continuar';
                 document.getElementById('dangerOverlay').classList.add('active');
+                
                 document.getElementById('soundWaves').setAttribute('visible', 'true');
                 document.getElementById('stressParticles').setAttribute('visible', 'true');
                 document.getElementById('infoPanel').setAttribute('visible', 'true');
+                
                 const light = document.getElementById('dangerLight');
-                light.setAttribute('animation', { property: 'light.intensity', from: 0, to: 4, dir: 'alternate', dur: 700, loop: true });
+                light.setAttribute('animation', {
+                    property: 'light.intensity',
+                    from: 0,
+                    to: 5,
+                    dir: 'alternate',
+                    dur: 800,
+                    loop: true
+                });
+                
                 const root = document.getElementById('stickmanRoot');
-                root.setAttribute('animation__shake', { property: 'rotation', from: '0 0 -5', to: '0 0 5', dir: 'alternate', dur: 80, loop: true });
+                root.setAttribute('animation__shake', {
+                    property: 'rotation',
+                    from: '0 0 -6',
+                    to: '0 0 6',
+                    dir: 'alternate',
+                    dur: 90,
+                    loop: true
+                });
+                
                 const mouth = document.getElementById('mouthShape');
                 mouth.setAttribute('rotation', '180 0 0');
+                
                 this.startHUDAnimation(105);
-                document.getElementById('btnNextPhase').classList.add('visible');
-                document.getElementById('arStatusText').textContent = '⚠️ Exposición a ruido peligroso - Toca CONTINUAR';
             },
+
             phase2_CoveringEars() {
-                console.log('📍 FASE 2: Cubriéndose los oídos');
+                console.log('📍 FASE 2: Cubriéndose los oídos con las manos');
                 this.phase = 2;
-                document.getElementById('arStatusText').textContent = 'Protección insuficiente con las manos';
+                
+                document.getElementById('arStatusText').textContent = 'Fase 2: Protección insuficiente - Las manos no protegen lo suficiente';
+                
                 const leftShoulder = document.getElementById('leftShoulder');
                 const leftUpperArm = document.getElementById('leftUpperArm');
                 const rightShoulder = document.getElementById('rightShoulder');
                 const rightUpperArm = document.getElementById('rightUpperArm');
-                leftShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 95', dur: 1200, easing: 'easeInOutQuad' });
-                leftUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 -110', dur: 1200, easing: 'easeInOutQuad' });
-                rightShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 -95', dur: 1200, easing: 'easeInOutQuad' });
-                rightUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 110', dur: 1200, easing: 'easeInOutQuad' });
+                
+                leftShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 100',
+                    dur: 1500,
+                    easing: 'easeInOutQuad'
+                });
+                
+                leftUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -120',
+                    dur: 1500,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -100',
+                    dur: 1500,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 120',
+                    dur: 1500,
+                    easing: 'easeInOutQuad'
+                });
+                
                 this.updateHUD(95);
             },
+
             phase3_Walking() {
                 console.log('📍 FASE 3: Caminando hacia la mesa');
                 this.phase = 3;
-                document.getElementById('arStatusText').textContent = 'Buscando protección auditiva...';
+                
+                document.getElementById('arStatusText').textContent = 'Fase 3: Buscando protección auditiva adecuada...';
+                
                 const root = document.getElementById('stickmanRoot');
                 root.removeAttribute('animation__shake');
+                
                 const leftShoulder = document.getElementById('leftShoulder');
                 const leftUpperArm = document.getElementById('leftUpperArm');
                 const rightShoulder = document.getElementById('rightShoulder');
                 const rightUpperArm = document.getElementById('rightUpperArm');
-                leftShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 18', dur: 700, easing: 'easeInOutQuad' });
-                leftUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 18', dur: 700, easing: 'easeInOutQuad' });
-                rightShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 -18', dur: 700, easing: 'easeInOutQuad' });
-                rightUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 -18', dur: 700, easing: 'easeInOutQuad' });
+                
+                leftShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 20',
+                    dur: 900,
+                    easing: 'easeInOutQuad'
+                });
+                
+                leftUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 20',
+                    dur: 900,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 900,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 900,
+                    easing: 'easeInOutQuad'
+                });
+                
                 setTimeout(() => {
-                    root.setAttribute('animation__turn', { property: 'rotation', to: '0 -55 0', dur: 1400, easing: 'easeInOutQuad' });
+                    root.setAttribute('animation__turn', {
+                        property: 'rotation',
+                        to: '0 -60 0',
+                        dur: 1600,
+                        easing: 'easeInOutQuad'
+                    });
+                    
                     setTimeout(() => {
                         const leftThigh = document.getElementById('leftThigh');
                         const rightThigh = document.getElementById('rightThigh');
-                        leftThigh.setAttribute('animation', { property: 'rotation', from: '0 0 4', to: '40 0 4', dir: 'alternate', dur: 500, loop: 6, easing: 'easeInOutSine' });
-                        rightThigh.setAttribute('animation', { property: 'rotation', from: '0 0 -4', to: '-40 0 -4', dir: 'alternate', dur: 500, loop: 6, easing: 'easeInOutSine' });
-                        leftShoulder.setAttribute('animation__swing', { property: 'rotation', from: '0 0 18', to: '40 0 18', dir: 'alternate', dur: 500, loop: 6, easing: 'easeInOutSine' });
-                        rightShoulder.setAttribute('animation__swing', { property: 'rotation', from: '0 0 -18', to: '-40 0 -18', dir: 'alternate', dur: 500, loop: 6, easing: 'easeInOutSine' });
-                        root.setAttribute('animation__walk', { property: 'position', to: '1 0 0', dur: 3000, easing: 'linear' });
-                    }, 1500);
-                }, 800);
+                        
+                        leftThigh.setAttribute('animation', {
+                            property: 'rotation',
+                            from: '0 0 5',
+                            to: '45 0 5',
+                            dir: 'alternate',
+                            dur: 550,
+                            loop: 7,
+                            easing: 'easeInOutSine'
+                        });
+                        
+                        rightThigh.setAttribute('animation', {
+                            property: 'rotation',
+                            from: '0 0 -5',
+                            to: '-45 0 -5',
+                            dir: 'alternate',
+                            dur: 550,
+                            loop: 7,
+                            easing: 'easeInOutSine'
+                        });
+                        
+                        leftShoulder.setAttribute('animation__swing', {
+                            property: 'rotation',
+                            from: '0 0 20',
+                            to: '45 0 20',
+                            dir: 'alternate',
+                            dur: 550,
+                            loop: 7,
+                            easing: 'easeInOutSine'
+                        });
+                        
+                        rightShoulder.setAttribute('animation__swing', {
+                            property: 'rotation',
+                            from: '0 0 -20',
+                            to: '-45 0 -20',
+                            dir: 'alternate',
+                            dur: 550,
+                            loop: 7,
+                            easing: 'easeInOutSine'
+                        });
+                        
+                        root.setAttribute('animation__walk', {
+                            property: 'position',
+                            to: '1.2 0 0',
+                            dur: 3850,
+                            easing: 'linear'
+                        });
+                    }, 1700);
+                }, 1000);
             },
+
             phase4_TakingHeadphones() {
-                console.log('📍 FASE 4: Tomando auriculares');
+                console.log('📍 FASE 4: Tomando los auriculares');
                 this.phase = 4;
-                document.getElementById('arStatusText').textContent = 'Colocando protección auditiva...';
+                
+                document.getElementById('arStatusText').textContent = 'Fase 4: Colocando protección auditiva certificada...';
+                
                 const leftThigh = document.getElementById('leftThigh');
                 const rightThigh = document.getElementById('rightThigh');
                 const leftShoulder = document.getElementById('leftShoulder');
                 const rightShoulder = document.getElementById('rightShoulder');
+                
                 leftThigh.removeAttribute('animation');
                 rightThigh.removeAttribute('animation');
                 leftShoulder.removeAttribute('animation__swing');
                 rightShoulder.removeAttribute('animation__swing');
-                leftThigh.setAttribute('rotation', '0 0 4');
-                rightThigh.setAttribute('rotation', '0 0 -4');
+                
+                leftThigh.setAttribute('rotation', '0 0 5');
+                rightThigh.setAttribute('rotation', '0 0 -5');
+                
                 const rightUpperArm = document.getElementById('rightUpperArm');
                 const rightForearm = document.getElementById('rightForearm');
-                rightShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 -85', dur: 1400, easing: 'easeInOutQuad' });
-                rightUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 60', dur: 1400, easing: 'easeInOutQuad' });
-                rightForearm.setAttribute('animation', { property: 'rotation', to: '0 0 -50', dur: 1400, delay: 500, easing: 'easeInOutQuad' });
+                
+                rightShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -90',
+                    dur: 1700,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 70',
+                    dur: 1700,
+                    easing: 'easeInOutQuad'
+                });
+                
+                rightForearm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -60',
+                    dur: 1700,
+                    delay: 600,
+                    easing: 'easeInOutQuad'
+                });
+                
                 setTimeout(() => {
                     const headphones = document.getElementById('headphonesGroup');
                     headphones.removeAttribute('animation');
-                    headphones.setAttribute('animation__approach', { property: 'position', to: '1 0.75 0', dur: 2200, easing: 'easeInOutCubic' });
-                    headphones.setAttribute('animation__scale', { property: 'scale', to: '0.75 0.75 0.75', dur: 2200, easing: 'easeInOutCubic' });
-                }, 1600);
+                    
+                    headphones.setAttribute('animation__approach', {
+                        property: 'position',
+                        to: '1.2 0.9 0',
+                        dur: 2600,
+                        easing: 'easeInOutCubic'
+                    });
+                    
+                    headphones.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0.8 0.8 0.8',
+                        dur: 2600,
+                        easing: 'easeInOutCubic'
+                    });
+                }, 1900);
             },
+
             phase5_WearingProtection() {
-                console.log('📍 FASE 5: Protección aplicada');
+                console.log('📍 FASE 5: Protección auditiva colocada');
                 this.phase = 5;
-                document.getElementById('arStatusText').textContent = '✅ Protección auditiva efectiva';
+                
+                document.getElementById('arStatusText').textContent = 'Fase 5: ✅ Protección auditiva efectiva activada';
+                
                 const headphones = document.getElementById('headphonesGroup');
-                headphones.setAttribute('position', '1 0.75 0');
-                headphones.setAttribute('scale', '0.7 0.7 0.7');
+                headphones.setAttribute('position', '1.2 0.9 0');
+                headphones.setAttribute('scale', '0.75 0.75 0.75');
                 headphones.removeAttribute('animation__approach');
                 headphones.removeAttribute('animation__scale');
+                
                 const leftShoulder = document.getElementById('leftShoulder');
                 const rightShoulder = document.getElementById('rightShoulder');
                 const rightUpperArm = document.getElementById('rightUpperArm');
                 const rightForearm = document.getElementById('rightForearm');
-                leftShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 18', dur: 1000 });
-                rightShoulder.setAttribute('animation', { property: 'rotation', to: '0 0 -18', dur: 1000 });
-                rightUpperArm.setAttribute('animation', { property: 'rotation', to: '0 0 -18', dur: 1000 });
-                rightForearm.setAttribute('animation', { property: 'rotation', to: '0 0 -6', dur: 1000 });
+                
+                leftShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 20',
+                    dur: 1200
+                });
+                
+                rightShoulder.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 1200
+                });
+                
+                rightUpperArm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -20',
+                    dur: 1200
+                });
+                
+                rightForearm.setAttribute('animation', {
+                    property: 'rotation',
+                    to: '0 0 -7',
+                    dur: 1200
+                });
+                
                 if (this.audioContext && this.filterNode && this.gainNode) {
                     const t = this.audioContext.currentTime;
-                    this.filterNode.frequency.exponentialRampToValueAtTime(250, t + 2.5);
-                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
+                    this.filterNode.frequency.exponentialRampToValueAtTime(300, t + 3);
+                    this.gainNode.gain.exponentialRampToValueAtTime(0.05, t + 3);
                 }
+                
                 document.getElementById('soundWaves').setAttribute('visible', 'false');
                 document.getElementById('stressParticles').setAttribute('visible', 'false');
                 document.getElementById('dangerOverlay').classList.remove('active');
+                
                 const light = document.getElementById('dangerLight');
                 light.removeAttribute('animation');
                 light.setAttribute('light', 'intensity', 0);
+                
                 const mouth = document.getElementById('mouthShape');
                 mouth.setAttribute('rotation', '0 0 0');
-                document.getElementById('infoTitle').setAttribute('value', '✅ 60 dB - SEGURO ✅');
+                
+                document.getElementById('infoTitle').setAttribute('value', '✅ 60 dB - NIVEL SEGURO ✅');
                 document.getElementById('infoTitle').setAttribute('color', '#00FF00');
-                document.getElementById('infoSubtitle').setAttribute('value', 'Protección auditiva efectiva aplicada');
+                document.getElementById('infoSubtitle').setAttribute('value', 'Protección auditiva efectiva - Audición protegida correctamente');
+                
                 this.updateHUD(60, '#34c759');
             },
+
             phase6_FinalMessage() {
-                console.log('📍 FASE 6: Mensaje final');
+                console.log('📍 FASE 6: Mensaje educativo final');
                 this.phase = 6;
-                document.getElementById('arStatusText').textContent = '✅ Simulación completada';
+                
+                document.getElementById('arStatusText').textContent = '✅ Simulación completada - Protege tu audición siempre';
                 document.getElementById('btnNextPhase').classList.remove('visible');
+                
                 const panel = document.getElementById('infoPanel');
                 const title = document.getElementById('infoTitle');
                 const subtitle = document.getElementById('infoSubtitle');
-                panel.children[0].setAttribute('animation', { property: 'height', to: 1.5, dur: 1000 });
-                panel.children[1].setAttribute('animation', { property: 'height', to: 1.45, dur: 1000 });
-                panel.children[2].setAttribute('animation', { property: 'height', to: 1.4, dur: 1000 });
+                
+                panel.children[0].setAttribute('animation', {
+                    property: 'height',
+                    to: 1.8,
+                    dur: 1200
+                });
+                
+                panel.children[1].setAttribute('animation', {
+                    property: 'height',
+                    to: 1.75,
+                    dur: 1200
+                });
+                
+                panel.children[2].setAttribute('animation', {
+                    property: 'height',
+                    to: 1.7,
+                    dur: 1200
+                });
+                
                 setTimeout(() => {
-                    title.setAttribute('position', '0 0.6 0.01');
-                    subtitle.setAttribute('value', 'Usa protección en ambientes >85dB\n\n🏭 Fábricas\n🔨 Construcción\n🎸 Conciertos\n\nTU AUDICIÓN NO SE REGENERA');
-                    subtitle.setAttribute('position', '0 0.1 0.01');
-                }, 1100);
+                    title.setAttribute('position', '0 0.7 0.01');
+                    subtitle.setAttribute('value', 
+                        'PROTECCIÓN AUDITIVA OBLIGATORIA\n\n' +
+                        'Usa protección en ambientes con más de 85 dB:\n\n' +
+                        '🏭 Fábricas e industrias\n' +
+                        '🔨 Construcción y obras\n' +
+                        '🎸 Conciertos y eventos\n' +
+                        '✈️ Aeropuertos\n' +
+                        '🏠 Herramientas ruidosas\n\n' +
+                        'TU AUDICIÓN NO SE REGENERA\n' +
+                        'Protégela HOY para escuchar MAÑANA');
+                    subtitle.setAttribute('position', '0 0 0.01');
+                }, 1300);
             },
+
             startHUDAnimation(initialDb) {
                 if (this.hudInterval) clearInterval(this.hudInterval);
+                
                 this.hudInterval = setInterval(() => {
                     if (this.phase <= 2) {
-                        const db = 95 + Math.floor(Math.random() * 15);
+                        const db = 95 + Math.floor(Math.random() * 18);
                         this.updateHUD(db);
                     } else if (this.phase >= 5) {
-                        const db = 55 + Math.floor(Math.random() * 10);
+                        const db = 55 + Math.floor(Math.random() * 12);
                         this.updateHUD(db, '#34c759');
                     }
-                }, 250);
+                }, 280);
             }
         };
 
         window.addEventListener('load', () => {
-            console.log('🚀 LANXESS AR PRO v18.0 CARGADO');
+            console.log('🚀 LANXESS AR PROFESSIONAL v19.0 CARGADO');
             Router.init();
         });
     </script>
