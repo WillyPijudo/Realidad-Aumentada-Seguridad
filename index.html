@@ -97,7 +97,7 @@
         .loading-logo {
             font-size: 100px;
             margin-bottom: 30px;
-            animation: logoFloat 3s ease-in-out infinite;
+            : logoFloat 3s ease-in-out infinite;
             filter: drop-shadow(0 10px 30px rgba(215, 25, 32, 0.6));
         }
 
@@ -2207,35 +2207,23 @@
         });
 
         // ========================================
-        // INICIALIZACIÓN AL CARGAR PÁGINA
+        // INICIALIZACIÓN AL CARGAR PÁGINA (CORREGIDO)
         // ========================================
         window.addEventListener('load', () => {
             log('===========================================', 'info');
             log(`Lanxess AR v${APP_VERSION} - Iniciando...`, 'info');
-            log('===========================================', 'info');
 
-            // Esperar a que A-Frame esté listo
-            const sceneEl = document.querySelector('a-scene');
+            // 1. Inicializar referencias
+            initializeElements();
 
-            if (sceneEl) {
-                if (sceneEl.hasLoaded) {
-                    log('A-Frame ya estaba cargado', 'debug');
-                    initializeElements();
-                } else {
-                    log('Esperando a que A-Frame cargue...', 'debug');
-                    sceneEl.addEventListener('loaded', () => {
-                        log('A-Frame cargado correctamente', 'success');
-                        initializeElements();
-                    });
+            // 2. Esperar un momento y MOSTRAR INSTRUCCIONES
+            // (Esto rompe el bloqueo: quitamos el loading para ver el botón de inicio)
+            setTimeout(() => {
+                if (elements.loadingScreen) {
+                    elements.loadingScreen.classList.add('hidden');
                 }
-            } else {
-                log('Esperando creación de a-scene...', 'debug');
-                setTimeout(() => {
-                    initializeElements();
-                }, 1000);
-            }
-
-            log('Sistema inicializado y listo', 'success');
+                log('Pantalla de carga inicial ocultada', 'success');
+            }, 2500); // 2.5 segundos de "carga falsa" para que se vea el logo
         });
 
         // ========================================
@@ -2287,3 +2275,4 @@
     </script>
 </body>
 </html>
+
