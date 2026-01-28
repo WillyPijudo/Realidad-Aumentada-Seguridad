@@ -183,6 +183,9 @@
             padding: 30px;
             transition: opacity var(--transition-slow);
             overflow-y: auto;
+            touch-action: pan-y; 
+            -webkit-overflow-scrolling: touch;
+            pointer-events: auto;
         }
 
         #instructionsScreen.hidden {
@@ -2276,6 +2279,7 @@
     </script>
 </body>
 </html>
+
 
 
 
