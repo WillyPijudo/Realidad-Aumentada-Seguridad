@@ -48,8 +48,6 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            user-select: none;
         }
 
         html, body {
@@ -64,7 +62,6 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            touch-action: none;
         }
 
         /* ========================================
@@ -182,12 +179,13 @@
         align-items: center;
         z-index: 9999;
         padding: 30px;
-        padding-bottom: 80px;
+        padding-bottom: 120px;
         transition: opacity var(--transition-slow);
-        overflow-y: scroll;
+        overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
+        touch-action: pan-y;     
         }
 
         #instructionsScreen.hidden {
@@ -2307,6 +2305,7 @@
     </script>
 </body>
 </html>
+
 
 
 
