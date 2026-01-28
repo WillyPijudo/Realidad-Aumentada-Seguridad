@@ -48,6 +48,23 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            /* Permitir selección e interacción en pantallas de UI */
+#instructionsScreen,
+#instructionsScreen *,
+#educationalMessage,
+#educationalMessage * {
+    user-select: auto;
+    -webkit-user-select: auto;
+    -webkit-touch-callout: default;
+}
+
+/* Solo bloquear selección en la escena AR */
+#arScene,
+#arScene * {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
         }
 
         html, body {
@@ -185,7 +202,9 @@
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
-        touch-action: pan-y;     
+        touch-action: pan-y;
+        pointer-events: auto !important;
+        will-change: scroll-position;
         }
 
         #instructionsScreen.hidden {
@@ -2276,16 +2295,24 @@
         // ========================================
         // PREVENIR ZOOM EN iOS
         // ========================================
-        document.addEventListener('gesturestart', (e) => {
-            e.preventDefault();
-        });
+   // Prevenir zoom pero PERMITIR scroll
+document.addEventListener('touchmove', (e) => {
+    // Solo bloquear si hay múltiples dedos (zoom pinch)
+    if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+    }
+    // Si es un solo dedo, dejar que pase (esto es scroll)
+}, { passive: false });
 
-        document.addEventListener('touchmove', (e) => {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
+// Prevenir doble-tap zoom
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
         // ========================================
         // LOGGING DE ESTADO (DEBUGGING)
         // ========================================
@@ -2305,6 +2332,7 @@
     </script>
 </body>
 </html>
+
 
 
 
